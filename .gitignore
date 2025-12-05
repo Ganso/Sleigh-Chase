@@ -1,0 +1,17 @@
+# Build
+build/
+*.o
+*.elf
+*.bin
+*.rom
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Temporal
+.DS_Store
+*.tmp

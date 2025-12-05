@@ -1,0 +1,34 @@
+out/res/resources.o: res/resources.res \
+/src/res/LetraI.png \
+/src/res/Letra2bn.png \
+/src/res/LetraEbn.png \
+/src/res/Letra5.png \
+/src/res/Letra0.png \
+/src/res/LetraLbn.png \
+/src/res/BolaConfeti.png \
+/src/res/Bomba.png \
+/src/res/FondoFiesta.png \
+/src/res/Letra5bn.png \
+/src/res/LetraZbn.png \
+/src/res/Letra2.png \
+/src/res/Campanabn.png \
+/src/res/snd_letra_ok.wav \
+/src/res/LetraF.png \
+/src/res/Letra0bn.png \
+/src/res/FondoNieve.png \
+/src/res/Canon.png \
+/src/res/snd_victoria.wav \
+/src/res/Fondo.png \
+/src/res/snd_canon.wav \
+/src/res/LetraZ.png \
+/src/res/LetraIbn.png \
+/src/res/LetraL.png \
+/src/res/snd_letra_no.wav \
+/src/res/snd_campana.wav \
+/src/res/LetraE.png \
+/src/res/Campana.png \
+/src/res/musica.vgm \
+/src/res/LetraFbn.png \
+/src/res/snd_bomba.wav \
+/src/res/PaletaEstandar.pal \
+/src/res/snd_aplausos.wav
