@@ -17,5 +17,4 @@ out/src/main.o: src/main.c /sgdk/inc/genesis.h /sgdk/inc/types.h \
  /sgdk/inc/ext/console.h /sgdk/inc/config.h /sgdk/inc/string.h \
  /sgdk/inc/maths.h /sgdk/inc/dma.h inc/game_core.h /sgdk/inc/kdebug.h \
  inc/minigame_bells.h inc/game_core.h inc/minigame_pickup.h \
- inc/minigame_delivery.h inc/minigame_celebration.h res/resources.h \
- inc/geesebumps.h
+ inc/minigame_delivery.h inc/minigame_celebration.h inc/geesebumps.h

@@ -17,6 +17,7 @@ LDFLAGS = -T $(LIBMD)/genesis.ld
 # Archivos fuente
 SOURCES = src/main.c \
           src/game_core.c \
+          src/geesebumps.c \
           src/minigame_bells.c \
           src/minigame_pickup.c \
           src/minigame_delivery.c \

@@ -12,7 +12,6 @@
 #include "minigame_pickup.h"
 #include "minigame_delivery.h"
 #include "minigame_celebration.h"
-#include "resources.h"
 #include "geesebumps.h"
 
 /* Fases del juego */
@@ -37,16 +36,14 @@ int main() {
     Z80_init();
     Z80_loadDriver(Z80_DRIVER_XGM2, 1);
 
-    /* Logo intro */
-    //geesebumps_logo();
-
     /* Loop principal */
     while (1) {
         switch (currentPhase) {
             case PHASE_INTRO:
                 /* Mostrar intro o pasar a Fase 1 */
-                //gameCore_fadeFromBlack();
                 KLog("Mostrando intro...");
+                geesebumps_logo();
+                gameCore_fadeToBlack();
                 currentPhase = PHASE_PICKUP;
                 break;
 

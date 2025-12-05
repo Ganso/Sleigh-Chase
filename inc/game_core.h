@@ -31,13 +31,8 @@ typedef struct {
 
 /* FUNCIONES */
 u16 gameCore_readInput(void);
-u8 gameCore_checkCollisionAABB(s16 x1, s16 y1, u16 w1, u16 h1,
-                                s16 x2, s16 y2, u16 w2, u16 h2);
 void gameCore_initTimer(GameTimer *timer, u16 seconds);
 s32 gameCore_updateTimer(GameTimer *timer);
-u16 gameCore_getTimeRemaining(GameTimer *timer);
 void gameCore_fadeToBlack(void);
-void gameCore_fadeFromBlack(void);
-void gameCore_clearAllSprites(void);
 
 #endif
