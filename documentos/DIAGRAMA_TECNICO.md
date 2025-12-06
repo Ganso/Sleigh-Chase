@@ -244,12 +244,12 @@ RESUMEN:
 ├─────────────────────────────────────────────────────────────────────┤
 
 FASE 1: RECOGIDA (Polo Norte)
-├─ sprite_regalo (32×32) - Regalos cayendo
-├─ sprite_canon_polo (80×64, 2 frames) - Cañón
-├─ sprite_red_confeti (8×8) - Red lanzada
-├─ sprite_copo_grande (64×64) - Obstáculos
-└─ sprite_regalo_bn (32×32) - Para HUD
-   Simultáneos: ~12 máximo
+├─ sprite_santa_car (80×128, 2 frames) - Carro cenital con nariz parpadeo
+├─ sprite_arbol_pista (64×64) - Árboles coleccionables al ritmo del scroll
+├─ sprite_elfo_lateral (32×32) - Aliados que lanzan regalos desde el borde
+├─ sprite_duende_malo (32×32) - Enemigos con desplazamiento lateral
+└─ sprite_regalo (32×32) - Contadores/HUD y regalos recibidos
+   Simultáneos: ~12 máximo (1 carro + 4 árboles + 2 elfos + 4 duendes + HUD)
    Memoria: ~2 KB RAM
 
 FASE 2: ENTREGA (Tejados)  ← NUEVA DOCUMENTACIÓN ULTRAPRECISA

@@ -181,224 +181,66 @@ Audio:
 ## 4️⃣ FASE 1 - RECOGIDA (POLO NORTE)
 
 ### Descripción General
-- **Escenario**: Polo Norte nevado (noche)
-- **Duración**: 60-90 segundos
-- **Dificultad**: Fácil (introducción)
-- **Mecánica**: Recoger regalos que caen
+- **Escenario**: Pista de nieve cenital con scroll vertical continuo en bucle de dos pantallas.
+- **Duración**: 60-90 segundos aproximados.
+- **Mecánica**: Conducir el carro de Papá Noel evitando laterales y duendes, recogiendo regalos de árboles y elfos.
+- **Disparos**: No hay disparo; el único poder ofensivo es la limpieza de pantalla cuando la nariz de Rudolf parpadea.
 
 ### Gameplay
 
 **Objetivo Principal**
 ```
-Recoger 20 REGALOS TOTALES para pasar a Fase 2
+Recoger 15 REGALOS para pasar a Fase 2.
 
-┌─ Requisitos:
-│  ├─ 20 regalos totales
-│  ├─ Tiempo ilimitado
-│  ├─ Sin penalización por fallar
-│  └─ Pequeños obstáculos (copos de nieve grandes)
-└─ Victoria: 20/20 regalos recogidos
+┌─ Fuentes de regalo:
+│  ├─ Tocar árboles (64×64) colocados sobre la pista.
+│  └─ Recibir lanzamientos de elfos aliados situados en los laterales.
+└─ Victoria: 15 regalos acumulados.
 ```
 
 **Mecánica de Juego**
 ```
 ENTRADA:
-├─ LEFT/RIGHT    → Mover cañón izquierda/derecha
-├─ A             → Disparar (confeti/red)
-├─ B             → Contacto directo (sin disparar)
-└─ START         → Pausa (opcional)
+├─ LEFT/RIGHT → Desplazar el carro dentro de la pista (sin invadir laterales).
+├─ B          → Activar poder especial si la nariz parpadea (limpia duendes).
+└─ START      → Pausa (opcional).
 
-FÍSICAS:
-├─ Regalos: Caen con gravedad (2-4 píxeles/frame)
-├─ Velocidad variable: 1-3 fps de caída
-├─ Cañón: Aceleración suave (MAX 6 píxeles/frame)
-└─ Red/disparos: Viajan a 2 píxeles/frame hacia arriba
+ESCENARIO:
+├─ Scroll vertical ascendente (MAP image_pista_polo_map) de 320×448 px en bucle.
+├─ Laterales prohibidos: 20% de la pantalla a cada lado con vallas dibujadas.
+└─ Objetos de pista bajan al mismo ritmo que el scroll para simular estáticos.
 
-COLISIONES:
-├─ Red + Regalo = Regalo recogido
-├─ Contacto directo = Regalo recogido
-├─ Regalo cae fuera = Reinicia (sin penalización)
-└─ Obstáculo + Red = Pierde bala (sin penalización)
+OBJETOS ALIADOS:
+├─ Árboles 64×64 (sprite_arbol_pista) que al tocarlos suman 1 regalo.
+├─ Elfos 32×32 en los laterales (sprite_elfo_lateral) que entregan 1 regalo al acercarse.
+└─ Carro de Papá Noel 80×128 (sprite_santa_car) con animación de nariz normal/parpadeo.
+
+ENEMIGOS:
+├─ Duendes malvados 32×32 (sprite_duende_malo) que caen con el scroll y se mueven lateralmente hacia el carro.
+├─ Colisión con un duende resta 1 regalo (mínimo 0) y reubica al enemigo.
+└─ Poder especial: disponible cada 3 regalos recogidos; elimina todos los duendes en pantalla.
 
 SCORE/PROGRESO:
-├─ HUD: Muestra "Regalos: X/20"
-├─ Actualización: Cada frame
-└─ al 100% → Mensaje "¡VICTORIA!" + transición
+├─ HUD: "Regalos: X/15" y "Especial: cargo/3".
+├─ La nariz parpadea al alcanzar la carga completa del poder especial.
+└─ Completar objetivo → transición a Fase 2.
 ```
 
-**Dificultad Progression**
-```
-Tiempo 0-20s:   3 regalos cayendo
-Tiempo 20-40s:  4 regalos cayendo
-Tiempo 40-60s:  5 regalos cayendo
-Tiempo 60-80s:  6 regalos cayendo (máximo)
+### Recursos
 
-Obstáculos:
-├─ 2 copos de nieve grandes (fijos)
-├─ Sin penalización por colisionar
-└─ Solo reduce velocidad de proyectil
-```
+**Sprites principales**
+- `sprite_santa_car` (80×128, 2 frames) – Carro visto desde arriba, segundo frame con nariz parpadeando.
+- `sprite_arbol_pista` (64×64, 1 frame) – Árbol nevado sobre la pista.
+- `sprite_elfo_lateral` (32×32, 1 frame) – Elfo que entrega regalos desde el borde.
+- `sprite_duende_malo` (32×32, 1 frame) – Duende enemigo que intenta chocar.
+- `sprite_regalo` (32×32, 1 frame) – Regalo usado en contadores y lanzamientos.
 
-### Sprites Requeridos
+**Fondo y mapa**
+- `image_pista_polo_tile` + `image_pista_polo_map` (320×448, 40×56 tiles) – Pista vertical en bucle con vallas laterales; usa `image_pista_polo_pal`.
 
-**sprite_regalo**
-```
-Tamaño: 32×32 píxeles
-Frames: 1 (estático) o 2 (parpadeo al tocar)
-Colores: Rojo brillante, cinta dorada
-Paleta: PAL_PLAYER
-Archivo: Regalos.png (32×32)
-```
-
-**sprite_canon_polo**
-```
-Tamaño: 80×64 píxeles
-Frames: 2 (reposo, disparo)
-Colores: Madera, trineo rojo
-Paleta: PAL_PLAYER
-Archivo: CanonPolo.png (80×64)
-```
-
-**sprite_red_confeti**
-```
-Tamaño: 8×8 píxeles
-Frames: 1
-Colores: Multicolor (rojo, dorado)
-Paleta: PAL_EFFECT
-Archivo: RedConfeti.png (8×8)
-```
-
-**sprite_copo_grande**
-```
-Tamaño: 64×64 píxeles
-Frames: 1 (estático)
-Colores: Blanco brillante
-Paleta: PAL_COMMON
-Archivo: CopoGrande.png (64×64)
-```
-
-**sprite_regalo_bn**
-```
-Tamaño: 32×32 píxeles
-Frames: 1
-Colores: Escala de grises (para contador)
-Paleta: PAL_PLAYER
-Archivo: Regalos_BN.png (32×32)
-```
-
-### Fondos
-
-**image_fondo_polo**
-```
-Tamaño: 320×224 píxeles
-Tipo: Tileset + Map
-Contenido: Nieve (patrón), árboles lejanos, lunas
-Paleta: PAL_COMMON (colores frío: blanco, azul)
-Archivo Gráfico: FondoPolo.png (512×256 min)
-Archivo Tileset: FondoPolo.tileset
-Archivo Mapa: FondoPolo.map
-Parallax: NO (fondo estático)
-```
-
-**image_copos_fondo**
-```
-Tamaño: 320×224 píxeles
-Tipo: Tileset paralaje
-Contenido: Copos pequeños, niebla
-Paleta: PAL_COMMON (blanco semi-transparente)
-Archivo: CoposFondo.png (256×256)
-Parallax: Sí (scroll lento: -1 píxel/frame)
-```
-
-### Sonidos (SFX)
-
-**snd_regalo_recogido**
-```
-Duración: ~0.2 segundos
-Tipo: Efecto corto positivo
-Frecuencia: 8kHz, 8-bit PCM
-Tamaño: ~1600 bytes
-Contenido: "Ding" metálico
-Reproducir: SOUND_PCM_CH1
-```
-
-**snd_disparo_red**
-```
-Duración: ~0.1 segundos
-Tipo: Sonido de acción
-Frecuencia: 8kHz, 8-bit PCM
-Tamaño: ~800 bytes
-Contenido: "Whoosh" suave
-Reproducir: SOUND_PCM_CH_AUTO
-```
-
-**snd_obstáculo_golpe**
-```
-Duración: ~0.15 segundos
-Tipo: Impacto suave
-Frecuencia: 8kHz, 8-bit PCM
-Tamaño: ~1200 bytes
-Contenido: "Thud" de nieve
-Reproducir: SOUND_PCM_CH2
-```
-
-### Música
-
-**musica_polo**
-```
-Tipo: XGM2 (VGM format)
-Tempo: 120 BPM (moderado, navideño)
-Duración: 30-60 segundos loop
-Instrumento principal: Piano + strings
-Estilo: Música box, instrumental navideña
-Tamaño: ~3-5 KB
-Loop: Sí (infinito hasta victoria)
-Volumen FM: 70
-Volumen PSG: 100
-Reproducir: XGM2_play(musica_polo) con loop
-```
-
-### Variables Locales (minigame_pickup.c)
-
-```c
-/* Estructuras */
-typedef struct {
-    Sprite* sprite;
-    s16 x, y;
-    s8 velocity;
-    u8 blinkCounter;
-    u8 isBlinking;
-} Regalo;
-
-/* Arrays */
-static Regalo regalos[NUM_REGALOS];      // 6 máximo cayendo
-static Sprite* cannonPolo;
-static Sprite* bullets[NUM_BULLETS];     // 3 máximo
-
-/* Globales */
-static s16 cannonX;
-static s8 cannonVelocity;
-static u16 regalosRecolectados;         // 0-20
-static u16 frameCounter;
-static s8 bulletCooldown;
-
-/* Constantes */
-#define NUM_REGALOS 6
-#define NUM_BULLETS 3
-#define OBJETIVO_REGALOS 20
-#define BULLET_COOLDOWN_FRAMES 30
-```
-
-### Paletas requeridas
-
-```c
-extern const Palette fondoPoloPal;
-extern const Palette cannonPaloPal;
-extern const Palette regalosPal;
-```
-
----
-
+**Sonidos reutilizados**
+- `snd_regalo_recogido`: confirma recolección de regalos (árbol o elfo).
+- `snd_obstaculo_golpe`: puede acompañar colisión con duendes si se desea feedback.
 ## <a name="fase-2"></a>
 
 ## 5️⃣ FASE 2 - ENTREGA (TEJADOS)

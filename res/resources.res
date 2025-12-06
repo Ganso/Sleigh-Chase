@@ -1,5 +1,6 @@
 PALETTE image_fondo_pal "bg/Fondo.png" BEST
 PALETTE image_fondo_polo_pal "bg/FondoPolo.png" BEST # Placeholder (Paleta fondo polar fase uno)
+PALETTE image_pista_polo_pal "bg/PistaPolo.png" BEST # Placeholder (Paleta pista scroll fase uno)
 PALETTE image_fondo_tejados_pal "bg/FondoTejados.png" BEST # Placeholder (Paleta fondo tejados noche navidad)
 PALETTE image_fondo_fiesta_pal "bg/FondoFiesta.png" BEST # Placeholder (Paleta fondo fiesta final colorido)
 
@@ -16,6 +17,10 @@ SPRITE sprite_regalo_bn "sprites/RegaloBN.png" 4 4 BEST 1 # Placeholder (Contado
 SPRITE sprite_canon_polo "sprites/CanonPolo.png" 10 8 BEST 1 # Placeholder (Canon trineo fase polo principal)
 SPRITE sprite_red_confeti "sprites/RedConfeti.png" 1 1 BEST 2 # Placeholder (Disparo red confeti polo rapido)
 SPRITE sprite_copo_grande "sprites/CopoGrande.png" 8 8 BEST # Placeholder (Obstaculo copo nieve grande estatico)
+SPRITE sprite_santa_car "sprites/SantaCar.png" 10 16 BEST 2 # Placeholder (Carro vertical de Papa Noel para scroll)
+SPRITE sprite_arbol_pista "sprites/ArbolPista.png" 8 8 BEST 1 # Placeholder (Arbol 64x64 decorativo/coleccionable)
+SPRITE sprite_elfo_lateral "sprites/ElfoLateral.png" 4 4 BEST 1 # Placeholder (Elfo con regalo en lateral)
+SPRITE sprite_duende_malo "sprites/DuendeMalo.png" 4 4 BEST 1 # Placeholder (Duende enemigo 32x32)
 
 # Fase 2
 SPRITE sprite_regalo_entrega "sprites/Regalos_Pequeno.png" 3 3 BEST 1 # Placeholder (Regalo pequeño entrega tejados volador)
@@ -36,6 +41,8 @@ TILESET image_fondo_nieve_tile "bg/FondoNieve.png" BEST
 MAP image_fondo_nieve_map "bg/FondoNieve.png" image_fondo_nieve_tile BEST
 TILESET image_fondo_polo_tile "bg/FondoPolo.png" BEST # Placeholder (Fondo tileset fase polo principal)
 MAP image_fondo_polo_map "bg/FondoPolo.png" image_fondo_polo_tile BEST # Placeholder (Mapa fondo fase polo principal)
+TILESET image_pista_polo_tile "bg/PistaPolo.png" BEST # Placeholder (Pista vertical fase uno)
+MAP image_pista_polo_map "bg/PistaPolo.png" image_pista_polo_tile BEST # Placeholder (Mapa pista vertical fase uno)
 TILESET image_copos_fondo_tile "bg/CoposFondo.png" BEST # Placeholder (Capa copos paralaje polo fondo)
 MAP image_copos_fondo_map "bg/CoposFondo.png" image_copos_fondo_tile BEST # Placeholder (Mapa copos paralaje polo fondo)
 TILESET image_fondo_tejados_tile "bg/FondoTejados.png" BEST # Placeholder (Fondo base fase tejados principal)
