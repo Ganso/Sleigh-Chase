@@ -1,7 +1,7 @@
 out/res/resources_bg.o: res/resources_bg.res \
 /src/res/bg/Nubes.png \
 /src/res/bg/FondoPolo.png \
-/src/res/bg/FondoNieve.png \
+/src/res/bg/PrimerPlanoNieve.png \
 /src/res/bg/FondoFiesta.png \
 /src/res/bg/LucesParpadeo.png \
 /src/res/bg/Fondo.png \

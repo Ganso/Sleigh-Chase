@@ -17,4 +17,4 @@ out/src/minigame_pickup.o: src/minigame_pickup.c inc/minigame_pickup.h \
  /sgdk/inc/types.h /sgdk/inc/ext/flash-save/saveman.h \
  /sgdk/inc/ext/console.h /sgdk/inc/config.h /sgdk/inc/string.h \
  /sgdk/inc/maths.h /sgdk/inc/dma.h /sgdk/inc/kdebug.h res/resources_bg.h \
- res/resources_sprites.h
+ res/resources_sprites.h inc/snow_effect.h

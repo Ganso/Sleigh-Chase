@@ -13,6 +13,7 @@
 #include "resources_bg.h"
 #include "resources_sfx.h"
 #include "resources_sprites.h"
+#include "snow_effect.h"
 
 /* ═══════════════════════════════════════════════════════════════════════════
    CONSTANTES
@@ -81,9 +82,7 @@ static s8 bulletCooldown;
 
 static GameTimer gameTimer;
 static Map *mapBackground;
-static Map *mapSnow;
-static s16 snowOffsetX, snowOffsetY;
-static u32 tileIndex;
+static SnowEffect snowEffect;
 
 /* ═══════════════════════════════════════════════════════════════════════════
    FORWARD DECLARATIONS
@@ -374,6 +373,8 @@ void minigameBells_init(void) {
     VDP_setScreenWidth320();
     VDP_setScreenHeight224();
     
+    gameCore_resetTileIndex();
+    
     SPR_init();
     JOY_init();
     
@@ -390,19 +391,13 @@ void minigameBells_init(void) {
     VDP_setBackgroundColor(0);
     
     /* Cargar fondo */
-    tileIndex = TILE_USER_INDEX;
-    
-    VDP_loadTileSet(&image_fondo_tile, tileIndex, CPU);
+    VDP_loadTileSet(&image_fondo_tile, globalTileIndex, CPU);
     mapBackground = MAP_create(&image_fondo_map, BG_B,
-        TILE_ATTR_FULL(PAL_COMMON, FALSE, FALSE, FALSE, tileIndex));
-    tileIndex += image_fondo_tile.numTile;
+        TILE_ATTR_FULL(PAL_COMMON, FALSE, FALSE, FALSE, globalTileIndex));
+    globalTileIndex += image_fondo_tile.numTile;
     MAP_scrollTo(mapBackground, 0, 0);
-    
-    VDP_loadTileSet(&image_fondo_nieve_tile, tileIndex, CPU);
-    mapSnow = MAP_create(&image_fondo_nieve_map, BG_A,
-        TILE_ATTR_FULL(PAL_COMMON, TRUE, FALSE, FALSE, tileIndex));
-    tileIndex += image_fondo_nieve_tile.numTile;
-    MAP_scrollTo(mapSnow, 0, 0);
+
+    snowEffect_init(&snowEffect, &globalTileIndex, 2, -1);
     
     /* Música */
     audio_play_phase3();
@@ -441,8 +436,6 @@ void minigameBells_init(void) {
     cannonVelocity = 0;
     cannonFiring = FALSE;
     bulletCooldown = 0;
-    snowOffsetX = 0;
-    snowOffsetY = 0;
 }
 
 void minigameBells_update(void) {
@@ -484,9 +477,7 @@ void minigameBells_update(void) {
     }
     
     /* Paralaje */
-    snowOffsetX = sinFix16(frameCounter * 2);
-    snowOffsetY--;
-    MAP_scrollTo(mapSnow, snowOffsetX, snowOffsetY);
+    snowEffect_update(&snowEffect, frameCounter);
     
     /* Actualizar objetos */
     for (u8 i = 0; i < NUM_BELLS; i++) {

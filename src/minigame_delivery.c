@@ -48,8 +48,10 @@ void minigameDelivery_init(void) {
     entregasCompletadas = 0;
     frameCounter = 0;
 
+#if 0
     VDP_drawText("FASE 2 (placeholder) - Tejados", 4, 10);
     VDP_drawText("Entrega 10 regalos (simulado)", 4, 12);
+#endif
 }
 
 void minigameDelivery_update(void) {
@@ -61,9 +63,11 @@ void minigameDelivery_update(void) {
 }
 
 void minigameDelivery_render(void) {
+#if 0
     char buffer[32];
     sprintf(buffer, "Entregas: %u/%u", entregasCompletadas, OBJETIVO_ENTREGAS);
     VDP_drawText(buffer, 4, 14);
+#endif
     SPR_update();
     SYS_doVBlankProcess();
 }

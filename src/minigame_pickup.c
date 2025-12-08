@@ -9,6 +9,7 @@
 #include "minigame_pickup.h"
 #include "resources_bg.h"
 #include "resources_sprites.h"
+#include "snow_effect.h"
 
 #define NUM_TREES 1
 #define NUM_ELVES  2
@@ -62,7 +63,6 @@ static Map *mapTrack;
 static s16 trackHeightPx;
 static s16 trackOffsetY;
 static s16 trackMaxScroll;
-static u32 tileIndex;
 static u16 giftsCollected;
 static u16 giftsCharge;
 static u16 frameCounter;
@@ -73,6 +73,7 @@ static s16 playableWidth;
 static s16 santaMinY;
 static s16 santaMaxY;
 static InertiaConfig santaInertia;
+static SnowEffect snowEffect;
 
 int kprintf(const char *fmt, ...) __attribute__ ((format (printf, 1, 2)));
 
@@ -239,7 +240,7 @@ void minigamePickup_init(void) {
     VDP_clearPlane(BG_B, TRUE);
     VDP_setScrollingMode(HSCROLL_PLANE, VSCROLL_PLANE);
 
-    tileIndex = TILE_USER_INDEX;
+    gameCore_resetTileIndex();
     trackOffsetY = 0;
     trackHeightPx = 0;
     trackMaxScroll = 0;
@@ -268,10 +269,10 @@ void minigamePickup_init(void) {
 
     VDP_setBackgroundColor(0);
 
-    VDP_loadTileSet(&image_pista_polo_tile, tileIndex, CPU);
+    VDP_loadTileSet(&image_pista_polo_tile, globalTileIndex, CPU);
     mapTrack = MAP_create(&image_pista_polo_map, BG_B,
-        TILE_ATTR_FULL(PAL_COMMON, FALSE, FALSE, FALSE, tileIndex));
-    tileIndex += image_pista_polo_tile.numTile;
+        TILE_ATTR_FULL(PAL_COMMON, FALSE, FALSE, FALSE, globalTileIndex));
+    globalTileIndex += image_pista_polo_tile.numTile;
     trackHeightPx = TRACK_HEIGHT_PX; /* Pista Polo 320x640 */
     trackMaxScroll = trackHeightPx - SCREEN_HEIGHT;
     if (trackMaxScroll < 0) trackMaxScroll = 0;
@@ -285,13 +286,15 @@ void minigamePickup_init(void) {
         MAP_scrollTo(mapTrack, 0, trackOffsetY);
     }
 
+    snowEffect_init(&snowEffect, &globalTileIndex, 1, -2);
+
     santa.x = leftLimit + playableWidth / 2;
     santa.y = santaMaxY;
     santa.vx = 0;
     santa.vy = 0;
     santa.specialReady = FALSE;
     santa.sprite = SPR_addSpriteSafe(&sprite_santa_car, santa.x, santa.y,
-        TILE_ATTR(PAL_PLAYER, TRUE, FALSE, FALSE));
+        TILE_ATTR(PAL_PLAYER, FALSE, FALSE, FALSE));
     SPR_setAnim(santa.sprite, 0);
     SPR_setDepth(santa.sprite, SPR_MIN_DEPTH);
 
@@ -353,6 +356,8 @@ void minigamePickup_update(void) {
             VDP_setVerticalScroll(BG_B, trackOffsetY);
         }
     }
+
+    snowEffect_update(&snowEffect, frameCounter);
 
     for (u8 i = 0; i < NUM_TREES; i++) {
         if (!trees[i].active) continue;
@@ -416,13 +421,6 @@ void minigamePickup_update(void) {
 }
 
 void minigamePickup_render(void) {
-    char buffer[32];
-    sprintf(buffer, "Regalos: %u/%u", giftsCollected, TARGET_GIFTS);
-    VDP_drawText(buffer, 4, 2);
-
-    sprintf(buffer, "Especial: %u/%u", giftsCharge, GIFTS_FOR_SPECIAL);
-    VDP_drawText(buffer, 4, 4);
-
 #if DEBUG_MODE
     renderDebug();
 #endif

@@ -9,6 +9,8 @@
 
 #include "game_core.h"
 
+u32 globalTileIndex = TILE_USER_INDEX;
+
 /* Leer entrada del mando */
 u16 gameCore_readInput(void) {
     return JOY_readJoypad(JOY_1);
@@ -41,4 +43,8 @@ void gameCore_fadeToBlack(void) {
     XGM2_fadeOut(60);              // Fade música
     PAL_fadeOutAll(60, FALSE);     // Fade paletas
     VDP_setBackgroundColor(0);     // Color negro
+}
+
+void gameCore_resetTileIndex(void) {
+    globalTileIndex = TILE_USER_INDEX;
 }

@@ -1,6 +1,6 @@
-out/src/minigame_bells.o: src/minigame_bells.c /sgdk/inc/genesis.h \
- /sgdk/inc/types.h /sgdk/inc/config.h /sgdk/inc/asm.h /sgdk/inc/sys.h \
- /sgdk/inc/sram.h /sgdk/inc/mapper.h /sgdk/inc/memory.h \
+out/src/snow_effect.o: src/snow_effect.c inc/snow_effect.h \
+ /sgdk/inc/genesis.h /sgdk/inc/types.h /sgdk/inc/config.h /sgdk/inc/asm.h \
+ /sgdk/inc/sys.h /sgdk/inc/sram.h /sgdk/inc/mapper.h /sgdk/inc/memory.h \
  /sgdk/inc/memory_base.h /sgdk/inc/tools.h /sgdk/inc/bmp.h \
  /sgdk/inc/maths.h /sgdk/inc/vdp.h /sgdk/inc/pal.h /sgdk/inc/dma.h \
  /sgdk/inc/vdp_tile.h /sgdk/inc/vdp_bg.h /sgdk/inc/map.h /sgdk/inc/pool.h \
@@ -16,7 +16,5 @@ out/src/minigame_bells.o: src/minigame_bells.c /sgdk/inc/genesis.h \
  /sgdk/inc/task.h /sgdk/inc/task_cst.h /sgdk/inc/ext/flash-save/flash.h \
  /sgdk/inc/types.h /sgdk/inc/ext/flash-save/saveman.h \
  /sgdk/inc/ext/console.h /sgdk/inc/config.h /sgdk/inc/string.h \
- /sgdk/inc/maths.h /sgdk/inc/dma.h inc/audio_manager.h \
- inc/minigame_bells.h inc/game_core.h /sgdk/inc/kdebug.h \
- res/resources_bg.h res/resources_sfx.h res/resources_sprites.h \
- inc/snow_effect.h
+ /sgdk/inc/maths.h /sgdk/inc/dma.h inc/game_core.h /sgdk/inc/kdebug.h \
+ res/resources_bg.h

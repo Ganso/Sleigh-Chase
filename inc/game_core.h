@@ -27,6 +27,10 @@
 #define PAL_ENEMY  2
 #define PAL_EFFECT 3
 
+/* TILESET INDEX GLOBAL */
+extern u32 globalTileIndex;
+void gameCore_resetTileIndex(void);
+
 /* ESTRUCTURAS */
 typedef struct {
     u32 elapsed;

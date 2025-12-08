@@ -77,7 +77,7 @@ christmas-game-2026/
 │
 ├─ 📂 res/
 │  ├─ 📂 sprites/        (Campana*, Canon, Bomba, Confeti; TODO resto fases)
-│  ├─ 📂 bg/             (Fondo.png, FondoNieve.png; TODO Polo/Tejados/Fiesta)
+│  ├─ 📂 bg/             (Fondo.png, PrimerPlanoNieve.png; TODO Polo/Tejados/Fiesta)
 │  ├─ 📂 sfx/            (snd_campana, snd_bomba, snd_canon; TODO más SFX)
 │  ├─ 📂 music/          (musica.vgm reutilizada en todas las fases)
 │  ├─ 📂 Geesebumps/     (paletas + logos + Goosebumps_intro.vgm)

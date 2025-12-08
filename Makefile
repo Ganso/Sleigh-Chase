@@ -19,6 +19,7 @@ SOURCES = src/main.c \
           src/game_core.c \
           src/audio_manager.c \
           src/hud.c \
+          src/snow_effect.c \
           src/geesebumps.c \
           src/minigame_bells.c \
           src/minigame_pickup.c \

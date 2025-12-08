@@ -11,8 +11,8 @@ PALETTE image_fondo_fiesta_pal "bg/FondoFiesta.png" BEST
 # Fondo
 TILESET image_fondo_tile "bg/Fondo.png" BEST
 MAP image_fondo_map "bg/Fondo.png" image_fondo_tile BEST
-TILESET image_fondo_nieve_tile "bg/FondoNieve.png" BEST
-MAP image_fondo_nieve_map "bg/FondoNieve.png" image_fondo_nieve_tile BEST
+TILESET image_primer_plano_nieve_tile "bg/PrimerPlanoNieve.png" BEST
+MAP image_primer_plano_nieve_map "bg/PrimerPlanoNieve.png" image_primer_plano_nieve_tile BEST
 # image_fondo_polo_tile : Placeholder (Fondo tileset fase polo principal)
 TILESET image_fondo_polo_tile "bg/FondoPolo.png" BEST
 # image_fondo_polo_map : Placeholder (Mapa fondo fase polo principal)

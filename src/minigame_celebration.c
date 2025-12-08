@@ -39,8 +39,7 @@ void minigameCelebration_init(void) {
     memset(personajes, 0, sizeof(personajes));
     frameCounter = 0;
 
-    VDP_drawText("FASE 4 (placeholder) - Celebracion", 4, 10);
-    VDP_drawText("Animacion final (simulada)", 4, 12);
+    /* HUD desactivado temporalmente */
 }
 
 void minigameCelebration_update(void) {
@@ -48,9 +47,7 @@ void minigameCelebration_update(void) {
 }
 
 void minigameCelebration_render(void) {
-    char buffer[32];
-    sprintf(buffer, "Celebrando... t=%u", frameCounter);
-    VDP_drawText(buffer, 4, 14);
+    /* HUD desactivado temporalmente */
     SPR_update();
     SYS_doVBlankProcess();
 }
