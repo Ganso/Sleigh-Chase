@@ -17,6 +17,10 @@ christmas-game-2026/
 │   ├── bg/           (Fondos y paletas)
 │   ├── sfx/          (Efectos de sonido)
 │   ├── music/        (Música in‑game)
+│   ├── resources_bg.res      (Directivas SGDK para fondos)
+│   ├── resources_sprites.res (Directivas SGDK para sprites)
+│   ├── resources_sfx.res     (Directivas SGDK para efectos)
+│   ├── resources_music.res   (Directivas SGDK para música)
 │   └── Geesebumps/   (Intro/logo Geesebumps y música)
 ├── build/            (Salida: rom.bin)
 ├── Makefile

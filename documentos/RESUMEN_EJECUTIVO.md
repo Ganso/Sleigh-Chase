@@ -79,9 +79,10 @@ christmas-game-2026/
 │  ├─ 📂 sprites/        (Campana*, Canon, Bomba, Confeti; TODO resto fases)
 │  ├─ 📂 bg/             (Fondo.png, FondoNieve.png; TODO Polo/Tejados/Fiesta)
 │  ├─ 📂 sfx/            (snd_campana, snd_bomba, snd_canon; TODO más SFX)
-│  ├─ 📂 music/          (musica.vgm; TODO musicas fases 1/2/4)
+│  ├─ 📂 music/          (musica.vgm reutilizada en todas las fases)
 │  ├─ 📂 Geesebumps/     (paletas + logos + Goosebumps_intro.vgm)
-│  └─ resources.res / resources.h
+│  ├─ resources_bg.res / resources_sprites.res / resources_sfx.res / resources_music.res
+│  └─ resources.h
 │
 ├─ ✅ Makefile
 ├─ ✅ README.md
@@ -231,7 +232,7 @@ ESTADO ACTUAL:
    └─ Paletas: Colores tejados nocturnos
 
 2. Crear assets de audio Fase 2:
-   └─ Música: musica_tejados.vgm (XGM2 loop)
+   └─ Música: reutilizar musica_fondo.vgm (campanas) hasta nuevo aviso
    └─ SFX: 3 efectos (disparo, entrega, chimenea)
 
 3. Implementar código minigame_delivery.c:

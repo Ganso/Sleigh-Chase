@@ -562,51 +562,24 @@ RENDERING:
 
 ## 5. ESPECIFICACIONES DE AUDIO
 
-### 5.1 Música - musica_tejados
+### 5.1 Música - reutilización temporal
 
 ```
-NAME:           musica_tejados
-FORMAT:         XGM2 (VGM - Video Game Music)
-COMPRESSION:    VGZ
-BITRATE:        22050 Hz (standard SGDK)
-DURATION:       40-60 segundos
-LOOP:           Sí, infinito
-LOOP POINT:     Al final (seamless)
-FILE:           musica_tejados.vgm (~3-4 KB)
+TRACK:          musica_fondo (campanas Fase 3)
+FORMATO:        XGM2 (VGM - Video Game Music)
+DURACIÓN:       40-60 segundos en loop infinito
+VOLUMEN:        FM=70/127, PSG=100/127
 
-COMPOSICIÓN:
-├─ BPM: 100 (moderado, relajado)
-├─ Tempo: 4/4 time signature
-├─ Instrumento principal: Sintetizador FM (pad suave)
-├─ Acompañamiento: Bajo synthesizer
-├─ Ritmo: Drums FM simples
-├─ Estilo: Navideño nocturno, misterioso
-└─ Volumen: FM=70/127, PSG=100/127
-
-CANALES FM:
-├─ Canal 1: Pad principal (acordes)
-├─ Canal 2: Melodía secundaria
-├─ Canal 3: Bajo
-└─ Canal 4: Efecto/relleno
-
-SECUENCIA MUSICAL:
-├─ Intro 8 compases (introducción)
-├─ Verso 16 compases (tema principal)
-├─ Puente 8 compases (variación)
-├─ Verso 16 compases (repetición)
-└─ Coda 4 compases (transición a loop)
+NOTA:           La fase de tejados reutiliza provisionalmente la misma
+                pista que la fase de campanadas para acelerar pruebas y
+                evitar placeholders WAV. Se mantiene la reproducción en
+                loop continuo.
 
 REPRODUCCIÓN EN CÓDIGO:
-├─ Iniciar: XGM2_play(musica_tejados)
+├─ Iniciar: XGM2_play(musica_fondo)
 ├─ Con loop: Automático (flag en VGM)
 ├─ Parar: XGM2_stop()
-├─ Fade: XGM2_fadeOut(tiempo_frames)
-└─ Volume: XGM2_setMusicVolume(FM_vol, PSG_vol)
-
-TRANSICIONES:
-├─ Desde Fase 1: Fade Música Polo (0), Fade in tejados (60 frames)
-├─ A Fase 3: Fade out tejados (60 frames), Fade in iglesia
-└─ Loop automático durante fase
+└─ Fade: XGM2_fadeOut(tiempo_frames)
 ```
 
 ### 5.2 SFX - snd_regalo_disparado
@@ -1134,9 +1107,9 @@ DESGLOSE ROM:
   - [ ] `res/Audio/Sounds/snd_regalo_disparado.wav`
   - [ ] `res/Audio/Sounds/snd_entrega_exitosa.wav`
   - [ ] `res/Audio/Sounds/snd_chimenea_activa.wav`
-  - [ ] `res/Audio/Music/musica_tejados.vgm`
+  - [ ] Reusar `res/music/musica.vgm` (campanas) como pista temporal
 
-- [ ] Actualizar resources.res:
+- [ ] Actualizar resources_sprites.res / resources_sfx.res / resources_bg.res:
   ```makefile
   # Agregrar sprites Fase 2
   SPRITE sprite_regalo_entrega Regalos_Pequeño.png 3 3 BEST 1
@@ -1151,11 +1124,10 @@ DESGLOSE ROM:
   MAP imagenubeparaljamap Nubes.png imagenubeparalajitile BEST
   PALETTE imagefondotejadospal FondoTejados.png
   
-  # Agregar audio
+  # Agregar audio en resources_sfx.res
   WAV snd_regalo_disparado snd_regalo_disparado.wav XGM2
   WAV snd_entrega_exitosa snd_entrega_exitosa.wav XGM2
   WAV snd_chimenea_activa snd_chimenea_activa.wav XGM2
-  XGM2 musica_tejados musica_tejados.vgm
   ```
 
 ### 10.2 Implementación del Código
