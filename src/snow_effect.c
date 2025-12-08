@@ -23,6 +23,7 @@ void snowEffect_init(SnowEffect *effect, u32 *tileIndex, s16 angleStep, s16 vert
 
     effect->angleStep = angleStep;
     effect->verticalStep = verticalStep;
+    effect->offsetY = verticalStep;   /* Arrancamos ya desplazados para evitar un wrap brusco inicial */
 
     VDP_loadTileSet(&image_primer_plano_nieve_tile, *tileIndex, CPU);
     effect->map = MAP_create(&image_primer_plano_nieve_map, BG_A,
@@ -30,12 +31,20 @@ void snowEffect_init(SnowEffect *effect, u32 *tileIndex, s16 angleStep, s16 vert
     *tileIndex += image_primer_plano_nieve_tile.numTile;
 
     if (effect->map != NULL) {
-        MAP_scrollTo(effect->map, 0, 0);
-        /* Ancho/alto reales del mapa en píxeles (8 px por tile) */
-        effect->widthPx = effect->map->w << 3;
-        effect->heightPx = effect->map->h << 3;
+        effect->widthPx = effect->map->w << 7;   /* 128 px por bloque */
+        effect->heightPx = effect->map->h << 7;
         if (effect->widthPx == 0) effect->widthPx = SCREEN_WIDTH;
         if (effect->heightPx == 0) effect->heightPx = SCREEN_HEIGHT;
+
+        /* Aplicamos el scroll inicial ya normalizado al rango del mapa */
+        s32 wrapWidth = effect->widthPx;
+        s32 wrapHeight = effect->heightPx;
+        s32 posX = effect->offsetX % wrapWidth;
+        if (posX < 0) posX += wrapWidth;
+        s32 posY = effect->offsetY % wrapHeight;
+        if (posY < 0) posY += wrapHeight;
+
+        MAP_scrollTo(effect->map, (u32)posX, (u32)posY);
     }
 }
 

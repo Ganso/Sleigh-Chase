@@ -75,8 +75,6 @@ static s16 santaMaxY;
 static InertiaConfig santaInertia;
 static SnowEffect snowEffect;
 
-int kprintf(const char *fmt, ...) __attribute__ ((format (printf, 1, 2)));
-
 static u8 validateHorizontalRange(s16 minX, s16 maxX, const char* context) {
     if (maxX <= minX) {
         kprintf("[%s] Rango X invalido (min=%d, max=%d)", context, minX, maxX);
@@ -274,12 +272,10 @@ void minigamePickup_init(void) {
         TILE_ATTR_FULL(PAL_COMMON, FALSE, FALSE, FALSE, globalTileIndex));
     globalTileIndex += image_pista_polo_tile.numTile;
 
-    /* Usar el alto real del mapa para evitar desbordar VRAM durante el scroll */
-    if (mapTrack != NULL && mapTrack->h > 0) {
-        trackHeightPx = mapTrack->h << 3; /* 8 px por tile */
-    } else {
-        trackHeightPx = TRACK_HEIGHT_PX; /* Fallback al tamaño previsto 320x640 */
-    }
+    /* Ajustamos la altura real del mapa (en px) para arrancar desde la parte inferior sin lecturas fuera de rango */
+    trackHeightPx = mapTrack ? (mapTrack->h << 7) : TRACK_HEIGHT_PX; /* h en bloques de 128px */
+    if (trackHeightPx <= 0) trackHeightPx = SCREEN_HEIGHT;
+
     trackMaxScroll = trackHeightPx - SCREEN_HEIGHT;
     if (trackMaxScroll < 0) trackMaxScroll = 0;
     trackOffsetY = trackMaxScroll;
@@ -289,7 +285,11 @@ void minigamePickup_init(void) {
         trackMaxScroll = 0;
         trackOffsetY = 0;
     } else {
-        MAP_scrollTo(mapTrack, 0, trackOffsetY);
+        /* Normalizamos y aplicamos el scroll inicial ya válido */
+        s16 initialOffset = trackOffsetY % trackHeightPx;
+        KDebug_AlertNumber(initialOffset);
+        MAP_scrollTo(mapTrack, 0, initialOffset);
+        VDP_setVerticalScroll(BG_B, initialOffset);
     }
 
     snowEffect_init(&snowEffect, &globalTileIndex, 1, -2);
@@ -358,6 +358,7 @@ void minigamePickup_update(void) {
         }
         clampTrackOffset();
         if (mapTrack != NULL) {
+            KDebug_AlertNumber(trackOffsetY);
             MAP_scrollTo(mapTrack, 0, trackOffsetY);
             VDP_setVerticalScroll(BG_B, trackOffsetY);
         }
