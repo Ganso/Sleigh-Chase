@@ -9,9 +9,9 @@
 #include "minigame_pickup.h"
 #include "resources.h"
 
-#define NUM_TREES 2
-#define NUM_ELVES 2
-#define NUM_ENEMIES 4
+#define NUM_TREES 1
+#define NUM_ELVES  2
+#define NUM_ENEMIES 2
 #define GIFTS_FOR_SPECIAL 3
 #define TARGET_GIFTS 15
 #define SCROLL_SPEED 1
@@ -21,11 +21,15 @@
 #define ENEMY_LATERAL_SPEED 1
 
 #define TREE_SIZE 64
+#define TREE_HITBOX_SIZE (TREE_SIZE / 2)
 #define ENEMY_SIZE 32
+#define ENEMY_HITBOX_SIZE (ENEMY_SIZE / 2)
 #define ELF_SIZE 32
 #define SANTA_WIDTH 80
 #define SANTA_HEIGHT 128
 #define SANTA_VERTICAL_SPEED 2
+#define TRACK_HEIGHT_PX 640
+#define VERTICAL_SLOW_DIV 2  /* factor de retardo vertical (50%) */
 
 typedef struct {
     Sprite* sprite;
@@ -60,9 +64,11 @@ static s16 playableWidth;
 static s16 santaMinY;
 static s16 santaMaxY;
 
+int kprintf(const char *fmt, ...) __attribute__ ((format (printf, 1, 2)));
+
 static u8 validateHorizontalRange(s16 minX, s16 maxX, const char* context) {
     if (maxX <= minX) {
-        KLog_f("[%s] Rango X invalido (min=%d, max=%d)", context, minX, maxX);
+        kprintf("[%s] Rango X invalido (min=%d, max=%d)", context, minX, maxX);
         return FALSE;
     }
     return TRUE;
@@ -70,7 +76,7 @@ static u8 validateHorizontalRange(s16 minX, s16 maxX, const char* context) {
 
 static void markActorInactive(SimpleActor *actor, const char* context) {
     actor->active = FALSE;
-    KLog_f("[%s] Actor desactivado por error de inicializacion", context);
+    kprintf("[%s] Actor desactivado por error de inicializacion", context);
     if (actor->sprite != NULL) {
         SPR_setVisibility(actor->sprite, HIDDEN);
     }
@@ -122,6 +128,7 @@ static void spawnElf(SimpleActor *elf, u8 side) {
         return;
     }
     elf->active = TRUE;
+    SPR_setHFlip(elf->sprite, side == 1);
     SPR_setPosition(elf->sprite, elf->x, elf->y);
 }
 
@@ -149,7 +156,8 @@ static void spawnEnemy(SimpleActor *enemy) {
 static void resetSpecialIfReady(void) {
     if (giftsCharge >= GIFTS_FOR_SPECIAL) {
         santa.specialReady = TRUE;
-        SPR_setAnim(santa.sprite, 1);
+        /* Animación alternativa desactivada para evitar errores si no existe */
+        SPR_setAnim(santa.sprite, 0);
     }
 }
 
@@ -159,7 +167,7 @@ static void clampTrackOffset(void) {
         trackOffsetY = 0;
     }
     if (trackOffsetY > trackMaxScroll) {
-        KLog_f("[TRACK] Offset %d supera maximo %d, se recorta", trackOffsetY, trackMaxScroll);
+        kprintf("[TRACK] Offset %d supera maximo %d, se recorta", trackOffsetY, trackMaxScroll);
         trackOffsetY = trackMaxScroll;
     }
 }
@@ -184,19 +192,7 @@ static u8 checkCollision(s16 x1, s16 y1, s16 w1, s16 h1, s16 x2, s16 y2, s16 w2,
 static void renderDebug(void) {
     char buffer[48];
 
-    sprintf(buffer, "DBG frame:%lu off:%d/%d", (u32)frameCounter, trackOffsetY, trackMaxScroll);
-    KLog(buffer);
-
-    sprintf(buffer, "Santa x:%d vx:%d y:%d", santa.x, santa.vx, santa.y);
-    KLog(buffer);
-
-    sprintf(buffer, "Tree0 y:%d Tree1 y:%d", trees[0].y, trees[1].y);
-    KLog(buffer);
-
-    sprintf(buffer, "Elf0 y:%d Elf1 y:%d", elves[0].y, elves[1].y);
-    KLog(buffer);
-
-    sprintf(buffer, "Enemy0 y:%d Enemy1 y:%d", enemies[0].y, enemies[1].y);
+    //sprintf(buffer, "DBG frame:%lu off:%d/%d", (u32)frameCounter, trackOffsetY, trackMaxScroll);
     KLog(buffer);
 }
 #endif
@@ -206,6 +202,7 @@ void minigamePickup_init(void) {
     VDP_setScreenHeight224();
     VDP_clearPlane(BG_A, TRUE);
     VDP_clearPlane(BG_B, TRUE);
+    VDP_setScrollingMode(HSCROLL_PLANE, VSCROLL_PLANE);
 
     tileIndex = TILE_USER_INDEX;
     trackOffsetY = 0;
@@ -218,7 +215,7 @@ void minigamePickup_init(void) {
     leftLimit = (SCREEN_WIDTH * FORBIDDEN_PERCENT) / 100;
     rightLimit = SCREEN_WIDTH - leftLimit;
     playableWidth = rightLimit - leftLimit - SANTA_WIDTH;
-    santaMinY = SCREEN_HEIGHT / 2;
+    santaMinY = SANTA_HEIGHT / 2;
     santaMaxY = SCREEN_HEIGHT - (SANTA_HEIGHT / 2);
 
     if (image_pista_polo_pal.data) {
@@ -237,12 +234,12 @@ void minigamePickup_init(void) {
     mapTrack = MAP_create(&image_pista_polo_map, BG_B,
         TILE_ATTR_FULL(PAL_COMMON, FALSE, FALSE, FALSE, tileIndex));
     tileIndex += image_pista_polo_tile.numTile;
-    trackHeightPx = image_pista_polo_map.h * 8;
+    trackHeightPx = TRACK_HEIGHT_PX; /* Pista Polo 320x640 */
     trackMaxScroll = trackHeightPx - SCREEN_HEIGHT;
     if (trackMaxScroll < 0) trackMaxScroll = 0;
     trackOffsetY = trackMaxScroll;
+    kprintf("[TRACK] alto_px:%d max:%d", trackHeightPx, trackMaxScroll);
     if (mapTrack == NULL) {
-        KLog("[TRACK] Error al crear el mapa de pista");
         trackHeightPx = 0;
         trackMaxScroll = 0;
         trackOffsetY = 0;
@@ -310,23 +307,32 @@ void minigamePickup_update(void) {
     SPR_setPosition(santa.sprite, santa.x, santa.y);
 
     /* Scroll del fondo hacia abajo (caida) */
-    trackOffsetY -= SCROLL_SPEED;
-    if (trackOffsetY < 0) {
-        trackOffsetY = trackMaxScroll;
-    }
-    clampTrackOffset();
-    if (mapTrack != NULL) {
-        MAP_scrollTo(mapTrack, 0, trackOffsetY);
+    const s16 scrollStep = ((frameCounter % VERTICAL_SLOW_DIV) == 0) ? SCROLL_SPEED : 0;
+    if (scrollStep) {
+        trackOffsetY -= scrollStep;
+        if (trackOffsetY < 0) {
+            trackOffsetY = trackMaxScroll;
+        }
+        clampTrackOffset();
+        if (mapTrack != NULL) {
+            MAP_scrollTo(mapTrack, 0, trackOffsetY);
+            VDP_setVerticalScroll(BG_B, trackOffsetY);
+        }
     }
 
     for (u8 i = 0; i < NUM_TREES; i++) {
         if (!trees[i].active) continue;
-        trees[i].y += SCROLL_SPEED;
-        if (trees[i].y > SCREEN_HEIGHT) {
-            spawnTree(&trees[i]);
+        if (scrollStep) {
+            trees[i].y += scrollStep;
+            if (trees[i].y > SCREEN_HEIGHT) {
+                spawnTree(&trees[i]);
+            }
         }
-        if (checkCollision(santa.x, santa.y, SANTA_WIDTH, SANTA_HEIGHT,
-                trees[i].x, trees[i].y, TREE_SIZE, TREE_SIZE)) {
+        if (checkCollision(
+                santa.x, santa.y, SANTA_WIDTH, SANTA_HEIGHT,
+                trees[i].x + (TREE_SIZE - TREE_HITBOX_SIZE) / 2,
+                trees[i].y + (TREE_SIZE - TREE_HITBOX_SIZE) / 2,
+                TREE_HITBOX_SIZE, TREE_HITBOX_SIZE)) {
             collectGift();
             spawnTree(&trees[i]);
         }
@@ -349,7 +355,7 @@ void minigamePickup_update(void) {
 
     for (u8 i = 0; i < NUM_ENEMIES; i++) {
         if (!enemies[i].active) continue;
-        enemies[i].y += SCROLL_SPEED;
+        enemies[i].y += scrollStep;
         if ((frameCounter % ENEMY_LATERAL_DELAY) == 0) {
             if (enemies[i].x < santa.x) enemies[i].x += ENEMY_LATERAL_SPEED;
             else if (enemies[i].x > santa.x) enemies[i].x -= ENEMY_LATERAL_SPEED;
@@ -357,8 +363,11 @@ void minigamePickup_update(void) {
         if (enemies[i].y > SCREEN_HEIGHT) {
             spawnEnemy(&enemies[i]);
         }
-        if (checkCollision(santa.x, santa.y, SANTA_WIDTH, SANTA_HEIGHT,
-                enemies[i].x, enemies[i].y, ENEMY_SIZE, ENEMY_SIZE)) {
+        if (checkCollision(
+                santa.x, santa.y, SANTA_WIDTH, SANTA_HEIGHT,
+                enemies[i].x + (ENEMY_SIZE - ENEMY_HITBOX_SIZE) / 2,
+                enemies[i].y + (ENEMY_SIZE - ENEMY_HITBOX_SIZE) / 2,
+                ENEMY_HITBOX_SIZE, ENEMY_HITBOX_SIZE)) {
             if (giftsCollected > 0) {
                 giftsCollected--;
             }
