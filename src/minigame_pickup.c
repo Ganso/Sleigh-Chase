@@ -273,7 +273,13 @@ void minigamePickup_init(void) {
     mapTrack = MAP_create(&image_pista_polo_map, BG_B,
         TILE_ATTR_FULL(PAL_COMMON, FALSE, FALSE, FALSE, globalTileIndex));
     globalTileIndex += image_pista_polo_tile.numTile;
-    trackHeightPx = TRACK_HEIGHT_PX; /* Pista Polo 320x640 */
+
+    /* Usar el alto real del mapa para evitar desbordar VRAM durante el scroll */
+    if (mapTrack != NULL && mapTrack->h > 0) {
+        trackHeightPx = mapTrack->h << 3; /* 8 px por tile */
+    } else {
+        trackHeightPx = TRACK_HEIGHT_PX; /* Fallback al tamaño previsto 320x640 */
+    }
     trackMaxScroll = trackHeightPx - SCREEN_HEIGHT;
     if (trackMaxScroll < 0) trackMaxScroll = 0;
     trackOffsetY = trackMaxScroll;

@@ -31,8 +31,9 @@ void snowEffect_init(SnowEffect *effect, u32 *tileIndex, s16 angleStep, s16 vert
 
     if (effect->map != NULL) {
         MAP_scrollTo(effect->map, 0, 0);
-        effect->widthPx = effect->map->w << 7;   /* 128 px por bloque */
-        effect->heightPx = effect->map->h << 7;
+        /* Ancho/alto reales del mapa en píxeles (8 px por tile) */
+        effect->widthPx = effect->map->w << 3;
+        effect->heightPx = effect->map->h << 3;
         if (effect->widthPx == 0) effect->widthPx = SCREEN_WIDTH;
         if (effect->heightPx == 0) effect->heightPx = SCREEN_HEIGHT;
     }
