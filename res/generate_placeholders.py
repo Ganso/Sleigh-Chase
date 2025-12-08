@@ -6,7 +6,12 @@ import wave
 from PIL import Image, ImageDraw
 
 BASE_DIR = Path(__file__).resolve().parent
-RESOURCES_FILE = BASE_DIR / "resources.res"
+RESOURCE_FILES = {
+    "bg": BASE_DIR / "resources_bg.res",
+    "sprites": BASE_DIR / "resources_sprites.res",
+    "sfx": BASE_DIR / "resources_sfx.res",
+    "music": BASE_DIR / "resources_music.res",
+}
 DEFAULT_AUDIO_DURATION = 0.25
 
 PALETTE = [
@@ -412,30 +417,6 @@ ENTRIES = [
         "usage": "Golpe suave de confeti en la celebración final",
         "tone": "Sonido pequeño y alegre de papel",
     },
-    {
-        "path": "music/musica_polo.wav",
-        "resource_line": 'WAV musica_polo "music/musica_polo.wav" XGM2 # Placeholder (Musica ambiente fase polo inicial)',
-        "duration": "30-60 segundos en loop",
-        "usage": "Música ambiente de la fase Polo Norte (intro del juego)",
-        "tone": "Navideña instrumental con piano y cuerdas a 120 BPM, estilo music box",
-        "loop": True,
-    },
-    {
-        "path": "music/musica_tejados.wav",
-        "resource_line": 'WAV musica_tejados "music/musica_tejados.wav" XGM2 # Placeholder (Musica ambiente fase tejados nocturna)',
-        "duration": "30-60 segundos en loop",
-        "usage": "Música ambiente para la entrega nocturna en tejados",
-        "tone": "Tema navideño medio tiempo con atmósfera nocturna",
-        "loop": True,
-    },
-    {
-        "path": "music/musica_celebracion.wav",
-        "resource_line": 'WAV musica_celebracion "music/musica_celebracion.wav" XGM2 # Placeholder (Musica ambiente fase fiesta celebracion)',
-        "duration": "30-60 segundos en loop",
-        "usage": "Música festiva de la fase de celebración final",
-        "tone": "Sintetizador alegre y rápido a 140 BPM, muy festivo",
-        "loop": True,
-    },
 ]
 
 
@@ -591,30 +572,39 @@ def print_placeholder_prompts(entries: list[dict]) -> None:
 
 
 def ensure_resources(entries: list[dict]) -> None:
-    existing_lines = []
-    if RESOURCES_FILE.exists():
-        existing_lines = RESOURCES_FILE.read_text(encoding="utf-8").splitlines()
+    grouped_entries: dict[Path, list[dict]] = {}
+    for entry in entries:
+        path = Path(entry["path"])
+        target = RESOURCE_FILES.get(path.parts[0])
+        if not target:
+            continue
+        grouped_entries.setdefault(target, []).append(entry)
 
-    known_directives = set()
-    for line in existing_lines:
-        directive = line.split("#", 1)[0].strip()
-        if directive:
+    for resource_file, file_entries in grouped_entries.items():
+        existing_lines = []
+        if resource_file.exists():
+            existing_lines = resource_file.read_text(encoding="utf-8").splitlines()
+
+        known_directives = set()
+        for line in existing_lines:
+            directive = line.split("#", 1)[0].strip()
+            if directive:
+                known_directives.add(directive)
+
+        updated = list(existing_lines)
+
+        for entry in file_entries:
+            directive, comment_line, _ = split_resource_line(entry["resource_line"])
+            if directive in known_directives:
+                continue
+
+            if comment_line:
+                updated.append(comment_line)
+            updated.append(directive)
             known_directives.add(directive)
 
-    updated = list(existing_lines)
-
-    for entry in entries:
-        directive, comment_line, _ = split_resource_line(entry["resource_line"])
-        if directive in known_directives:
-            continue
-
-        if comment_line:
-            updated.append(comment_line)
-        updated.append(directive)
-        known_directives.add(directive)
-
-    if updated != existing_lines:
-        RESOURCES_FILE.write_text("\n".join(updated) + "\n", encoding="utf-8")
+        if updated != existing_lines:
+            resource_file.write_text("\n".join(updated) + "\n", encoding="utf-8")
 
 
 def ensure_files(entries: list[dict]) -> None:

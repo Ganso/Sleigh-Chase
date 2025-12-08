@@ -15,5 +15,6 @@ void audio_play_phase2(void);
 void audio_play_phase3(void);
 void audio_play_phase4(void);
 void audio_stop_music(void);
+void audio_test_playback(const u8* vgm_track);
 
 #endif

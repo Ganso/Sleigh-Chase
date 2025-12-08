@@ -397,18 +397,18 @@ Reproducir: SOUND_PCM_CH2
 
 ### Música
 
-**musica_tejados**
+**musica_fondo (reutilización)**
 ```
 Tipo: XGM2 (VGM format)
-Tempo: 100 BPM (más lento, ambiental)
+Tempo: 120 BPM (campanadas navideñas)
 Duración: 30-60 segundos loop
-Instrumento principal: Sintetizador FM
-Estilo: Navideño nocturno, misterioso
+Instrumento principal: Sintetizador FM + campanas
+Estilo: Festivo, luminoso
 Tamaño: ~3-5 KB
 Loop: Sí
-Volumen FM: 60
-Volumen PSG: 90
-Reproducir: XGM2_play(musica_tejados) con loop
+Volumen FM: 70
+Volumen PSG: 100
+Reproducir: XGM2_play(musica_fondo) con loop
 ```
 
 ### Variables Locales (minigame_delivery.c)
@@ -677,18 +677,18 @@ Reproducir: Cada 2-3 frames de confeti
 
 ### Música
 
-**musica_celebracion**
+**musica_fondo (reutilización)**
 ```
 Tipo: XGM2 (VGM format)
-Tempo: 140 BPM (rápido, festivo)
+Tempo: 120 BPM (campanadas)
 Duración: 30-60 segundos loop
-Instrumento principal: Sintetizador cheerful
-Estilo: Navideño upbeat, festivo
-Tamaño: ~4-6 KB
-Loop: Sí (cuenta como victoria)
-Volumen FM: 80
-Volumen PSG: 110 (máximo)
-Reproducir: XGM2_play(musica_celebracion)
+Instrumento principal: Sintetizador FM + campanas
+Estilo: Festivo, alegre
+Tamaño: ~3-5 KB
+Loop: Sí (victoria)
+Volumen FM: 70
+Volumen PSG: 100
+Reproducir: XGM2_play(musica_fondo)
 ```
 
 ### Variables Locales (minigame_celebration.c)
@@ -746,7 +746,10 @@ christmas-game-2026/
 │  │  └─ sega.s                   ✅ Startup asm
 │  └─ res/
 │     ├─ resources.h              🔄 Será generado
-│     └─ resources.res            🔄 Será generado
+│     ├─ resources_bg.res         🔄 Directivas fondos
+│     ├─ resources_sprites.res    🔄 Directivas sprites
+│     ├─ resources_sfx.res        🔄 Directivas efectos
+│     └─ resources_music.res      🔄 Directivas música
 │
 ├─ inc/
 │  ├─ game_core.h                 ✅ Headers core
@@ -760,10 +763,10 @@ christmas-game-2026/
 │  ├─ sprites/               (Campana*, Canon, Bomba, Confeti; TODO resto fases)
 │  ├─ bg/                    (Fondo.png, FondoNieve.png; TODO fondos Polo/Tejados/Fiesta)
 │  ├─ sfx/                   (snd_campana, snd_bomba, snd_canon; TODO más SFX)
-│  ├─ music/                 (musica.vgm fase 3; TODO músicas fases 1/2/4)
+│  ├─ music/                 (musica.vgm reutilizada en las fases)
 │  ├─ Geesebumps/            (paletas + logos + Goosebumps_intro.vgm)
-│  ├─ resources.h            (generado por rescomp)
-│  └─ resources.res          (directivas SGDK)
+│  ├─ resources_bg.res / resources_sprites.res / resources_sfx.res / resources_music.res
+│  └─ resources.h            (generado por rescomp)
 │
 ├─ build/
 │  └─ rom.bin                    (Salida final)
@@ -873,10 +876,7 @@ christmas-game-2026/
 ├──────────────────────────┼──────────┼──────────┼─────────┼────────┼────────┤
 │ MÚSICA (XGM2)            │          │          │         │        │        │
 ├──────────────────────────┼──────────┼──────────┼─────────┼────────┼────────┤
-│ musica_fondo (Fase 3)    │ ~3-4 KB  │ 30-60s   │ VGM     │ Infinito│ ✅     │
-│ musica_polo (Fase 1)     │ ~3-4 KB  │ 30-60s   │ VGM     │ Infinito│ 📋     │
-│ musica_tejados (Fase 2)  │ ~3-4 KB  │ 30-60s   │ VGM     │ Infinito│ 📋     │
-│ musica_celebracion (Fase 4)│ ~4-5 KB │ 30-60s   │ VGM     │ Infinito│ 📋     │
+│ musica_fondo (Fases 1-4) │ ~3-4 KB  │ 30-60s   │ VGM     │ Infinito│ ✅     │
 │ musica_geesebumps (Intro)│ ~3-4 KB  │ 15-20s   │ VGM     │ Sí     │ ✅     │
 ├──────────────────────────┼──────────┼──────────┼─────────┼────────┼────────┤
 │ SFX FASE 3 (PCM)         │          │          │         │        │        │
@@ -934,31 +934,39 @@ Canales PCM: CH1, CH2, CH_AUTO
 Máximo simultáneo: 1 PCM a la vez (XGM2)
 ```
 
-### Directivas resources.res
+### Directivas resources_*.res
 
 ```makefile
-# MÚSICA (XGM2)
-XGM2 musica_fondo                    musica.vgm
-XGM2 musica_polo                     musica_polo.vgm
-XGM2 musica_tejados                  musica_tejados.vgm
-XGM2 musica_celebracion              musica_celebracion.vgm
-XGM2 musicageesebumps                GeesebumpsGoosebumpsintro.vgm
+# resources_music.res
+XGM2 musica_fondo                    music/musica.vgm
 
-# SFX (PCM → XGM2)
-WAV snd_campana                      sndcampana.wav XGM2
-WAV snd_bomba                        sndbomba.wav XGM2
-WAV snd_canon                        sndcanon.wav XGM2
-WAV snd_letra_ok                     sndletraok.wav XGM2
-WAV snd_letra_no                     sndletrano.wav XGM2
-WAV snd_victoria                     sndvictoria.wav XGM2
-WAV snd_aplausos                     sndaplausos.wav XGM2
-WAV snd_regalo_recogido              sndregalo_recogido.wav XGM2
-WAV snd_disparo_red                  snd_disparo_red.wav XGM2
-WAV snd_obstaculo_golpe              snd_obstaculo_golpe.wav XGM2
-WAV snd_regalo_disparado             snd_regalo_disparado.wav XGM2
-WAV snd_entrega_exitosa              snd_entrega_exitosa.wav XGM2
-WAV snd_chimenea_activa              snd_chimenea_activa.wav XGM2
-WAV snd_confeti_choque               snd_confeti_choque.wav XGM2
+# resources_sfx.res
+WAV snd_campana                      sfx/snd_campana.wav XGM2
+WAV snd_bomba                        sfx/snd_bomba.wav XGM2
+WAV snd_canon                        sfx/snd_canon.wav XGM2
+WAV snd_regalo_recogido              sfx/snd_regalo_recogido.wav XGM2
+WAV snd_disparo_red                  sfx/snd_disparo_red.wav XGM2
+WAV snd_obstaculo_golpe              sfx/snd_obstaculo_golpe.wav XGM2
+WAV snd_regalo_disparado             sfx/snd_regalo_disparado.wav XGM2
+WAV snd_entrega_exitosa              sfx/snd_entrega_exitosa.wav XGM2
+WAV snd_chimenea_activa              sfx/snd_chimenea_activa.wav XGM2
+WAV snd_confeti_choque               sfx/snd_confeti_choque.wav XGM2
+
+# resources_bg.res
+PALETTE image_fondo_pal              bg/Fondo.png BEST
+PALETTE image_fondo_polo_pal         bg/FondoPolo.png BEST
+PALETTE image_pista_polo_pal         bg/PistaPolo.png BEST
+PALETTE image_fondo_tejados_pal      bg/FondoTejados.png BEST
+PALETTE image_fondo_fiesta_pal       bg/FondoFiesta.png BEST
+TILESET image_fondo_tile             bg/Fondo.png BEST
+MAP image_fondo_map                  bg/Fondo.png image_fondo_tile BEST
+# … resto de tilesets y mapas de fondo
+
+# resources_sprites.res
+SPRITE sprite_campana                sprites/Campana.png 4 4 BEST
+SPRITE sprite_campana_bn             sprites/Campanabn.png 4 4 BEST
+SPRITE sprite_canon                  sprites/Canon.png 10 8 BEST 1
+# … resto de sprites por fase
 ```
 
 ---
