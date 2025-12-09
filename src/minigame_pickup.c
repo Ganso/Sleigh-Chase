@@ -50,12 +50,6 @@ typedef struct {
     u8 specialReady;
 } Santa;
 
-typedef struct {
-    s8 accel;
-    s8 friction;
-    s8 maxVelocity;
-} InertiaConfig;
-
 static Santa santa;
 static SimpleActor trees[NUM_TREES];
 static SimpleActor elves[NUM_ELVES];
@@ -73,7 +67,7 @@ static s16 rightLimit;
 static s16 playableWidth;
 static s16 santaMinY;
 static s16 santaMaxY;
-static InertiaConfig santaInertia;
+static GameInertia santaInertia;
 static SnowEffect snowEffect;
 
 static u8 validateHorizontalRange(s16 minX, s16 maxX, const char* context) {
@@ -193,36 +187,6 @@ static u8 checkCollision(s16 x1, s16 y1, s16 w1, s16 h1, s16 x2, s16 y2, s16 w2,
     return (x1 < x2 + w2) && (x1 + w1 > x2) && (y1 < y2 + h2) && (y1 + h1 > y2);
 }
 
-static void applyInertiaAxis(s16 *position, s8 *velocity, s16 minLimit, s16 maxLimit,
-    s8 inputDirection, const InertiaConfig *config) {
-    if (inputDirection < 0) {
-        *velocity = (*velocity > -config->maxVelocity) ?
-            *velocity - config->accel : -config->maxVelocity;
-    } else if (inputDirection > 0) {
-        *velocity = (*velocity < config->maxVelocity) ?
-            *velocity + config->accel : config->maxVelocity;
-    } else {
-        if (*velocity > 0) {
-            *velocity -= config->friction;
-            if (*velocity < 0) *velocity = 0;
-        } else if (*velocity < 0) {
-            *velocity += config->friction;
-            if (*velocity > 0) *velocity = 0;
-        }
-    }
-
-    *position += *velocity;
-    if (*position < minLimit) *position = minLimit;
-    if (*position > maxLimit) *position = maxLimit;
-}
-
-static void applyInertiaMovement(s16 *x, s16 *y, s8 *vx, s8 *vy,
-    s8 inputX, s8 inputY, s16 minX, s16 maxX, s16 minY, s16 maxY,
-    const InertiaConfig *inertia) {
-    applyInertiaAxis(x, vx, minX, maxX, inputX, inertia);
-    applyInertiaAxis(y, vy, minY, maxY, inputY, inertia);
-}
-
 #if DEBUG_MODE
 static void renderDebug(void) {
     char buffer[48];
@@ -254,7 +218,8 @@ void minigamePickup_init(void) {
     santaMaxY = SCREEN_HEIGHT - (SANTA_HEIGHT / 2);
     santaInertia.accel = 1;
     santaInertia.friction = 1;
-    santaInertia.maxVelocity = 3; /* velocidad máxima más baja para un movimiento más lento y con inercia */
+    santaInertia.frictionDelay = 3; /* frena cada 3 frames para aumentar la inercia */
+    santaInertia.maxVelocity = 6; /* misma inercia base que el canon de campanas */
 
     if (image_pista_polo_pal.data) {
         PAL_setPalette(PAL_COMMON, image_pista_polo_pal.data, CPU);
@@ -337,11 +302,11 @@ void minigamePickup_update(void) {
         clearEnemies();
     }
 
-    applyInertiaMovement(&santa.x, &santa.y, &santa.vx, &santa.vy,
+    gameCore_applyInertiaMovement(&santa.x, &santa.y, &santa.vx, &santa.vy,
         inputDirX, inputDirY,
         leftLimit, leftLimit + playableWidth,
         santaMinY, santaMaxY,
-        &santaInertia);
+        frameCounter, &santaInertia);
     SPR_setPosition(santa.sprite, santa.x, santa.y);
 
     /* Caja de colisión reducida: solo los 40 px centrales (80 px de sprite) */

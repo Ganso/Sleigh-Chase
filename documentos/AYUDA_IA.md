@@ -12,7 +12,7 @@ Notas para cualquier asistente que edite el proyecto. Mantener este resumen visi
 
 ## Flujo y arquitectura
 - `src/main.c` es el orquestador: fases `INTRO -> PICKUP -> DELIVERY -> BELLS -> CELEBRATION -> END`. Tras cada `*_isComplete()` se aplica `gameCore_fadeToBlack()` antes de avanzar.
-- Motor comun (`game_core.*`): lectura unificada de input (`gameCore_readInput`), timers (`GameTimer`), reinicio del indice global de tiles (`gameCore_resetTileIndex`), fade combinado musica+paletas (`gameCore_fadeToBlack`). `globalTileIndex` debe avanzarse al cargar tiles para evitar solapes en VRAM.
+- Motor comun (`game_core.*`): lectura unificada de input (`gameCore_readInput`), timers (`GameTimer`), reinicio del indice global de tiles (`gameCore_resetTileIndex`), fade combinado musica+paletas (`gameCore_fadeToBlack`). Inercia compartida: usa `GameInertia` y los helpers `gameCore_applyInertiaAxis/Movement` (parametrizable por fase). `globalTileIndex` debe avanzarse al cargar tiles para evitar solapes en VRAM.
 - HUD basico (`hud.*`): texto en BG con `VDP_drawText` para contadores por fase. Fase 3 usa su propio HUD de campanas; resto puede reutilizar `hud_*`.
 - Audio central (`audio_manager.*`): `audio_init` configura volumenes y `audio_play_phaseX` dispara las pistas (`XGM2_play`). Usa `audio_stop_music` al salir.
 - Efecto de nieve (`snow_effect.*`): carga `image_primer_plano_nieve` en `BG_A` usando el `globalTileIndex` que se le pasa por puntero; se debe llamar tras cargar el fondo para mantener el orden de tiles.
