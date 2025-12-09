@@ -553,7 +553,7 @@ void minigamePickup_init(void) {
         TILE_ATTR_FULL(PAL_COMMON, FALSE, FALSE, FALSE, globalTileIndex));
     globalTileIndex += image_pista_polo_tile.numTile;
 
-    trackHeightPx = 240;
+    trackHeightPx = 224;
     trackMaxScroll = trackHeightPx - 1;
     if (trackMaxScroll < 0) trackMaxScroll = 0;
     trackOffsetY = trackMaxScroll;

@@ -11,8 +11,6 @@ extern const TileSet image_fondo_tile;
 extern const MapDefinition image_fondo_map;
 extern const TileSet image_primer_plano_nieve_tile;
 extern const MapDefinition image_primer_plano_nieve_map;
-extern const TileSet image_fondo_polo_tile;
-extern const MapDefinition image_fondo_polo_map;
 extern const TileSet image_pista_polo_tile;
 extern const MapDefinition image_pista_polo_map;
 extern const TileSet image_copos_fondo_tile;
