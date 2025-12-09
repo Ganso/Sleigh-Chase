@@ -24,7 +24,7 @@
 #define ENEMY_LATERAL_SPEED 1
 
 #define TREE_SIZE 64
-#define TREE_HITBOX_SIZE (TREE_SIZE / 2)
+#define TREE_HITBOX_HEIGHT 10
 #define ENEMY_SIZE 32
 #define ENEMY_HITBOX_SIZE (ENEMY_SIZE / 2)
 #define ELF_SIZE 32
@@ -187,6 +187,54 @@ static u8 checkCollision(s16 x1, s16 y1, s16 w1, s16 h1, s16 x2, s16 y2, s16 w2,
     return (x1 < x2 + w2) && (x1 + w1 > x2) && (y1 < y2 + h2) && (y1 + h1 > y2);
 }
 
+typedef struct {
+    Sprite* sprite;
+    s16 bottom;
+} DepthEntry;
+
+static void reorderDepthByBottom(void) {
+    DepthEntry entries[NUM_TREES + NUM_ENEMIES + 1];
+    u8 count = 0;
+
+    if (santa.sprite) {
+        entries[count].sprite = santa.sprite;
+        entries[count].bottom = santa.y + SANTA_HEIGHT;
+        count++;
+    }
+
+    for (u8 i = 0; i < NUM_TREES; i++) {
+        if (trees[i].sprite && trees[i].active) {
+            entries[count].sprite = trees[i].sprite;
+            entries[count].bottom = trees[i].y + TREE_SIZE;
+            count++;
+        }
+    }
+
+    for (u8 i = 0; i < NUM_ENEMIES; i++) {
+        if (enemies[i].sprite && enemies[i].active) {
+            entries[count].sprite = enemies[i].sprite;
+            entries[count].bottom = enemies[i].y + ENEMY_SIZE;
+            count++;
+        }
+    }
+
+    /* Ordenar por bottom descendente (el que esta mas abajo va delante) */
+    for (u8 i = 0; i < count; i++) {
+        for (u8 j = i + 1; j < count; j++) {
+            if (entries[j].bottom > entries[i].bottom) {
+                DepthEntry tmp = entries[i];
+                entries[i] = entries[j];
+                entries[j] = tmp;
+            }
+        }
+    }
+
+    u16 depth = SPR_MIN_DEPTH;
+    for (u8 i = 0; i < count; i++) {
+        SPR_setDepth(entries[i].sprite, depth++);
+    }
+}
+
 #if DEBUG_MODE
 static void renderDebug(void) {
     char buffer[48];
@@ -219,7 +267,7 @@ void minigamePickup_init(void) {
     santaInertia.accel = 1;
     santaInertia.friction = 1;
     santaInertia.frictionDelay = 3; /* frena cada 3 frames para aumentar la inercia */
-    santaInertia.maxVelocity = 6; /* misma inercia base que el canon de campanas */
+    santaInertia.maxVelocity = 4;
 
     if (image_pista_polo_pal.data) {
         PAL_setPalette(PAL_COMMON, image_pista_polo_pal.data, CPU);
@@ -342,9 +390,9 @@ void minigamePickup_update(void) {
         }
         if (checkCollision(
                 santaHitX, santaHitY, santaHitW, santaHitH,
-                trees[i].x + (TREE_SIZE - TREE_HITBOX_SIZE) / 2,
-                trees[i].y + (TREE_SIZE - TREE_HITBOX_SIZE) / 2,
-                TREE_HITBOX_SIZE, TREE_HITBOX_SIZE)) {
+                trees[i].x,
+                trees[i].y + (TREE_SIZE - TREE_HITBOX_HEIGHT),
+                TREE_SIZE, TREE_HITBOX_HEIGHT)) {
             collectGift();
             spawnTree(&trees[i]);
         }
@@ -389,6 +437,8 @@ void minigamePickup_update(void) {
         }
         SPR_setPosition(enemies[i].sprite, enemies[i].x, enemies[i].y);
     }
+
+    reorderDepthByBottom();
 
     frameCounter++;
 }
