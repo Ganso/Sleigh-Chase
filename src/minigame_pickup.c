@@ -26,8 +26,12 @@
 #define TREE_SIZE 64
 #define TREE_HITBOX_HEIGHT 10
 #define ENEMY_SIZE 32
-#define ENEMY_HITBOX_SIZE (ENEMY_SIZE / 2)
+#define ENEMY_HITBOX_HEIGHT 10
 #define ELF_SIZE 32
+#define ELF_MARK_SIZE 16
+#define ELF_MARK_VISIBLE_MIN_Y 60       /* y inferior mínima para mostrar X (arriba) */
+#define ELF_MARK_VISIBLE_MAX_Y 210      /* y inferior máxima para mostrar X (abajo) */
+#define ELF_MARK_SCREEN_MARGIN_PERCENT 20
 #define SANTA_WIDTH 80
 #define SANTA_HEIGHT 128
 #define SANTA_HITBOX_PADDING 20   /* píxeles que no colisionan a cada lado */
@@ -54,6 +58,9 @@ static Santa santa;
 static SimpleActor trees[NUM_TREES];
 static SimpleActor elves[NUM_ELVES];
 static SimpleActor enemies[NUM_ENEMIES];
+static s16 elfSpawnY[NUM_ELVES];
+static u8 elfMarkShown[NUM_ELVES];
+static Sprite* elfMarkSprites[NUM_ELVES];
 static Map *mapTrack;
 static s16 trackHeightPx;
 static s16 trackOffsetY;
@@ -92,6 +99,50 @@ static void placeActor(SimpleActor *actor, s16 minX, s16 maxX, s16 minY, s16 max
     actor->active = TRUE;
 }
 
+static void hideElfMark(u8 index) {
+    elfMarkShown[index] = FALSE;
+    if (elfMarkSprites[index]) {
+        SPR_setVisibility(elfMarkSprites[index], HIDDEN);
+    }
+    kprintf("[ELF %d] Marca X oculta", index);
+}
+
+static s16 randomPositionWithMargin(s16 totalSize, s16 elementSize, u8 marginPercent) {
+    s16 margin = (totalSize * marginPercent) / 100;
+    s16 min = margin;
+    s16 max = totalSize - margin - elementSize;
+    if (max < min) {
+        min = 0;
+        max = totalSize - elementSize;
+    }
+    if (max < 0) {
+        return 0;
+    }
+    s16 range = max - min;
+    if (range <= 0) {
+        return min;
+    }
+    return min + (random() % (range + 1));
+}
+
+static void showElfMark(u8 index) {
+    s16 posX = randomPositionWithMargin(SCREEN_WIDTH, ELF_MARK_SIZE, ELF_MARK_SCREEN_MARGIN_PERCENT);
+    s16 posY = randomPositionWithMargin(SCREEN_HEIGHT, ELF_MARK_SIZE, ELF_MARK_SCREEN_MARGIN_PERCENT);
+
+    if (elfMarkSprites[index] == NULL) {
+        elfMarkSprites[index] = SPR_addSpriteSafe(&sprite_marca_x, posX, posY,
+            TILE_ATTR(PAL_EFFECT, FALSE, FALSE, FALSE));
+    }
+
+    if (elfMarkSprites[index]) {
+        SPR_setVisibility(elfMarkSprites[index], VISIBLE);
+        SPR_setPosition(elfMarkSprites[index], posX, posY);
+        SPR_setDepth(elfMarkSprites[index], SPR_MAX_DEPTH); /* siempre al fondo */
+        elfMarkShown[index] = TRUE;
+        kprintf("[ELF %d] Marca X mostrada en (%d,%d)", index, posX, posY);
+    }
+}
+
 static void spawnTree(SimpleActor *tree) {
     s16 minX = leftLimit;
     s16 maxX = rightLimit - TREE_SIZE;
@@ -113,10 +164,13 @@ static void spawnTree(SimpleActor *tree) {
     SPR_setPosition(tree->sprite, tree->x, tree->y);
 }
 
-static void spawnElf(SimpleActor *elf, u8 side) {
+static void spawnElf(SimpleActor *elf, u8 side, u8 index) {
     elf->x = (side == 0) ? (leftLimit - ELF_SIZE - 3) : (rightLimit + 3);
     elf->y = -((random() % (SCREEN_HEIGHT - 60)) + 60);
     elf->active = TRUE;
+    elfSpawnY[index] = elf->y;
+    hideElfMark(index);
+    kprintf("[ELF %d] Aparece en y=%d", index, elf->y);
 
     if (elf->sprite == NULL) {
         elf->sprite = SPR_addSpriteSafe(&sprite_elfo_lateral, elf->x, elf->y,
@@ -152,6 +206,30 @@ static void spawnEnemy(SimpleActor *enemy) {
     SPR_setPosition(enemy->sprite, enemy->x, enemy->y);
 }
 
+static void updateElfMark(u8 index) {
+    const s16 elfBottom = elves[index].y + ELF_SIZE;
+    kprintf("[ELF %d] bottomY=%d", index, elfBottom);
+
+    if (!elves[index].active) {
+        hideElfMark(index);
+        return;
+    }
+
+    const s16 minVisibleY = ELF_MARK_VISIBLE_MIN_Y;
+    const s16 maxVisibleY = ELF_MARK_VISIBLE_MAX_Y;
+
+    /* Oculta fuera de la franja visible de marca */
+    if (elfBottom < minVisibleY || elfBottom > maxVisibleY) {
+        hideElfMark(index);
+        return;
+    }
+
+    /* Muestra solo dentro del rango visible */
+    if (!elfMarkShown[index]) {
+        showElfMark(index);
+    }
+}
+
 static void resetSpecialIfReady(void) {
     if (giftsCharge >= GIFTS_FOR_SPECIAL) {
         santa.specialReady = TRUE;
@@ -162,11 +240,9 @@ static void resetSpecialIfReady(void) {
 
 static void clampTrackOffset(void) {
     if (trackOffsetY < 0) {
-        KLog("[TRACK] Offset negativo detectado, se fuerza a 0");
         trackOffsetY = 0;
     }
     if (trackOffsetY > trackMaxScroll) {
-        kprintf("[TRACK] Offset %d supera maximo %d, se recorta", trackOffsetY, trackMaxScroll);
         trackOffsetY = trackMaxScroll;
     }
 }
@@ -237,10 +313,6 @@ static void reorderDepthByBottom(void) {
 
 #if DEBUG_MODE
 static void renderDebug(void) {
-    char buffer[48];
-
-    //sprintf(buffer, "DBG frame:%lu off:%d/%d", (u32)frameCounter, trackOffsetY, trackMaxScroll);
-    KLog(buffer);
 }
 #endif
 
@@ -293,7 +365,6 @@ void minigamePickup_init(void) {
     trackMaxScroll = trackHeightPx - SCREEN_HEIGHT;
     if (trackMaxScroll < 0) trackMaxScroll = 0;
     trackOffsetY = trackMaxScroll;
-    kprintf("[TRACK] alto_px:%d max:%d", trackHeightPx, trackMaxScroll);
     if (mapTrack == NULL) {
         trackHeightPx = 0;
         trackMaxScroll = 0;
@@ -301,7 +372,6 @@ void minigamePickup_init(void) {
     } else {
         /* Normalizamos y aplicamos el scroll inicial ya válido */
         s16 initialOffset = trackOffsetY % trackHeightPx;
-        KDebug_AlertNumber(initialOffset);
         MAP_scrollTo(mapTrack, 0, initialOffset);
         VDP_setVerticalScroll(BG_B, initialOffset);
     }
@@ -324,7 +394,8 @@ void minigamePickup_init(void) {
     }
     for (u8 i = 0; i < NUM_ELVES; i++) {
         elves[i].sprite = NULL;
-        spawnElf(&elves[i], i % 2);
+        elfMarkSprites[i] = NULL;
+        spawnElf(&elves[i], i % 2, i);
     }
     for (u8 i = 0; i < NUM_ENEMIES; i++) {
         enemies[i].sprite = NULL;
@@ -372,7 +443,6 @@ void minigamePickup_update(void) {
         }
         clampTrackOffset();
         if (mapTrack != NULL) {
-            KDebug_AlertNumber(trackOffsetY);
             MAP_scrollTo(mapTrack, 0, trackOffsetY);
             VDP_setVerticalScroll(BG_B, trackOffsetY);
         }
@@ -400,18 +470,22 @@ void minigamePickup_update(void) {
     }
 
     for (u8 i = 0; i < NUM_ELVES; i++) {
-        if (!elves[i].active) continue;
+        if (!elves[i].active) {
+            hideElfMark(i);
+            continue;
+        }
         if (scrollStep) {
             elves[i].y += scrollStep;
             if (elves[i].y > SCREEN_HEIGHT) {
-                spawnElf(&elves[i], i % 2);
+                spawnElf(&elves[i], i % 2, i);
             }
         }
         if (checkCollision(santaHitX, santaHitY, santaHitW, santaHitH,
                 elves[i].x, elves[i].y, ELF_SIZE, ELF_SIZE)) {
             collectGift();
-            spawnElf(&elves[i], i % 2);
+            spawnElf(&elves[i], i % 2, i);
         }
+        updateElfMark(i);
         SPR_setPosition(elves[i].sprite, elves[i].x, elves[i].y);
     }
 
@@ -427,9 +501,9 @@ void minigamePickup_update(void) {
         }
         if (checkCollision(
                 santaHitX, santaHitY, santaHitW, santaHitH,
-                enemies[i].x + (ENEMY_SIZE - ENEMY_HITBOX_SIZE) / 2,
-                enemies[i].y + (ENEMY_SIZE - ENEMY_HITBOX_SIZE) / 2,
-                ENEMY_HITBOX_SIZE, ENEMY_HITBOX_SIZE)) {
+                enemies[i].x,
+                enemies[i].y + (ENEMY_SIZE - ENEMY_HITBOX_HEIGHT),
+                ENEMY_SIZE, ENEMY_HITBOX_HEIGHT)) {
             if (giftsCollected > 0) {
                 giftsCollected--;
             }

@@ -6,18 +6,13 @@ SPRITE sprite_bomba "sprites/Bomba.png" 4 4 BEST 1
 SPRITE sprite_bola_confeti "sprites/BolaConfeti.png" 1 1 BEST 1
 
 # Fase 1
-# sprite_regalo : Placeholder (Regalo cayendo en fase polar)
-SPRITE sprite_regalo "sprites/Regalo.png" 4 4 BEST 1
-# sprite_regalo_bn : Placeholder (Contador regalo blanco y negro)
-SPRITE sprite_regalo_bn "sprites/RegaloBN.png" 4 4 BEST 1
-# sprite_santa_car : Placeholder (Carro vertical de Papa Noel para scroll)
+SPRITE sprite_regalo "sprites/Regalo.png" 2 2 BEST 1
 SPRITE sprite_santa_car "sprites/SantaCar.png" 10 16 BEST 2
-# sprite_arbol_pista : Placeholder (Arbol 64x64 decorativo/coleccionable)
 SPRITE sprite_arbol_pista "sprites/ArbolPista.png" 8 8 BEST 1
-# sprite_elfo_lateral : Placeholder (Elfo con regalo en lateral)
 SPRITE sprite_elfo_lateral "sprites/ElfoLateral.png" 4 4 BEST 1
-# sprite_duende_malo : Placeholder (Duende enemigo 32x32)
 SPRITE sprite_duende_malo "sprites/DuendeMalo.png" 4 4 BEST 1
+SPRITE sprite_marca_x "sprites/MarcaX.png" 2 2 BEST 1
+SPRITE sprite_sobra_regalo "sprites/SombraRegalo.png" 2 2 BEST 1
 
 # Fase 2
 # sprite_regalo_entrega : Placeholder (Regalo pequeño entrega tejados volador)
