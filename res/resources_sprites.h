@@ -13,7 +13,7 @@ extern const SpriteDefinition sprite_arbol_pista;
 extern const SpriteDefinition sprite_elfo_lateral;
 extern const SpriteDefinition sprite_duende_malo;
 extern const SpriteDefinition sprite_marca_x;
-extern const SpriteDefinition sprite_sobra_regalo;
+extern const SpriteDefinition sprite_sombra_regalo;
 extern const SpriteDefinition sprite_regalo_entrega;
 extern const SpriteDefinition sprite_chimenea;
 extern const SpriteDefinition sprite_canon_tejado;

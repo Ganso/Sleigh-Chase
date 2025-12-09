@@ -32,6 +32,7 @@
 #define ELF_MARK_VISIBLE_MIN_Y 60       /* y inferior mínima para mostrar X (arriba) */
 #define ELF_MARK_VISIBLE_MAX_Y 210      /* y inferior máxima para mostrar X (abajo) */
 #define ELF_MARK_SCREEN_MARGIN_PERCENT 20
+#define ELF_SHADOW_MIN_DEPTH SPR_MAX_DEPTH
 #define SANTA_WIDTH 80
 #define SANTA_HEIGHT 128
 #define SANTA_HITBOX_PADDING 20   /* píxeles que no colisionan a cada lado */
@@ -61,6 +62,12 @@ static SimpleActor enemies[NUM_ENEMIES];
 static s16 elfSpawnY[NUM_ELVES];
 static u8 elfMarkShown[NUM_ELVES];
 static Sprite* elfMarkSprites[NUM_ELVES];
+static s16 elfMarkPosX[NUM_ELVES];
+static s16 elfMarkPosY[NUM_ELVES];
+static Sprite* elfShadowSprites[NUM_ELVES];
+static s16 elfShadowStartX[NUM_ELVES];
+static s16 elfShadowStartY[NUM_ELVES];
+static u8 elfShadowActive[NUM_ELVES];
 static Map *mapTrack;
 static s16 trackHeightPx;
 static s16 trackOffsetY;
@@ -128,6 +135,8 @@ static s16 randomPositionWithMargin(s16 totalSize, s16 elementSize, u8 marginPer
 static void showElfMark(u8 index) {
     s16 posX = randomPositionWithMargin(SCREEN_WIDTH, ELF_MARK_SIZE, ELF_MARK_SCREEN_MARGIN_PERCENT);
     s16 posY = randomPositionWithMargin(SCREEN_HEIGHT, ELF_MARK_SIZE, ELF_MARK_SCREEN_MARGIN_PERCENT);
+    elfMarkPosX[index] = posX;
+    elfMarkPosY[index] = posY;
 
     if (elfMarkSprites[index] == NULL) {
         elfMarkSprites[index] = SPR_addSpriteSafe(&sprite_marca_x, posX, posY,
@@ -170,6 +179,10 @@ static void spawnElf(SimpleActor *elf, u8 side, u8 index) {
     elf->active = TRUE;
     elfSpawnY[index] = elf->y;
     hideElfMark(index);
+    elfShadowActive[index] = FALSE;
+    if (elfShadowSprites[index]) {
+        SPR_setVisibility(elfShadowSprites[index], HIDDEN);
+    }
     kprintf("[ELF %d] Aparece en y=%d", index, elf->y);
 
     if (elf->sprite == NULL) {
@@ -206,27 +219,94 @@ static void spawnEnemy(SimpleActor *enemy) {
     SPR_setPosition(enemy->sprite, enemy->x, enemy->y);
 }
 
+static void hideElfShadow(u8 index) {
+    elfShadowActive[index] = FALSE;
+    if (elfShadowSprites[index]) {
+        SPR_setVisibility(elfShadowSprites[index], HIDDEN);
+    }
+}
+
+static void showElfShadow(u8 index, s16 startX, s16 startY) {
+    elfShadowStartX[index] = startX;
+    elfShadowStartY[index] = startY;
+    elfShadowActive[index] = TRUE;
+
+    if (elfShadowSprites[index] == NULL) {
+        elfShadowSprites[index] = SPR_addSpriteSafe(&sprite_sombra_regalo, startX, startY,
+            TILE_ATTR(PAL_EFFECT, FALSE, FALSE, FALSE));
+    }
+    if (elfShadowSprites[index]) {
+        SPR_setVisibility(elfShadowSprites[index], VISIBLE);
+        SPR_setDepth(elfShadowSprites[index], ELF_SHADOW_MIN_DEPTH);
+        SPR_setPosition(elfShadowSprites[index], startX, startY);
+        kprintf("[ELF %d] Sombra iniciada en (%d,%d)", index, startX, startY);
+    } else {
+        elfShadowActive[index] = FALSE;
+    }
+}
+
+static void updateElfShadow(u8 index, fix16 progress) {
+    if (!elfShadowActive[index] || elfShadowSprites[index] == NULL) {
+        return;
+    }
+    if (progress <= FIX16(0)) {
+        SPR_setPosition(elfShadowSprites[index], elfShadowStartX[index], elfShadowStartY[index]);
+        return;
+    }
+    if (progress >= FIX16(1)) {
+        SPR_setPosition(elfShadowSprites[index], elfMarkPosX[index], elfMarkPosY[index]);
+        return;
+    }
+
+    const s16 dx = elfMarkPosX[index] - elfShadowStartX[index];
+    const s16 dy = elfMarkPosY[index] - elfShadowStartY[index];
+    s16 newX = elfShadowStartX[index] + F16_toInt(F16_mul(FIX16(dx), progress));
+    s16 newY = elfShadowStartY[index] + F16_toInt(F16_mul(FIX16(dy), progress));
+    SPR_setPosition(elfShadowSprites[index], newX, newY);
+}
+
 static void updateElfMark(u8 index) {
     const s16 elfBottom = elves[index].y + ELF_SIZE;
     kprintf("[ELF %d] bottomY=%d", index, elfBottom);
 
     if (!elves[index].active) {
         hideElfMark(index);
+        hideElfShadow(index);
         return;
     }
 
     const s16 minVisibleY = ELF_MARK_VISIBLE_MIN_Y;
     const s16 maxVisibleY = ELF_MARK_VISIBLE_MAX_Y;
+    const u8 belowRange = elfBottom < minVisibleY;
+    const u8 aboveRange = elfBottom > maxVisibleY;
 
-    /* Oculta fuera de la franja visible de marca */
-    if (elfBottom < minVisibleY || elfBottom > maxVisibleY) {
+    if (belowRange) {
         hideElfMark(index);
+        hideElfShadow(index);
         return;
     }
 
     /* Muestra solo dentro del rango visible */
     if (!elfMarkShown[index]) {
         showElfMark(index);
+        showElfShadow(index, elves[index].x, elves[index].y);
+    }
+
+    /* Progreso lineal del viaje de la sombra basado en la posición del elfo en la franja */
+    const s16 travelSpan = maxVisibleY - minVisibleY;
+    fix16 progress = FIX16(0);
+    if (travelSpan > 0) {
+        progress = FIX16(elfBottom - minVisibleY);
+        progress = F16_div(progress, FIX16(travelSpan));
+    }
+    if (progress < FIX16(0)) progress = FIX16(0);
+    if (progress > FIX16(1)) progress = FIX16(1);
+
+    updateElfShadow(index, progress);
+
+    if (aboveRange) {
+        hideElfMark(index);
+        hideElfShadow(index);
     }
 }
 
@@ -395,6 +475,10 @@ void minigamePickup_init(void) {
     for (u8 i = 0; i < NUM_ELVES; i++) {
         elves[i].sprite = NULL;
         elfMarkSprites[i] = NULL;
+        elfShadowSprites[i] = NULL;
+        elfShadowActive[i] = FALSE;
+        elfMarkPosX[i] = 0;
+        elfMarkPosY[i] = 0;
         spawnElf(&elves[i], i % 2, i);
     }
     for (u8 i = 0; i < NUM_ENEMIES; i++) {
