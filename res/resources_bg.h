@@ -1,3 +1,4 @@
+#include <genesis.h>
 #ifndef _RES_RESOURCES_BG_H_
 #define _RES_RESOURCES_BG_H_
 

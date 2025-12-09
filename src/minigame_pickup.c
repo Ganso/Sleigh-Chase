@@ -189,7 +189,7 @@ static void spawnTree(SimpleActor *tree) {
 }
 
 static void spawnElf(SimpleActor *elf, u8 side, u8 index) {
-    elf->x = (side == 0) ? (leftLimit - ELF_SIZE - 3) : (rightLimit + 3);
+    elf->x = (side == 0) ? (leftLimit - ELF_SIZE - 5) : (rightLimit + 5);
     elf->y = -((random() % (SCREEN_HEIGHT - 60)) + 60);
     elf->active = TRUE;
     elfSpawnY[index] = elf->y;
@@ -421,11 +421,17 @@ static void resetSpecialIfReady(void) {
 }
 
 static void clampTrackOffset(void) {
-    if (trackOffsetY < 0) {
+    if (trackHeightPx <= 0) {
         trackOffsetY = 0;
+        return;
     }
-    if (trackOffsetY > trackMaxScroll) {
-        trackOffsetY = trackMaxScroll;
+
+    const s16 loopLength = trackHeightPx;
+    while (trackOffsetY < 0) {
+        trackOffsetY += loopLength;
+    }
+    while (trackOffsetY >= loopLength) {
+        trackOffsetY -= loopLength;
     }
 }
 
@@ -511,7 +517,6 @@ void minigamePickup_init(void) {
     VDP_setScreenHeight224();
     VDP_clearPlane(BG_A, TRUE);
     VDP_clearPlane(BG_B, TRUE);
-    VDP_setScrollingMode(HSCROLL_PLANE, VSCROLL_PLANE);
 
     gameCore_resetTileIndex();
     trackOffsetY = 0;
@@ -548,22 +553,18 @@ void minigamePickup_init(void) {
         TILE_ATTR_FULL(PAL_COMMON, FALSE, FALSE, FALSE, globalTileIndex));
     globalTileIndex += image_pista_polo_tile.numTile;
 
-    /* Ajustamos la altura real del mapa (en px) para arrancar desde la parte inferior sin lecturas fuera de rango */
-    trackHeightPx = mapTrack ? (mapTrack->h << 7) : TRACK_HEIGHT_PX; /* h en bloques de 128px */
-    if (trackHeightPx <= 0) trackHeightPx = SCREEN_HEIGHT;
-
-    trackMaxScroll = trackHeightPx - SCREEN_HEIGHT;
+    trackHeightPx = 240;
+    trackMaxScroll = trackHeightPx - 1;
     if (trackMaxScroll < 0) trackMaxScroll = 0;
     trackOffsetY = trackMaxScroll;
-    if (mapTrack == NULL) {
+    if (mapTrack != NULL) {
+        const s16 initialOffset = trackOffsetY % trackHeightPx;
+        MAP_scrollTo(mapTrack, 0, initialOffset);
+        //VDP_setVerticalScroll(BG_B, initialOffset);
+    } else {
         trackHeightPx = 0;
         trackMaxScroll = 0;
         trackOffsetY = 0;
-    } else {
-        /* Normalizamos y aplicamos el scroll inicial ya válido */
-        s16 initialOffset = trackOffsetY % trackHeightPx;
-        MAP_scrollTo(mapTrack, 0, initialOffset);
-        VDP_setVerticalScroll(BG_B, initialOffset);
     }
 
     snowEffect_init(&snowEffect, &globalTileIndex, 1, -2);
@@ -639,13 +640,10 @@ void minigamePickup_update(void) {
     const s16 scrollStep = ((frameCounter % VERTICAL_SLOW_DIV) == 0) ? SCROLL_SPEED : 0;
     if (scrollStep) {
         trackOffsetY -= scrollStep;
-        if (trackOffsetY < 0) {
-            trackOffsetY = trackMaxScroll;
-        }
-        clampTrackOffset();
+        clampTrackOffset(); /* envuelve en 0..223 */
         if (mapTrack != NULL) {
             MAP_scrollTo(mapTrack, 0, trackOffsetY);
-            VDP_setVerticalScroll(BG_B, trackOffsetY);
+            //VDP_setVerticalScroll(BG_B, trackOffsetY);
         }
     }
 
