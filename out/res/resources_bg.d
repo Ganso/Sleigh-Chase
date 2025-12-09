@@ -1,10 +1,10 @@
 out/res/resources_bg.o: res/resources_bg.res \
-/src/res/bg/Nubes.png \
-/src/res/bg/FondoPolo.png \
-/src/res/bg/PrimerPlanoNieve.png \
-/src/res/bg/FondoFiesta.png \
-/src/res/bg/LucesParpadeo.png \
-/src/res/bg/Fondo.png \
-/src/res/bg/CoposFondo.png \
-/src/res/bg/FondoTejados.png \
-/src/res/bg/PistaPolo.png
+D:/GitHub/Feliz-2026/Feliz-2026/res/bg/PrimerPlanoNieve.png \
+D:/GitHub/Feliz-2026/Feliz-2026/res/bg/CoposFondo.png \
+D:/GitHub/Feliz-2026/Feliz-2026/res/bg/LucesParpadeo.png \
+D:/GitHub/Feliz-2026/Feliz-2026/res/bg/Nubes.png \
+D:/GitHub/Feliz-2026/Feliz-2026/res/bg/PistaPolo.png \
+D:/GitHub/Feliz-2026/Feliz-2026/res/bg/FondoFiesta.png \
+D:/GitHub/Feliz-2026/Feliz-2026/res/bg/FondoPolo.png \
+D:/GitHub/Feliz-2026/Feliz-2026/res/bg/FondoTejados.png \
+D:/GitHub/Feliz-2026/Feliz-2026/res/bg/Fondo.png

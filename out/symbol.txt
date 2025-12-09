@@ -1,6 +1,6 @@
-00000000 t _Start_Of_Rom
-00000000 t _Vecteurs_68K
 00000000 A __DYNAMIC
+00000000 t _Start_Of_Rom	D:/apps/SGDK/src/bmp.c:1405
+00000000 t _Vecteurs_68K	D:/apps/SGDK/src/bmp.c:1405
 00000004 a image_copos_fondo_map_mapBlockIndexes_size
 00000004 a image_copos_fondo_map_mapBlockRowOffsets_size
 00000004 a image_fondo_map_mapBlockRowOffsets_size
@@ -28,42 +28,41 @@
 00000028 a sprite_chimenea_animation1_frame0_tileset_data_size
 00000036 a sprite_globo_animation0_frame0_tileset_data_size
 00000036 a sprite_regalo_entrega_animation0_frame0_tileset_data_size
-0000003a a sprite_nube_animation0_frame0_tileset_data_size
-0000003a a sprite_regalo_animation0_frame0_tileset_data_size
-0000003a a sprite_regalo_bn_animation0_frame0_tileset_data_size
+00000042 a sprite_nube_animation0_frame0_tileset_data_size
+00000042 a sprite_regalo_animation0_frame0_tileset_data_size
+00000042 a sprite_regalo_bn_animation0_frame0_tileset_data_size
 00000046 a image_primer_plano_nieve_tile_data_size
-0000004c A _sdata
+0000004a A _sdata
 00000054 a image_primer_plano_nieve_map_metatiles_size
 00000056 a image_primer_plano_nieve_map_mapBlocks_size
-00000056 a sprite_arbol_fiesta_animation0_frame0_tileset_data_size
-0000005a a sprite_arbol_fiesta_animation1_frame0_tileset_data_size
+0000005a a sprite_arbol_fiesta_animation0_frame0_tileset_data_size
+00000060 a sprite_arbol_fiesta_animation1_frame0_tileset_data_size
 00000060 a sprite_chimenea_animation0_frame0_tileset_data_size
 0000006a a image_copos_fondo_map_mapBlocks_size
 0000006a a image_fondo_polo_map_mapBlocks_size
 00000080 a image_fondo_pal_data_size
 00000080 a image_pista_polo_pal_data_size
-00000080 a sprite_canon_tejado_animation0_frame0_tileset_data_size
-00000082 a sprite_canon_polo_animation0_frame0_tileset_data_size
-0000008a a sprite_copo_grande_animation0_frame0_tileset_data_size
-0000008a a sprite_personaje_animation0_frame0_tileset_data_size
-0000008c a sprite_canon_animation0_frame0_tileset_data_size
+00000086 a sprite_canon_polo_animation0_frame0_tileset_data_size
+00000088 a sprite_canon_animation0_frame0_tileset_data_size
+0000008e a sprite_canon_tejado_animation0_frame0_tileset_data_size
 00000092 a sprite_canon_animation1_frame1_tileset_data_size
 00000092 a sprite_canon_animation1_frame3_tileset_data_size
-00000096 a sprite_canon_animation1_frame2_tileset_data_size
+00000094 a sprite_copo_grande_animation0_frame0_tileset_data_size
+00000094 a sprite_personaje_animation0_frame0_tileset_data_size
+00000098 a sprite_bomba_animation0_frame2_tileset_data_size
+0000009a a sprite_canon_animation1_frame2_tileset_data_size
 000000ac A stop_xgm_size
 000000be a image_fondo_polo_map_metatiles_size
-000000c0 a sprite_canon_animation1_frame4_tileset_data_size
 000000c8 a sprite_campana_bn_animation0_frame0_tileset_data_size
-000000d0 a sprite_canon_animation1_frame7_tileset_data_size
+000000ca a sprite_canon_animation1_frame4_tileset_data_size
+000000d4 a sprite_canon_animation1_frame7_tileset_data_size
 000000d6 a sprite_campana_animation0_frame0_tileset_data_size
-000000de a sprite_canon_animation1_frame5_tileset_data_size
 000000de a sprite_elfo_lateral_animation0_frame0_tileset_data_size
-000000ec a sprite_bomba_animation0_frame0_tileset_data_size
-000000ec a sprite_canon_animation1_frame6_tileset_data_size
-000000ee a sprite_bomba_animation0_frame2_tileset_data_size
+000000e2 a sprite_canon_animation1_frame5_tileset_data_size
 000000f2 a sprite_bomba_animation0_frame1_tileset_data_size
+000000f4 a sprite_canon_animation1_frame6_tileset_data_size
 000000fa a image_fondo_map_mapBlocks_size
-00000100 T rom_header
+00000100 T rom_header	D:/apps/SGDK/src/bmp.c:1468
 00000100 a sprite_duende_malo_animation0_frame0_tileset_data_size
 00000154 a image_copos_fondo_tile_data_size
 00000154 a image_fondo_fiesta_tile_data_size
@@ -71,95 +70,51 @@
 00000154 a image_fondo_tejados_tile_data_size
 00000154 a image_luces_parpadeo_tile_data_size
 00000154 a image_nubes_paralaje_tile_data_size
-00000200 t _Entry_Point
-0000023c t NoTMSS
-00000242 t SkipInit
-00000248 t _INT
-0000025a t _EXTINT
+00000180 a sprite_bomba_animation0_frame0_tileset_data_size
+00000200 t _Entry_Point	D:/apps/SGDK/src/bmp.c:1469
+0000023c t NoTMSS	D:/apps/SGDK/src/bmp.c:1469
+00000242 t SkipInit	D:/apps/SGDK/src/bmp.c:1469
+00000248 t _INT	D:/apps/SGDK/src/bmp.c:1469
+0000025a t _EXTINT	D:/apps/SGDK/src/bmp.c:1469
 00000262 a font_default_data_size
-0000026c t _VINT
-0000028e t unlock
-000002b0 t no_user_task
-000002d2 t no_xgm_task
-000002e2 t no_bmp_task
-000002f8 t ldiv
-00000302 t ld1
-00000312 t ld2
-0000031c a sprite_arbol_pista_animation0_frame0_tileset_data_size
-00000320 t ld3
-00000322 t lmul
-0000032c t lm1
-0000033c t lm2
-0000034a t lm3
-0000034c t lrem
-00000356 t lr1
-00000360 t lr2
-00000370 t lr3
-00000372 t ldivu
-00000380 t lmulu
-0000038e t lremu
-0000039e t i_lmul
-000003ba t i_ldiv
-000003ca t nz1
-000003de t is1
-000003e6 t norm
-000003f6 t not1
+0000026c t _VINT	D:/apps/SGDK/src/bmp.c:1469
+0000028e t unlock	D:/apps/SGDK/src/bmp.c:1469
+000002b0 t no_user_task	D:/apps/SGDK/src/bmp.c:1470
+000002d2 t no_xgm_task	D:/apps/SGDK/src/bmp.c:1470
+000002e2 t no_bmp_task	D:/apps/SGDK/src/bmp.c:1470
+000002f8 t ldiv	D:/apps/SGDK/src/bmp.c:1470
+00000302 t ld1	D:/apps/SGDK/src/bmp.c:1470
+00000312 t ld2	D:/apps/SGDK/src/bmp.c:1470
+00000318 a sprite_arbol_pista_animation0_frame0_tileset_data_size
+00000320 t ld3	D:/apps/SGDK/src/bmp.c:1470
+00000322 t lmul	D:/apps/SGDK/src/bmp.c:1470
+0000032c t lm1	D:/apps/SGDK/src/bmp.c:1470
+0000033c t lm2	D:/apps/SGDK/src/bmp.c:1470
+0000034a t lm3	D:/apps/SGDK/src/bmp.c:1470
+0000034c t lrem	D:/apps/SGDK/src/bmp.c:1470
+00000356 t lr1	D:/apps/SGDK/src/bmp.c:1470
+00000360 t lr2	D:/apps/SGDK/src/bmp.c:1470
+00000370 t lr3	D:/apps/SGDK/src/bmp.c:1470
+00000372 t ldivu	D:/apps/SGDK/src/bmp.c:1470
+00000380 t lmulu	D:/apps/SGDK/src/bmp.c:1470
+0000038e t lremu	D:/apps/SGDK/src/bmp.c:1470
+0000039e t i_lmul	D:/apps/SGDK/src/bmp.c:1470
+000003ba t i_ldiv	D:/apps/SGDK/src/bmp.c:1471
+000003ca t nz1	D:/apps/SGDK/src/bmp.c:1471
+000003de t is1	D:/apps/SGDK/src/bmp.c:1471
+000003e6 t norm	D:/apps/SGDK/src/bmp.c:1471
+000003f6 t not1	D:/apps/SGDK/src/bmp.c:1471
 00000400 A music_geesebumps_size
-00000410 t slow
+00000410 t slow	D:/apps/SGDK/src/bmp.c:1471
 0000043a a sgdk_logo_data_size
-0000043c t slower
-00000440 t moreadj
-0000044e t adj
-00000458 t ltuns
-00000468 T flushQueue
-0000047c t .fq_loop
-0000048a t .fq_end
-0000048c T KDebug_Alert
+0000043c t slower	D:/apps/SGDK/src/bmp.c:1471
+00000440 t moreadj	D:/apps/SGDK/src/bmp.c:1471
+0000044e t adj	D:/apps/SGDK/src/bmp.c:1471
+00000458 t ltuns	D:/apps/SGDK/src/bmp.c:1471
+00000468 T main	D:/apps/SGDK/src/bmp.c:1471
 0000048c a image_fondo_map_metatiles_size
 000004a2 a image_pista_polo_map_mapBlocks_size
-000004a8 T KDebug_AlertNumber
-000004b0 t numLoop
-000004c8 t number
-000004d0 t letter
-000004d6 t ascii
-000004f6 T memset_
-0000056e T memsetU16
-0000057a a sprite_santa_car_animation0_frame0_tileset_data_size
-000005cc T memcpy_
-00000670 T SYS_setInterruptMaskLevel
-00000688 T SYS_getAndSetInterruptMaskLevel
-000006a2 T TSK_init
-000006c8 t .loop
-000006d0 T TSK_superPost
-000006e6 t no_task
-000006e8 T TSK_userYield
-000006f0 t userYield
-0000071a T _trap_0
-0000073e T aplib_unpack
-00000744 t aplib_decrunch
-00000758 t .copy_byte
-0000075a t .next_sequence_init
-0000075c t .next_sequence
-0000076c t .get_3_bits
-0000077c t .write_byte
-00000780 t .short_match
-0000078e t .code_pair
-0000079a t .normal_code_pair
-000007a8 t .compare_1280
-000007ac t .compare_128
-000007b0 t .domatch_with_2inc
-000007b2 t .domatch_with_inc
-000007b4 t .domatch_new_lastpos
-000007b6 t .copy_code_pair
-000007bc t .loop_do_copy
-000007c6 t .get_bit
-000007ce t .still_bits_left
-000007d0 t .decode_gamma
-000007d2 t .get_more_gamma
-000007dc t .end_decrunch
-000007e6 T lz4w_unpack
-000007ec t lz4w_unpack_a
-00000806 t .jump_table
+000005a0 a sprite_santa_car_animation0_frame0_tileset_data_size
 00000900 A musica_fondo_size
 00000b9a a image_pista_polo_map_metatiles_size
 00000d00 A snd_chimenea_activa_size
@@ -169,957 +124,1154 @@
 00000d00 A snd_obstaculo_golpe_size
 00000d00 A snd_regalo_disparado_size
 00000d00 A snd_regalo_recogido_size
-00000d04 t .lmr_len_01
-00000e18 t .lmr_len_00
-0000102a t .lm_len_00
-00001030 t .next
-00001040 t .litE_mat0
-00001042 t .litC_mat0
-00001044 t .litA_mat0
-00001046 t .lit8_mat0
-00001048 t .lit6_mat0
-0000104a t .lit4_mat0
-0000104c t .lit2_mat0
-00001052 t .long_match_1
-00001064 t .litF_mat0
-00001066 t .litD_mat0
-00001068 t .litB_mat0
-0000106a t .lit9_mat0
-0000106c t .lit7_mat0
-0000106e t .lit5_mat0
-00001070 t .lit3_mat0
-00001072 t .lit1_mat0
-00001078 t .long_match_2
-0000108a t .lit0_mat0
-0000108e t .long_match_3
-000010a0 t .lm_rom
-000010ac t .done
-000010b2 t .no_byte
-000010bc t .lmr_jump_table
 00001300 A snd_canon_size
 00001342 a image_pista_polo_tile_data_size
-000014bc t .litE_mat1
-000014be t .litC_mat1
-000014c0 t .litA_mat1
-000014c2 t .lit8_mat1
-000014c4 t .lit6_mat1
-000014c6 t .lit4_mat1
-000014c8 t .lit2_mat1
-000014ca t .lit0_mat1
-000014e8 t .litF_mat1
-000014ea t .litD_mat1
-000014ec t .litB_mat1
-000014ee t .lit9_mat1
-000014f0 t .lit7_mat1
-000014f2 t .lit5_mat1
-000014f4 t .lit3_mat1
-000014f6 t .lit1_mat1
-00001516 t .litE_mat2
-00001518 t .litC_mat2
-0000151a t .litA_mat2
-0000151c t .lit8_mat2
-0000151e t .lit6_mat2
-00001520 t .lit4_mat2
-00001522 t .lit2_mat2
-00001524 t .lit0_mat2
-00001544 t .litF_mat2
-00001546 t .litD_mat2
-00001548 t .litB_mat2
-0000154a t .lit9_mat2
-0000154c t .lit7_mat2
-0000154e t .lit5_mat2
-00001550 t .lit3_mat2
-00001552 t .lit1_mat2
-00001574 t .litE_mat3
-00001576 t .litC_mat3
-00001578 t .litA_mat3
-0000157a t .lit8_mat3
-0000157c t .lit6_mat3
-0000157e t .lit4_mat3
-00001580 t .lit2_mat3
-00001582 t .lit0_mat3
-000015a4 t .litF_mat3
-000015a6 t .litD_mat3
-000015a8 t .litB_mat3
-000015aa t .lit9_mat3
-000015ac t .lit7_mat3
-000015ae t .lit5_mat3
-000015b0 t .lit3_mat3
-000015b2 t .lit1_mat3
-000015d6 t .litE_mat4
-000015d8 t .litC_mat4
-000015da t .litA_mat4
-000015dc t .lit8_mat4
-000015de t .lit6_mat4
-000015e0 t .lit4_mat4
-000015e2 t .lit2_mat4
-000015e4 t .lit0_mat4
-00001608 t .litF_mat4
-0000160a t .litD_mat4
-0000160c t .litB_mat4
-0000160e t .lit9_mat4
-00001610 t .lit7_mat4
-00001612 t .lit5_mat4
-00001614 t .lit3_mat4
-00001616 t .lit1_mat4
-0000163c t .litE_mat5
-0000163e t .litC_mat5
-00001640 t .litA_mat5
-00001642 t .lit8_mat5
-00001644 t .lit6_mat5
-00001646 t .lit4_mat5
-00001648 t .lit2_mat5
-0000164a t .lit0_mat5
-00001670 t .litF_mat5
-00001672 t .litD_mat5
-00001674 t .litB_mat5
-00001676 t .lit9_mat5
-00001678 t .lit7_mat5
-0000167a t .lit5_mat5
-0000167c t .lit3_mat5
-0000167e t .lit1_mat5
-000016a6 t .litE_mat6
-000016a8 t .litC_mat6
-000016aa t .litA_mat6
-000016ac t .lit8_mat6
-000016ae t .lit6_mat6
-000016b0 t .lit4_mat6
-000016b2 t .lit2_mat6
-000016b4 t .lit0_mat6
-000016dc t .litF_mat6
-000016de t .litD_mat6
-000016e0 t .litB_mat6
-000016e2 t .lit9_mat6
-000016e4 t .lit7_mat6
-000016e6 t .lit5_mat6
-000016e8 t .lit3_mat6
-000016ea t .lit1_mat6
-00001714 t .litE_mat7
-00001716 t .litC_mat7
-00001718 t .litA_mat7
-0000171a t .lit8_mat7
-0000171c t .lit6_mat7
-0000171e t .lit4_mat7
-00001720 t .lit2_mat7
-00001722 t .lit0_mat7
-0000174c t .litF_mat7
-0000174e t .litD_mat7
-00001750 t .litB_mat7
-00001752 t .lit9_mat7
-00001754 t .lit7_mat7
-00001756 t .lit5_mat7
-00001758 t .lit3_mat7
-0000175a t .lit1_mat7
-00001786 t .litE_mat8
-00001788 t .litC_mat8
-0000178a t .litA_mat8
-0000178c t .lit8_mat8
-0000178e t .lit6_mat8
-00001790 t .lit4_mat8
-00001792 t .lit2_mat8
-00001794 t .lit0_mat8
-000017c0 t .litF_mat8
-000017c2 t .litD_mat8
-000017c4 t .litB_mat8
-000017c6 t .lit9_mat8
-000017c8 t .lit7_mat8
-000017ca t .lit5_mat8
-000017cc t .lit3_mat8
-000017ce t .lit1_mat8
-000017fc t .litE_mat9
-000017fe t .litC_mat9
-00001800 t .litA_mat9
-00001802 t .lit8_mat9
-00001804 t .lit6_mat9
-00001806 t .lit4_mat9
-00001808 t .lit2_mat9
-0000180a t .lit0_mat9
-00001838 t .litF_mat9
-0000183a t .litD_mat9
-0000183c t .litB_mat9
-0000183e t .lit9_mat9
-00001840 t .lit7_mat9
-00001842 t .lit5_mat9
-00001844 t .lit3_mat9
-00001846 t .lit1_mat9
-00001876 t .litE_matA
-00001878 t .litC_matA
-0000187a t .litA_matA
-0000187c t .lit8_matA
-0000187e t .lit6_matA
-00001880 t .lit4_matA
-00001882 t .lit2_matA
-00001884 t .lit0_matA
-000018b4 t .litF_matA
-000018b6 t .litD_matA
-000018b8 t .litB_matA
-000018ba t .lit9_matA
-000018bc t .lit7_matA
-000018be t .lit5_matA
-000018c0 t .lit3_matA
-000018c2 t .lit1_matA
-000018f4 t .litE_matB
-000018f6 t .litC_matB
-000018f8 t .litA_matB
-000018fa t .lit8_matB
-000018fc t .lit6_matB
-000018fe t .lit4_matB
-00001900 t .lit2_matB
-00001902 t .lit0_matB
-00001934 t .litF_matB
-00001936 t .litD_matB
-00001938 t .litB_matB
-0000193a t .lit9_matB
-0000193c t .lit7_matB
-0000193e t .lit5_matB
-00001940 t .lit3_matB
-00001942 t .lit1_matB
-00001976 t .litE_matC
-00001978 t .litC_matC
-0000197a t .litA_matC
-0000197c t .lit8_matC
-0000197e t .lit6_matC
-00001980 t .lit4_matC
-00001982 t .lit2_matC
-00001984 t .lit0_matC
-000019b8 t .litF_matC
-000019ba t .litD_matC
-000019bc t .litB_matC
-000019be t .lit9_matC
-000019c0 t .lit7_matC
-000019c2 t .lit5_matC
-000019c4 t .lit3_matC
-000019c6 t .lit1_matC
-000019fc t .litE_matD
-000019fe t .litC_matD
-00001a00 t .litA_matD
-00001a02 t .lit8_matD
-00001a04 t .lit6_matD
-00001a06 t .lit4_matD
-00001a08 t .lit2_matD
-00001a0a t .lit0_matD
-00001a40 t .litF_matD
-00001a42 t .litD_matD
-00001a44 t .litB_matD
-00001a46 t .lit9_matD
-00001a48 t .lit7_matD
-00001a4a t .lit5_matD
-00001a4c t .lit3_matD
-00001a4e t .lit1_matD
-00001a86 t .litE_matE
-00001a88 t .litC_matE
-00001a8a t .litA_matE
-00001a8c t .lit8_matE
-00001a8e t .lit6_matE
-00001a90 t .lit4_matE
-00001a92 t .lit2_matE
-00001a94 t .lit0_matE
-00001acc t .litF_matE
-00001ace t .litD_matE
-00001ad0 t .litB_matE
-00001ad2 t .lit9_matE
-00001ad4 t .lit7_matE
-00001ad6 t .lit5_matE
-00001ad8 t .lit3_matE
-00001ada t .lit1_matE
-00001b14 t .litE_matF
-00001b16 t .litC_matF
-00001b18 t .litA_matF
-00001b1a t .lit8_matF
-00001b1c t .lit6_matF
-00001b1e t .lit4_matF
-00001b20 t .lit2_matF
-00001b22 t .lit0_matF
-00001b5c t .litF_matF
-00001b5e t .litD_matF
-00001b60 t .litB_matF
-00001b62 t .lit9_matF
-00001b64 t .lit7_matF
-00001b66 t .lit5_matF
-00001b68 t .lit3_matF
-00001b6a t .lit1_matF
-00001ba8 t DMA_queueDmaFast
 00001bf2 a image_fondo_tile_data_size
-00001cf6 t DMA_doDmaFast
-00001e86 t DMA_doCPUCopyDirect
-00001fca t externalIntCB
-0000210a t _extint_dummy_callback
-0000210c t read6Btn
-00002254 t readMouse
-0000265c t readTeamPlayer
 00002900 A snd_bomba_size
-00002e2e t readLightgun
-000033ae t readTrackball
-000035e2 t prepareMapDataColumn_MTI16_BI16
-000036e2 t prepareMapDataRow_MTI16_BI16
-000037e4 t prepareMapDataColumnEx_MTI16_BI16
-00003904 t prepareMapDataRowEx_MTI16_BI16
-00003a20 t getMetaTile_MTI16_BI16
-00003a8c t getMetaTilemapRect_MTI16_BI16
-00003c38 t prepareMapDataColumn_MTI16_BI8
-00003d34 t prepareMapDataRow_MTI16_BI8
-00003e32 t prepareMapDataColumnEx_MTI16_BI8
-00003f4e t prepareMapDataRowEx_MTI16_BI8
-00004066 t getMetaTile_MTI16_BI8
-000040cc t getMetaTilemapRect_MTI16_BI8
-00004266 t prepareMapDataColumn_MTI8_BI16
-00004354 t prepareMapDataRow_MTI8_BI16
-0000444a t prepareMapDataColumnEx_MTI8_BI16
-0000455c t prepareMapDataRowEx_MTI8_BI16
+00002948 T KDebug_Alert
+00002964 T KDebug_AlertNumber
+0000296c t numLoop
+00002984 t number
+0000298c t letter
+00002992 t ascii
+000029b2 T TSK_init
+000029d8 t .loop
+000029e0 T TSK_superPost
+000029f6 t no_task
+000029f8 T TSK_userYield
+00002a00 t userYield
+00002a2a T _trap_0
+00002a4e T BMP_doVBlankProcess	D:/apps/SGDK/src/bmp.c:1214
+00002a58 T DMA_getMaxTransferSize	D:/apps/SGDK/src/dma.c:130
+00002a6a T DMA_setMaxTransferSize	D:/apps/SGDK/src/dma.c:135
+00002a7a T DMA_setMaxTransferSizeToDefault	D:/apps/SGDK/src/dma.c:141
+00002a9e T DMA_clearQueue	D:/apps/SGDK/src/dma.c:183
+00002abc T DMA_setBufferSize	D:/apps/SGDK/src/dma.c:151
+00002b16 T DMA_setBufferSizeToDefault	D:/apps/SGDK/src/dma.c:167
+00002b2a T DMA_initEx	D:/apps/SGDK/src/dma.c:52
+00002bda T DMA_init	D:/apps/SGDK/src/dma.c:47
+00002bf0 T DMA_flushQueue	D:/apps/SGDK/src/dma.c:194
+00002c64 T DMA_getQueueTransferSize	D:/apps/SGDK/src/dma.c:317
+00002c6c T DMA_releaseTemp	D:/apps/SGDK/src/dma.c:368
+00002c7c T DMA_allocateTemp	D:/apps/SGDK/src/dma.c:346
+00002ce8 T DMA_queueDmaFast	D:/apps/SGDK/src/dma.c:454
+00002e2c T DMA_allocateAndQueueDma	D:/apps/SGDK/src/dma.c:382
+00002e88 T DMA_copyAndQueueDma	D:/apps/SGDK/src/dma.c:406
+00002efc T DMA_queueDma	D:/apps/SGDK/src/dma.c:432
+00002f86 T DMA_doDmaFast	D:/apps/SGDK/src/dma.c:566
+0000308a T DMA_doDma	D:/apps/SGDK/src/dma.c:545
+0000310e T DMA_doCPUCopyDirect	D:/apps/SGDK/src/dma.c:663
+000031ba T DMA_doCPUCopy	D:/apps/SGDK/src/dma.c:640
+0000322e T DMA_transfer	D:/apps/SGDK/src/dma.c:322
+000032fa T DMA_doVRamFill	D:/apps/SGDK/src/dma.c:704
+0000339e t TH_CONTROL_PHASE	D:/apps/SGDK/src/joy.c:639
+000033bc t THREELINE_HANDSHAKE	D:/apps/SGDK/src/joy.c:655
+00003410 t externalIntCB	D:/apps/SGDK/src/joy.c:281
+000034dc t read3Btn	D:/apps/SGDK/src/joy.c:675
+0000352c t read6Btn	D:/apps/SGDK/src/joy.c:693
+000035aa t start3lhs	D:/apps/SGDK/src/joy.c:722
+0000369c t readMouse	D:/apps/SGDK/src/joy.c:773
+000038a0 t readTrackball	D:/apps/SGDK/src/joy.c:1175
+000039f6 t readTeamPlayer	D:/apps/SGDK/src/joy.c:844
+00003da2 t readLightgun	D:/apps/SGDK/src/joy.c:1027
+00004148 T JOY_setSupport	D:/apps/SGDK/src/joy.c:316
+000045c4 T JOY_reset	D:/apps/SGDK/src/joy.c:59
 00004600 A musica_test_size
-0000466a t getMetaTile_MTI8_BI16
-000046d6 t getMetaTilemapRect_MTI8_BI16
-00004886 t prepareMapDataColumn_MTI8_BI8
-00004970 t prepareMapDataRow_MTI8_BI8
-00004a62 t prepareMapDataColumnEx_MTI8_BI8
-00004b70 t prepareMapDataRowEx_MTI8_BI8
-00004c7a t getMetaTile_MTI8_BI8
-00004ce0 t getMetaTilemapRect_MTI8_BI8
-00004e88 t setMapColumn
-000050de t setMapRow
-00005326 t MEM_alloc
-000053fc t DMA_setBufferSize
-00005454 t MEM_pack
-000054bc t XGM_unloadDriver
-000054d4 t XGM2_unloadDriver
-000054dc t _int_callback
-000054de t _vblank_dummy_callback
-000054e0 t _vint_dummy_callback
-000054e2 t _hint_dummy_callback
-000054e4 t getSubTick
-00005590 t SND_DPCM2_unloadDriver
-00005590 t SND_PCM4_unloadDriver
-00005590 t SND_PCM_unloadDriver
-00005592 t YM2612_reset
-0000599e t setNextXFrame.constprop.0
-000059ec t DMA_initEx.constprop.0
-00005a68 t applyInertiaAxis.constprop.0
-00005b2a t VRAM_alloc.constprop.0
-00005bf8 t SPR_defragVRAM
-00005ce4 t SPR_addSpriteEx.constprop.0
-00005f06 t SPR_setDefinition.isra.0
-00006002 t JOY_update
+00004992 T JOY_init	D:/apps/SGDK/src/joy.c:50
+000049a0 T JOY_readJoypad	D:/apps/SGDK/src/joy.c:530
+000049f0 T JOY_update	D:/apps/SGDK/src/joy.c:1248
+00004ce6 T JOY_waitPressTime	D:/apps/SGDK/src/joy.c:593
+00004d84 T JOY_waitPress	D:/apps/SGDK/src/joy.c:588
+00004da2 t prepareMapDataColumn	D:/apps/SGDK/src/map.c:494
+00004e2a t prepareMapDataRow	D:/apps/SGDK/src/map.c:515
+00004eae t prepareMapDataColumn_MTI8_BI8	D:/apps/SGDK/src/map.c:537
+00004fac t prepareMapDataColumn_MTI8_BI16	D:/apps/SGDK/src/map.c:600
+000050ae t prepareMapDataColumn_MTI16_BI8	D:/apps/SGDK/src/map.c:663
+000051bc t prepareMapDataColumn_MTI16_BI16	D:/apps/SGDK/src/map.c:726
+000052ce t prepareMapDataColumnEx_MTI8_BI8	D:/apps/SGDK/src/map.c:789
+000053e6 t prepareMapDataColumnEx_MTI8_BI16	D:/apps/SGDK/src/map.c:855
+00005502 t prepareMapDataColumnEx_MTI16_BI8	D:/apps/SGDK/src/map.c:921
+00005628 t prepareMapDataColumnEx_MTI16_BI16	D:/apps/SGDK/src/map.c:987
+00005752 t prepareMapDataRow_MTI8_BI8	D:/apps/SGDK/src/map.c:1053
+00005846 t prepareMapDataRow_MTI8_BI16	D:/apps/SGDK/src/map.c:1111
+0000593c t prepareMapDataRow_MTI16_BI8	D:/apps/SGDK/src/map.c:1169
+00005a34 t prepareMapDataRow_MTI16_BI16	D:/apps/SGDK/src/map.c:1227
+00005b30 t prepareMapDataRowEx_MTI8_BI8	D:/apps/SGDK/src/map.c:1285
+00005c3a t prepareMapDataRowEx_MTI8_BI16	D:/apps/SGDK/src/map.c:1346
+00005d4a t prepareMapDataRowEx_MTI16_BI8	D:/apps/SGDK/src/map.c:1407
+00005e5e t prepareMapDataRowEx_MTI16_BI16	D:/apps/SGDK/src/map.c:1468
+00005f76 t getMetaTile_MTI8_BI8	D:/apps/SGDK/src/map.c:1597
+00005fe0 t getMetaTile_MTI8_BI16	D:/apps/SGDK/src/map.c:1611
+0000604a t getMetaTile_MTI16_BI8	D:/apps/SGDK/src/map.c:1625
+000060b6 t getMetaTile_MTI16_BI16	D:/apps/SGDK/src/map.c:1639
+00006122 t getMetaTilemapRect_MTI8_BI8	D:/apps/SGDK/src/map.c:1653
+00006278 t getMetaTilemapRect_MTI8_BI16	D:/apps/SGDK/src/map.c:1716
 00006300 A snd_campana_size
-0000650c t Z80_clear
-000065ce t Z80_upload
-000066e8 t Z80_upload.constprop.0
-000067c4 t Z80_upload.constprop.1
-000068a0 t SPR_update
-00007116 t MAP_create
-000074f4 t memset.constprop.0
-0000750e t PAL_doFadeStep
-0000761c t getAccess
-0000776c t setLoopNumber
-000077c0 t setMusicTempo
-0000785c t setFMVolume
-000078f4 t setPSGVolume
-0000798c t SPR_end
-00007aac t SPR_initEx.constprop.0
-00007cee t SND_NULL_loadDriver
-00007de6 t Z80_loadDriverInternal
-00007ef6 t VDP_clearPlane.constprop.0
-0000802a t MAP_scrollToEx.constprop.0
-000086c8 t snowEffect_update.part.0
-000087fa t KLog
-0000881a t kprintf
-000099a4 t spawnElf
-00009b82 t spawnEnemy
-00009d32 t spawnTree.constprop.0
-00009ef6 t VDP_waitVBlank
-0000a0a0 t SYS_doVBlankProcessEx.constprop.0.isra.0
-0000a634 t XGM_loadDriver
-0000a8e2 t XGM2_loadDriver
-0000aa7c t SND_DPCM2_loadDriver
-0000ac24 t SND_PCM_loadDriver
-0000adcc t SND_PCM4_loadDriver
-0000af7c t Z80_loadDriver
-0000b060 t Z80_init
-0000b0c6 t Z80_loadDriver.constprop.0
-0000b118 t XGM2_stop
-0000b194 t XGM2_pause
-0000b1fc t XGM2_load.constprop.0
-0000b2b6 t XGM2_playTrack.constprop.0
-0000b446 t audio_play_phase1
-0000b446 t audio_play_phase2
-0000b446 t audio_play_phase4
-0000b4c4 t XGM2_playPCMEx.constprop.0.isra.0
-0000b784 T VDP_setAutoInc
-0000b79e t setTileMapDataRowEx.constprop.0
-0000b958 t VDP_drawText
-0000baa8 T BMP_doVBlankProcess
-0000bab2 T memset
-0000bacc T memcpy
-0000badc t DMA_transfer.isra.0
-0000bcc4 t VDP_resetScreen
-0000c044 t VDP_loadTileSet
-0000c22c t updateMapsAddress
-0000c2b4 t VDP_init
-0000c3e0 t VDP_setReg.constprop.0
-0000c3fa t JOY_setSupport
-0000c41e t JOY_reset
-0000ccbc t internal_reset
-0000ce02 t snowEffect_init.part.0.constprop.0
-0000d05a t PAL_initFade.constprop.0
-0000d218 t gameCore_fadeToBlack
-0000d476 t main.isra.0
-0000fec8 T XGM_doVBlankProcess
-0000ff32 T _start_entry
-0001001a T _reset_entry
-00010034 T MDDBG__SymbolDataPtr
-00010038 t MDDBG__ErrorHandler
-00010038 t __ErrorHandler
-00010160 t MDDBG__Error_IdleLoop
-0001017a t MDDBG__Error_InitConsole
-00010186 t MDDBG__Error_MaskStackBoundaries
-000101f0 t MDDBG__Error_DrawOffsetLocation
-000101f4 t MDDBG__Error_DrawOffsetLocation2
-000101fa t MDDBG__Error_DrawOffsetLocation__inj
-00010288 t MDDBG__ErrorHandler_SetupVDP
-000102be t MDDBG__ErrorHandler_VDPConfig
-000102d4 t MDDBG__ErrorHandler_VDPConfig_Nametables
-00010310 t MDDBG__ErrorHandler_ConsoleConfig_Initial
-00010314 t MDDBG__ErrorHandler_ConsoleConfig_Shared
-00010344 t MDDBG__Str_OffsetLocation_24bit
-0001034d t MDDBG__Str_OffsetLocation_32bit
-00010388 t MDDBG__Art1bpp_Font
-00010682 t MDDBG__GetSymbolByOffset
-0001099c t MDDBG__FormatString
-00010a76 t MDDBG__Console_Init
-00010ab4 t MDDBG__Console_Reset
-00010ab6 t MDDBG__Console_InitShared
-00010b00 t MDDBG__Console_SetPosAsXY_Stack
-00010b06 t MDDBG__Console_SetPosAsXY
-00010b3a t MDDBG__Console_GetPosAsXY
-00010b60 t MDDBG__Console_StartNewLine
-00010b8e t MDDBG__Console_SetBasePattern
-00010baa t MDDBG__Console_SetWidth
-00010bc8 t MDDBG__Console_WriteLine_WithPattern
-00010bca t MDDBG__Console_WriteLine
-00010bce t MDDBG__Console_Write
-00010c94 t MDDBG__Console_WriteLine_Formatted
-00010c98 t MDDBG__Console_Write_Formatted
-00010cc8 t MDDBG__Decomp1bpp
-00010ce4 t MDDBG__KDebug_WriteLine_Formatted
-00010ce8 t MDDBG__KDebug_Write_Formatted
-00010d3c t MDDBG__KDebug_FlushLine
-00010d46 t MDDBG__KDebug_WriteLine
-00010d4a t MDDBG__KDebug_Write
-00010d78 t MDDBG__ErrorHandler_ConsoleOnly
-00010d9e t MDDBG__ErrorHandler_ClearConsole
-00010dc8 t MDDBG__ErrorHandler_PauseConsole
-00010e02 t MDDBG__ErrorHandler_PagesController
-00010e62 t MDDBG__VSync
-00010e9c t MDDBG__ErrorHandler_ExtraDebuggerList
-00010ea8 t MDDBG__Debugger_AddressRegisters
-00010ef4 t MDDBG__Debugger_Backtrace
-00010f92 t MDDBG__BusError
-00010f92 T _Bus_Error
-00010fa6 t MDDBG__AddressError
-00010fa6 T _Address_Error
-00010fbe t MDDBG__IllegalInstr
-00010fbe T _Illegal_Instruction
-00010fdc t MDDBG__ZeroDivide
-00010fdc T _Zero_Divide
-00010ff2 t MDDBG__ChkInstr
-00010ff2 T _Chk_Instruction
-0001100c t MDDBG__TrapvInstr
-0001100c T _Trapv_Instruction
-00011028 t MDDBG__PrivilegeViol
-00011028 T _Privilege_Violation
-00011046 t MDDBG__Trace
-00011046 T _Trace
-00011056 t MDDBG__Line1010Emu
-00011056 T _Line_1010_Emulation
-00011072 t MDDBG__Line1111Emu
-00011072 T _Line_1111_Emulation
-0001108e t MDDBG__ErrorExcept
-0001108e T _Error_Exception
-00011100 T smp_null
-00011200 T smp_null_dpcm
-00011280 T __udivsi3	/tmp/work/.build/m68k-elf/src/gcc/libgcc/config/m68k/lb1sf68.S:469
-00011280 T __udivsi3_internal	/tmp/work/.build/m68k-elf/src/gcc/libgcc/config/m68k/lb1sf68.S:469
-000112a8 t L3	/tmp/work/.build/m68k-elf/src/gcc/libgcc/config/m68k/lb1sf68.S:486
-000112aa t L4	/tmp/work/.build/m68k-elf/src/gcc/libgcc/config/m68k/lb1sf68.S:487
-000112d6 t L5	/tmp/work/.build/m68k-elf/src/gcc/libgcc/config/m68k/lb1sf68.S:508
-000112d8 t L6	/tmp/work/.build/m68k-elf/src/gcc/libgcc/config/m68k/lb1sf68.S:510
-000112dc T __divsi3	/tmp/work/.build/m68k-elf/src/gcc/libgcc/config/m68k/lb1sf68.S:547
-000112dc T __divsi3_internal	/tmp/work/.build/m68k-elf/src/gcc/libgcc/config/m68k/lb1sf68.S:547
-000112ea t L1	/tmp/work/.build/m68k-elf/src/gcc/libgcc/config/m68k/lb1sf68.S:558
-000112f4 t L2	/tmp/work/.build/m68k-elf/src/gcc/libgcc/config/m68k/lb1sf68.S:567
-00011306 t L3	/tmp/work/.build/m68k-elf/src/gcc/libgcc/config/m68k/lb1sf68.S:576
-0001130c T __umodsi3	/tmp/work/.build/m68k-elf/src/gcc/libgcc/config/m68k/lb1sf68.S:585
-0001133c T __modsi3	/tmp/work/.build/m68k-elf/src/gcc/libgcc/config/m68k/lb1sf68.S:611
-0001136c T __mulsi3	/tmp/work/.build/m68k-elf/src/gcc/libgcc/config/m68k/lb1sf68.S:442
-0001136c T __mulsi3_internal	/tmp/work/.build/m68k-elf/src/gcc/libgcc/config/m68k/lb1sf68.S:442
-00011390 T __CTOR_LIST__
-00011398 T __CTOR_END__
-00011398 T __DTOR_LIST__
-000113a0 T __DTOR_END__
-000113a0 T image_fondo_pal
-000113a6 T image_fondo_polo_pal
-000113ac T image_pista_polo_pal
-000113b2 T image_fondo_tejados_pal
-000113b8 T image_fondo_fiesta_pal
-000113be T image_fondo_tile
-000113c6 T image_fondo_map
-000113e2 T image_primer_plano_nieve_tile
-000113ea T image_primer_plano_nieve_map
-00011406 T image_fondo_polo_tile
-0001140e T image_fondo_polo_map
-0001142a T image_pista_polo_tile
-00011432 T image_pista_polo_map
-0001144e T image_copos_fondo_tile
-00011456 T image_copos_fondo_map
-00011472 T image_fondo_tejados_tile
-0001147a T image_fondo_tejados_map
-00011496 T image_nubes_paralaje_tile
-0001149e T image_nubes_paralaje_map
-000114ba T image_fondo_fiesta_tile
-000114c2 T image_fondo_fiesta_map
-000114de T image_luces_parpadeo_tile
-000114e6 T image_luces_parpadeo_map
-00011502 t sprite_campana_palette
-00011508 t sprite_campana_animation0_frame0_tileset
-00011510 t sprite_campana_animation0_frame0
-00011520 t sprite_campana_animation0_frames
-00011524 t sprite_campana_animation0
-0001152a t sprite_campana_animations
-0001152e T sprite_campana
-00011540 t sprite_campana_bn_animation0_frame0_tileset
-00011548 t sprite_campana_bn_animation0_frame0
-00011558 t sprite_campana_bn_animation0_frames
-0001155c t sprite_campana_bn_animation0
-00011562 t sprite_campana_bn_animations
-00011566 T sprite_campana_bn
-00011578 t sprite_canon_palette
-0001157e t sprite_canon_animation0_frame0_tileset
-00011586 t sprite_canon_animation0_frame0
-0001159c t sprite_canon_animation0_frames
-000115a0 t sprite_canon_animation0
-000115a6 t sprite_canon_animation1_frame1_tileset
-000115ae t sprite_canon_animation1_frame1
-000115c4 t sprite_canon_animation1_frame2_tileset
-000115cc t sprite_canon_animation1_frame2
-000115e2 t sprite_canon_animation1_frame3_tileset
-000115ea t sprite_canon_animation1_frame3
-00011600 t sprite_canon_animation1_frame4_tileset
-00011608 t sprite_canon_animation1_frame4
-0001161e t sprite_canon_animation1_frame5_tileset
-00011626 t sprite_canon_animation1_frame5
-00011642 t sprite_canon_animation1_frame6_tileset
-0001164a t sprite_canon_animation1_frame6
-00011660 t sprite_canon_animation1_frame7_tileset
-00011668 t sprite_canon_animation1_frame7
-0001167e t sprite_canon_animation1_frames
-0001169e t sprite_canon_animation1
-000116a4 t sprite_canon_animations
-000116ac T sprite_canon
-000116be t sprite_bomba_palette
-000116c4 t sprite_bomba_animation0_frame0_tileset
-000116cc t sprite_bomba_animation0_frame0
-000116e2 t sprite_bomba_animation0_frame1_tileset
-000116ea t sprite_bomba_animation0_frame1
-000116fa t sprite_bomba_animation0_frame2_tileset
-00011702 t sprite_bomba_animation0_frame2
-00011718 t sprite_bomba_animation0_frames
-00011724 t sprite_bomba_animation0
-0001172a t sprite_bomba_animations
-0001172e T sprite_bomba
-00011740 t sprite_bola_confeti_animation0_frame0_tileset
-00011748 t sprite_bola_confeti_animation0_frame0
-00011758 t sprite_bola_confeti_animation0_frame1_tileset
-00011760 t sprite_bola_confeti_animation0_frame1
-00011770 t sprite_bola_confeti_animation0_frame2_tileset
-00011778 t sprite_bola_confeti_animation0_frame2
-00011788 t sprite_bola_confeti_animation0_frame3_tileset
-00011790 t sprite_bola_confeti_animation0_frame3
-000117a0 t sprite_bola_confeti_animation0_frames
-000117b0 t sprite_bola_confeti_animation0
-000117b6 t sprite_bola_confeti_animations
-000117ba T sprite_bola_confeti
-000117cc t sprite_regalo_palette
-000117d2 t sprite_regalo_animation0_frame0_tileset
-000117da t sprite_regalo_animation0_frame0
-000117ea t sprite_regalo_animation0_frames
-000117ee t sprite_regalo_animation0
-000117f4 t sprite_regalo_animations
-000117f8 T sprite_regalo
-0001180a t sprite_regalo_bn_animation0_frame0_tileset
-00011812 t sprite_regalo_bn_animation0_frame0
-00011822 t sprite_regalo_bn_animation0_frames
-00011826 t sprite_regalo_bn_animation0
-0001182c t sprite_regalo_bn_animations
-00011830 T sprite_regalo_bn
-00011842 t sprite_canon_polo_animation0_frame0_tileset
-0001184a t sprite_canon_polo_animation0_frame0
-0001186c t sprite_canon_polo_animation0_frames
-00011870 t sprite_canon_polo_animation0
-00011876 t sprite_canon_polo_animations
-0001187a T sprite_canon_polo
-0001188c t sprite_red_confeti_animation0_frame0_tileset
-00011894 t sprite_red_confeti_animation0_frame0
-000118a4 t sprite_red_confeti_animation0_frames
-000118a8 t sprite_red_confeti_animation0
-000118ae t sprite_red_confeti_animations
-000118b2 T sprite_red_confeti
-000118c4 t sprite_copo_grande_animation0_frame0_tileset
-000118cc t sprite_copo_grande_animation0_frame0
-000118ee t sprite_copo_grande_animation0_frames
-000118f2 t sprite_copo_grande_animation0
-000118f8 t sprite_copo_grande_animations
-000118fc T sprite_copo_grande
-0001190e t sprite_santa_car_palette
-00011914 t sprite_santa_car_animation0_frame0_tileset
-0001191c t sprite_santa_car_animation0_frame0
-0001194a t sprite_santa_car_animation0_frames
-0001194e t sprite_santa_car_animation0
-00011954 t sprite_santa_car_animations
-00011958 T sprite_santa_car
-0001196a t sprite_arbol_pista_palette
-00011970 t sprite_arbol_pista_animation0_frame0_tileset
-00011978 t sprite_arbol_pista_animation0_frame0
-000119a6 t sprite_arbol_pista_animation0_frames
-000119aa t sprite_arbol_pista_animation0
-000119b0 t sprite_arbol_pista_animations
-000119b4 T sprite_arbol_pista
-000119c6 t sprite_elfo_lateral_animation0_frame0_tileset
-000119ce t sprite_elfo_lateral_animation0_frame0
-000119de t sprite_elfo_lateral_animation0_frames
-000119e2 t sprite_elfo_lateral_animation0
-000119e8 t sprite_elfo_lateral_animations
-000119ec T sprite_elfo_lateral
-000119fe t sprite_duende_malo_palette
-00011a04 t sprite_duende_malo_animation0_frame0_tileset
-00011a0c t sprite_duende_malo_animation0_frame0
-00011a1c t sprite_duende_malo_animation0_frames
-00011a20 t sprite_duende_malo_animation0
-00011a26 t sprite_duende_malo_animations
-00011a2a T sprite_duende_malo
-00011a3c t sprite_regalo_entrega_animation0_frame0_tileset
-00011a44 t sprite_regalo_entrega_animation0_frame0
-00011a54 t sprite_regalo_entrega_animation0_frames
-00011a58 t sprite_regalo_entrega_animation0
-00011a5e t sprite_regalo_entrega_animations
-00011a62 T sprite_regalo_entrega
-00011a74 t sprite_chimenea_animation0_frame0_tileset
-00011a7c t sprite_chimenea_animation0_frame0
-00011a8c t sprite_chimenea_animation0_frames
-00011a90 t sprite_chimenea_animation0
-00011a96 t sprite_chimenea_animation1_frame0_tileset
-00011a9e t sprite_chimenea_animation1_frame0
-00011aae t sprite_chimenea_animation1_frames
-00011ab2 t sprite_chimenea_animation1
-00011ab8 t sprite_chimenea_animations
-00011ac0 T sprite_chimenea
-00011ad2 t sprite_canon_tejado_animation0_frame0_tileset
-00011ada t sprite_canon_tejado_animation0_frame0
-00011afc t sprite_canon_tejado_animation0_frames
-00011b00 t sprite_canon_tejado_animation0
-00011b06 t sprite_canon_tejado_animations
-00011b0a T sprite_canon_tejado
-00011b1c t sprite_nube_animation0_frame0_tileset
-00011b24 t sprite_nube_animation0_frame0
-00011b34 t sprite_nube_animation0_frames
-00011b38 t sprite_nube_animation0
-00011b3e t sprite_nube_animations
-00011b42 T sprite_nube
-00011b54 t sprite_confeti_animation0_frame0_tileset
-00011b5c t sprite_confeti_animation0_frame0
-00011b6c t sprite_confeti_animation0_frames
-00011b70 t sprite_confeti_animation0
-00011b76 t sprite_confeti_animations
-00011b7a T sprite_confeti
-00011b8c t sprite_personaje_animation0_frame0_tileset
-00011b94 t sprite_personaje_animation0_frame0
-00011bb6 t sprite_personaje_animation0_frames
-00011bba t sprite_personaje_animation0
-00011bc0 t sprite_personaje_animations
-00011bc4 T sprite_personaje
-00011bd6 t sprite_arbol_fiesta_animation0_frame0_tileset
-00011bde t sprite_arbol_fiesta_animation0_frame0
-00011bf4 t sprite_arbol_fiesta_animation0_frames
-00011bf8 t sprite_arbol_fiesta_animation0
-00011bfe t sprite_arbol_fiesta_animation1_frame0_tileset
-00011c06 t sprite_arbol_fiesta_animation1_frame0
-00011c1c t sprite_arbol_fiesta_animation1_frames
-00011c20 t sprite_arbol_fiesta_animation1
-00011c26 t sprite_arbol_fiesta_animations
-00011c2e T sprite_arbol_fiesta
-00011c40 t sprite_globo_animation0_frame0_tileset
-00011c48 t sprite_globo_animation0_frame0
-00011c58 t sprite_globo_animation0_frames
-00011c5c t sprite_globo_animation0
-00011c62 t sprite_globo_animations
-00011c66 T sprite_globo
-00011e8a t tab_vol
-00012e8a t palette_blue
-00012eaa t palette_green
-00012eca t palette_red
-00012eea t palette_grey
-00012f0a t lowercase_hexchars
-00012f1b t uppercase_hexchars
-00012f2c t visibilityMask.0
-00012f4e t psgVolTable
-00012fb2 t fmVolTable
-00013016 t xlt.1
-0001301e t xlt_all.0
-0001302e t trigtab_f16
-000130e4 t palette_black_all
-00013164 T drv_xgm
-00014864 T drv_xgm2
-00016864 t sgdk_logo_palette
-0001686a T sgdk_logo
-00016878 T font_default
-00016880 T font_pal_default
-00016886 T drv_null
-000168c0 T drv_dpcm2
-000176c0 T drv_pcm
-000181f0 T drv_pcm4
-00018c60 T __INIT_SECTION__
-00018c62 T __FINI_SECTION__
-00018c64 T _etext
-00018c64 t image_fondo_pal_data
-00018ce4 t image_fondo_polo_pal_data
-00018d04 t image_pista_polo_pal_data
-00018e00 T snd_campana
-0001f100 T snd_bomba
-00021a00 T snd_canon
-00022d00 T snd_regalo_recogido
-00023a00 T snd_disparo_red
-00024700 T snd_obstaculo_golpe
-00025400 T snd_regalo_disparado
-00026100 T snd_entrega_exitosa
-00026e00 T snd_chimenea_activa
-00027b00 T snd_confeti_choque
-00028800 t sprite_campana_palette_data
-00028820 t sprite_canon_palette_data
-00028840 t sprite_bomba_palette_data
-00028860 t sprite_regalo_palette_data
-00028880 t sprite_santa_car_palette_data
-000288a0 t sprite_arbol_pista_palette_data
-000288c0 t sprite_duende_malo_palette_data
-000288e0 t sgdk_logo_palette_data
-00028900 t font_pal_default_data
-00028920 T stop_xgm
-000289cc t font_default_data
-00028c2e t sgdk_logo_data
-00029068 t image_fondo_tile_data
-0002ac5a t image_primer_plano_nieve_tile_data
-0002aca0 t image_fondo_polo_tile_data
-0002adf4 t image_pista_polo_tile_data
-0002c136 t image_copos_fondo_tile_data
-0002c28a t image_fondo_tejados_tile_data
-0002c3de t image_nubes_paralaje_tile_data
-0002c532 t image_fondo_fiesta_tile_data
-0002c686 t image_luces_parpadeo_tile_data
-0002c7da t image_fondo_map_metatiles
-0002cc66 t image_primer_plano_nieve_map_metatiles
-0002ccba t image_fondo_polo_map_metatiles
-0002cd78 t image_pista_polo_map_metatiles
-0002d912 t image_fondo_map_mapBlockIndexes
-0002d918 t image_fondo_polo_map_mapBlockIndexes
-0002d920 t image_pista_polo_map_mapBlockIndexes
-0002d930 t image_copos_fondo_map_mapBlockIndexes
-0002d934 t image_fondo_map_mapBlockRowOffsets
-0002d938 t image_fondo_polo_map_mapBlockRowOffsets
-0002d93c t image_pista_polo_map_mapBlockRowOffsets
-0002d946 t image_copos_fondo_map_mapBlockRowOffsets
-0002d94a t image_fondo_map_mapBlocks
-0002da44 t image_primer_plano_nieve_map_mapBlocks
-0002da9a t image_fondo_polo_map_mapBlocks
-0002db04 t image_pista_polo_map_mapBlocks
-0002dfa6 t image_copos_fondo_map_mapBlocks
-0002e100 T musica_fondo
-0002ea00 T musica_test
-00033000 t sprite_campana_animation0_frame0_tileset_data
-000330d6 t sprite_campana_bn_animation0_frame0_tileset_data
-0003319e t sprite_canon_animation0_frame0_tileset_data
-0003322a t sprite_canon_animation1_frame1_tileset_data
-000332bc t sprite_canon_animation1_frame2_tileset_data
-00033352 t sprite_canon_animation1_frame3_tileset_data
-000333e4 t sprite_canon_animation1_frame4_tileset_data
-000334a4 t sprite_canon_animation1_frame5_tileset_data
-00033582 t sprite_canon_animation1_frame6_tileset_data
-0003366e t sprite_canon_animation1_frame7_tileset_data
-0003373e t sprite_bomba_animation0_frame0_tileset_data
-0003382a t sprite_bomba_animation0_frame1_tileset_data
-0003391c t sprite_bomba_animation0_frame2_tileset_data
-00033a0a t sprite_bola_confeti_animation0_frame0_tileset_data
-00033a2a t sprite_bola_confeti_animation0_frame1_tileset_data
-00033a4a t sprite_bola_confeti_animation0_frame2_tileset_data
-00033a6a t sprite_bola_confeti_animation0_frame3_tileset_data
-00033a8a t sprite_regalo_animation0_frame0_tileset_data
-00033ac4 t sprite_regalo_bn_animation0_frame0_tileset_data
-00033afe t sprite_canon_polo_animation0_frame0_tileset_data
-00033b80 t sprite_red_confeti_animation0_frame0_tileset_data
-00033ba0 t sprite_copo_grande_animation0_frame0_tileset_data
-00033c2a t sprite_santa_car_animation0_frame0_tileset_data
-000341a4 t sprite_arbol_pista_animation0_frame0_tileset_data
-000344c0 t sprite_elfo_lateral_animation0_frame0_tileset_data
-0003459e t sprite_duende_malo_animation0_frame0_tileset_data
-0003469e t sprite_regalo_entrega_animation0_frame0_tileset_data
-000346d4 t sprite_chimenea_animation0_frame0_tileset_data
-00034734 t sprite_chimenea_animation1_frame0_tileset_data
-0003475c t sprite_canon_tejado_animation0_frame0_tileset_data
-000347dc t sprite_nube_animation0_frame0_tileset_data
-00034816 t sprite_confeti_animation0_frame0_tileset_data
-00034836 t sprite_personaje_animation0_frame0_tileset_data
-000348c0 t sprite_arbol_fiesta_animation0_frame0_tileset_data
-00034916 t sprite_arbol_fiesta_animation1_frame0_tileset_data
-00034970 t sprite_globo_animation0_frame0_tileset_data
-000349a6 A _stext
+000063d0 t getMetaTilemapRect_MTI16_BI8	D:/apps/SGDK/src/map.c:1779
+00006520 t getMetaTilemapRect_MTI16_BI16	D:/apps/SGDK/src/map.c:1842
+0000666c t setMapColumn	D:/apps/SGDK/src/map.c:378
+000067b0 t setMapRow	D:/apps/SGDK/src/map.c:437
+000068f6 T MAP_create	D:/apps/SGDK/src/map.c:57
+00006b06 T MAP_scrollToEx	D:/apps/SGDK/src/map.c:208
+00006e26 T MAP_scrollTo	D:/apps/SGDK/src/map.c:276
+00006e40 T divu	D:/apps/SGDK/src/maths.c:41
+00006e4c T divs	D:/apps/SGDK/src/maths.c:51
+00006e58 T intToFix16	D:/apps/SGDK/src/maths.c:104
+00006e60 T fix16ToInt	D:/apps/SGDK/src/maths.c:109
+00006e68 T fix16Div	D:/apps/SGDK/src/maths.c:140
+00006e78 T sinFix16	D:/apps/SGDK/src/maths.c:166
+00006e94 T getNextPow2	D:/apps/SGDK/src/maths.c:521
+00006ebe T MEM_init	D:/apps/SGDK/src/memory.c:155
+00006ee6 T MEM_getFree	D:/apps/SGDK/src/memory.c:186
+00006f12 T MEM_getLargestFreeBlock	D:/apps/SGDK/src/memory.c:208
+00006f48 T MEM_alloc	D:/apps/SGDK/src/memory.c:259
+0000708c T MEM_free	D:/apps/SGDK/src/memory.c:386
+000070bc T MEM_pack	D:/apps/SGDK/src/memory.c:409
+0000712c T memset	D:/apps/SGDK/src/memory.c:694
+0000714c T memcpy	D:/apps/SGDK/src/memory.c:701
+00007168 T PAL_getColors	D:/apps/SGDK/src/pal.c:213
+00007258 T PAL_setColors	D:/apps/SGDK/src/pal.c:274
+00007286 T PAL_setPalette	D:/apps/SGDK/src/pal.c:284
+000072a8 T PAL_initFade	D:/apps/SGDK/src/pal.c:290
+00007430 T PAL_doFadeStep	D:/apps/SGDK/src/pal.c:342
+000074f0 T PAL_fade	D:/apps/SGDK/src/pal.c:389
+0000755c T PAL_fadeTo	D:/apps/SGDK/src/pal.c:407
+000075bc T PAL_fadeOutAll	D:/apps/SGDK/src/pal.c:459
+000075e4 t uint16ToStr	D:/apps/SGDK/src/string.c:197
+000076c4 T strlen	D:/apps/SGDK/src/string.c:42
+000076d6 T strnlen	D:/apps/SGDK/src/string.c:52
+0000770e T strcpy	D:/apps/SGDK/src/string.c:78
+00007720 T strcat	D:/apps/SGDK/src/string.c:121
+0000773c T intToHex	D:/apps/SGDK/src/string.c:237
+000077f6 T uintToStr	D:/apps/SGDK/src/string.c:175
+00007894 T vsprintf	D:/apps/SGDK/src/string.c:364
+00007dd6 T _int_callback	D:/apps/SGDK/src/sys.c:414
+00007dd8 T _vblank_dummy_callback	D:/apps/SGDK/src/sys.c:421
+00007dda T _vint_dummy_callback	D:/apps/SGDK/src/sys.c:427
+00007ddc T _hint_dummy_callback	D:/apps/SGDK/src/sys.c:433
+00007dde T _extint_dummy_callback	D:/apps/SGDK/src/sys.c:439
+00007de0 t internal_reset	D:/apps/SGDK/src/sys.c:597
+00007ec8 T SYS_disableInts	D:/apps/SGDK/src/sys.c:801
+00007efa T SYS_enableInts	D:/apps/SGDK/src/sys.c:829
+00007f28 T SYS_setExtIntCallback	D:/apps/SGDK/src/sys.c:875
+00007f3e T SYS_getShowFrameLoad	D:/apps/SGDK/src/sys.c:882
+00007f4a T SYS_isInVInt	D:/apps/SGDK/src/sys.c:917
+00007f56 T SYS_doVBlankProcessEx	D:/apps/SGDK/src/sys.c:660
+000080cc T SYS_doVBlankProcess	D:/apps/SGDK/src/sys.c:655
+000080da T _start_entry	D:/apps/SGDK/src/sys.c:445
+0000818e T _reset_entry	D:/apps/SGDK/src/sys.c:587
+000081aa T addFrameLoad	D:/apps/SGDK/src/sys.c:977
+00008216 T getSubTickInternal	D:/apps/SGDK/src/timer.c:44
+00008270 T getSubTick	D:/apps/SGDK/src/timer.c:57
+000082a4 T getTick	D:/apps/SGDK/src/timer.c:63
+000082d0 T getTime	D:/apps/SGDK/src/timer.c:70
+000082f6 T waitSubTick	D:/apps/SGDK/src/timer.c:109
+0000837e T waitTick	D:/apps/SGDK/src/timer.c:159
+000083f2 T waitMs	D:/apps/SGDK/src/timer.c:194
+00008456 T setRandomSeed	D:/apps/SGDK/src/tools.c:30
+0000846e T random	D:/apps/SGDK/src/tools.c:37
+00008494 T KLog	D:/apps/SGDK/src/tools.c:73
+000084b8 T kprintf	D:/apps/SGDK/src/tools.c:57
+000084f4 T KLog_U2_	D:/apps/SGDK/src/tools.c:119
+0000856a T KLog_U3_	D:/apps/SGDK/src/tools.c:153
+000085fe T allocateTileSet	D:/apps/SGDK/src/tools.c:901
+00008628 T allocateMap	D:/apps/SGDK/src/tools.c:973
+000086c2 T unpack	D:/apps/SGDK/src/tools.c:1132
+000086fa T unpackTileSet	D:/apps/SGDK/src/tools.c:1053
+0000876e T VDP_getReg	D:/apps/SGDK/src/vdp.c:194
+0000878e T VDP_setEnable	D:/apps/SGDK/src/vdp.c:328
+000087c0 T VDP_setScreenHeight224	D:/apps/SGDK/src/vdp.c:351
+000087e8 T VDP_getScreenWidth	D:/apps/SGDK/src/vdp.c:376
+000087f0 T VDP_setScreenWidth320	D:/apps/SGDK/src/vdp.c:394
+00008828 T VDP_getVerticalScrollingMode	D:/apps/SGDK/src/vdp.c:521
+00008836 T VDP_getHorizontalScrollingMode	D:/apps/SGDK/src/vdp.c:526
+00008842 T VDP_setScrollingMode	D:/apps/SGDK/src/vdp.c:531
+0000887a T VDP_setBackgroundColor	D:/apps/SGDK/src/vdp.c:548
+00008898 T VDP_getAutoInc	D:/apps/SGDK/src/vdp.c:559
+000088a0 T VDP_setAutoInc	D:/apps/SGDK/src/vdp.c:564
+000088ba T VDP_getHVLatching	D:/apps/SGDK/src/vdp.c:591
+000088c6 T VDP_setHVLatching	D:/apps/SGDK/src/vdp.c:596
+000088f8 T VDP_waitDMACompletion	D:/apps/SGDK/src/vdp.c:842
+00008906 T VDP_resetScreen	D:/apps/SGDK/src/vdp.c:134
+00008a90 T getAdjustedVCounterInternal	D:/apps/SGDK/src/vdp.c:965
+00008af2 T VDP_waitVBlank	D:/apps/SGDK/src/vdp.c:887
+00008bce T VDP_waitVSync	D:/apps/SGDK/src/vdp.c:953
+00008bdc T updateUserTileMaxIndex	D:/apps/SGDK/src/vdp.c:1026
+00008bf6 t updateMapsAddress	D:/apps/SGDK/src/vdp.c:1032
+00008c78 T VDP_init	D:/apps/SGDK/src/vdp.c:65
+00008dda T VDP_setReg	D:/apps/SGDK/src/vdp.c:200
+00009002 T VDP_setHorizontalScroll	D:/apps/SGDK/src/vdp_bg.c:34
+00009044 T VDP_setHorizontalScrollVSync	D:/apps/SGDK/src/vdp_bg.c:51
+0000908a T VDP_setHorizontalScrollTile	D:/apps/SGDK/src/vdp_bg.c:68
+000090d0 T VDP_setHorizontalScrollLine	D:/apps/SGDK/src/vdp_bg.c:78
+00009116 T VDP_setVerticalScroll	D:/apps/SGDK/src/vdp_bg.c:88
+00009144 T VDP_setVerticalScrollVSync	D:/apps/SGDK/src/vdp_bg.c:105
+0000918a T VDP_setVerticalScrollTile	D:/apps/SGDK/src/vdp_bg.c:122
+000091d2 T VDP_doVBlankScrollProcess	D:/apps/SGDK/src/vdp_bg.c:132
+00009294 T VDP_clearPlane	D:/apps/SGDK/src/vdp_bg.c:177
+00009356 T VDP_setTextPlane	D:/apps/SGDK/src/vdp_bg.c:210
+00009360 T VDP_setTextPalette	D:/apps/SGDK/src/vdp_bg.c:215
+00009384 T VDP_setTextPriority	D:/apps/SGDK/src/vdp_bg.c:221
+000093a4 T VDP_drawTextEx	D:/apps/SGDK/src/vdp_bg.c:227
+0000946e T VDP_drawTextBG	D:/apps/SGDK/src/vdp_bg.c:321
+0000949e T VDP_drawText	D:/apps/SGDK/src/vdp_bg.c:380
+000094c4 T VDP_releaseAllSprites	D:/apps/SGDK/src/vdp_spr.c:35
+000094f2 T VDP_clearSprites	D:/apps/SGDK/src/vdp_spr.c:151
+00009500 T VDP_resetSprites	D:/apps/SGDK/src/vdp_spr.c:27
+0000950e T VDP_updateSprites	D:/apps/SGDK/src/vdp_spr.c:224
+0000954e t prepareTileMapDataRowEx	D:/apps/SGDK/src/vdp_tile.c:942
+000095e4 T VDP_loadTileData	D:/apps/SGDK/src/vdp_tile.c:28
+00009612 T VDP_loadTileSet	D:/apps/SGDK/src/vdp_tile.c:38
+00009688 T VDP_loadFont	D:/apps/SGDK/src/vdp_tile.c:60
+000096ac T VDP_fillTileData	D:/apps/SGDK/src/vdp_tile.c:70
+000096ec T VDP_getPlaneAddress	D:/apps/SGDK/src/vdp_tile.c:80
+000097a2 T VDP_clearTileMap	D:/apps/SGDK/src/vdp_tile.c:97
+000097e0 T VDP_setTileMapDataEx	D:/apps/SGDK/src/vdp_tile.c:147
+000098aa t setTileMapDataRowEx	D:/apps/SGDK/src/vdp_tile.c:451
+000099a2 T VDP_setTileMapDataRowEx	D:/apps/SGDK/src/vdp_tile.c:510
+00009a62 T VRAM_releaseRegion	D:/apps/SGDK/src/vram.c:34
+00009a7c T VRAM_clearRegion	D:/apps/SGDK/src/vram.c:41
+00009aa6 T VRAM_createRegion	D:/apps/SGDK/src/vram.c:23
+00009ae2 T VRAM_getFree	D:/apps/SGDK/src/vram.c:54
+00009b16 T VRAM_getLargestFreeBlock	D:/apps/SGDK/src/vram.c:79
+00009b50 T VRAM_alloc	D:/apps/SGDK/src/vram.c:135
+00009c66 T VRAM_free	D:/apps/SGDK/src/vram.c:203
+00009c8a T Z80_isBusTaken	D:/apps/SGDK/src/z80_ctrl.c:60
+00009c9c T Z80_requestBus	D:/apps/SGDK/src/z80_ctrl.c:69
+00009cc2 T Z80_getAndRequestBus	D:/apps/SGDK/src/z80_ctrl.c:89
+00009cfe T Z80_releaseBus	D:/apps/SGDK/src/z80_ctrl.c:114
+00009d08 T Z80_startReset	D:/apps/SGDK/src/z80_ctrl.c:123
+00009d12 T Z80_endReset	D:/apps/SGDK/src/z80_ctrl.c:131
+00009d1c T Z80_setBank	D:/apps/SGDK/src/z80_ctrl.c:140
+00009d30 T Z80_clear	D:/apps/SGDK/src/z80_ctrl.c:167
+00009d78 T Z80_upload	D:/apps/SGDK/src/z80_ctrl.c:183
+00009de0 T Z80_getLoadedDriver	D:/apps/SGDK/src/z80_ctrl.c:218
+00009de8 T Z80_unloadDriver	D:/apps/SGDK/src/z80_ctrl.c:223
+00009e44 T Z80_loadDriverInternal	D:/apps/SGDK/src/z80_ctrl.c:253
+00009eaa T Z80_loadDriver	D:/apps/SGDK/src/z80_ctrl.c:285
+00009f50 T Z80_init	D:/apps/SGDK/src/z80_ctrl.c:43
+00009f86 T Z80_isDriverReady	D:/apps/SGDK/src/z80_ctrl.c:324
+00009fbc T Z80_useBusProtection	D:/apps/SGDK/src/z80_ctrl.c:343
+00009fc6 T Z80_setBusProtection	D:/apps/SGDK/src/z80_ctrl.c:348
+0000a01a T Z80_enableBusProtection	D:/apps/SGDK/src/z80_ctrl.c:367
+0000a028 T Z80_disableBusProtection	D:/apps/SGDK/src/z80_ctrl.c:372
+0000a034 T Z80_getForceDelayDMA	D:/apps/SGDK/src/z80_ctrl.c:377
+0000a040 T SND_NULL_loadDriver	D:/apps/SGDK/src/snd/sound.c:19
+0000a09c t setNextXFrame	D:/apps/SGDK/src/snd/xgm.c:605
+0000a0f6 T XGM_unloadDriver	D:/apps/SGDK/src/snd/xgm.c:94
+0000a112 T XGM_setMusicTempo	D:/apps/SGDK/src/snd/xgm.c:493
+0000a134 T XGM_loadDriver	D:/apps/SGDK/src/snd/xgm.c:54
+0000a218 T XGM_doVBlankProcess	D:/apps/SGDK/src/snd/xgm.c:662
+0000a26e T SND_DPCM2_loadDriver	D:/apps/SGDK/src/snd/pcm/snd_dpcm2.c:23
+0000a2f6 T SND_DPCM2_unloadDriver	D:/apps/SGDK/src/snd/pcm/snd_dpcm2.c:53
+0000a2f8 T SND_PCM_loadDriver	D:/apps/SGDK/src/snd/pcm/snd_pcm.c:22
+0000a380 T SND_PCM_unloadDriver	D:/apps/SGDK/src/snd/pcm/snd_pcm.c:52
+0000a382 T SND_PCM4_loadDriver	D:/apps/SGDK/src/snd/pcm/snd_pcm4.c:24
+0000a41e T SND_PCM4_unloadDriver	D:/apps/SGDK/src/snd/pcm/snd_pcm4.c:58
+0000a420 T flushQueue
+0000a434 t .fq_loop
+0000a442 t .fq_end
+0000a444 T memset_
+0000a4bc T memsetU16
+0000a51a T memcpy_
+0000a5be T SYS_getInterruptMaskLevel
+0000a5c8 T SYS_setInterruptMaskLevel
+0000a5e0 T SYS_getAndSetInterruptMaskLevel
+0000a5fa T aplib_unpack
+0000a600 t aplib_decrunch
+0000a614 t .copy_byte
+0000a616 t .next_sequence_init
+0000a618 t .next_sequence
+0000a628 t .get_3_bits
+0000a638 t .write_byte
+0000a63c t .short_match
+0000a64a t .code_pair
+0000a656 t .normal_code_pair
+0000a664 t .compare_1280
+0000a668 t .compare_128
+0000a66c t .domatch_with_2inc
+0000a66e t .domatch_with_inc
+0000a670 t .domatch_new_lastpos
+0000a672 t .copy_code_pair
+0000a678 t .loop_do_copy
+0000a682 t .get_bit
+0000a68a t .still_bits_left
+0000a68c t .decode_gamma
+0000a68e t .get_more_gamma
+0000a698 t .end_decrunch
+0000a6a2 T lz4w_unpack
+0000a6aa t lz4w_unpack_a
+0000a6b2 t .next
+0000a6c4 t .jump_table
+0000abc2 t .lmr_len_01
+0000acd6 t .lmr_len_00
+0000aee8 t .lm_len_00
+0000aefe t .litE_mat0
+0000af00 t .litC_mat0
+0000af02 t .litA_mat0
+0000af04 t .lit8_mat0
+0000af06 t .lit6_mat0
+0000af08 t .lit4_mat0
+0000af0a t .lit2_mat0
+0000af12 t .long_match_1
+0000af26 t .litF_mat0
+0000af28 t .litD_mat0
+0000af2a t .litB_mat0
+0000af2c t .lit9_mat0
+0000af2e t .lit7_mat0
+0000af30 t .lit5_mat0
+0000af32 t .lit3_mat0
+0000af34 t .lit1_mat0
+0000af3c t .long_match_2
+0000af50 t .lit0_mat0
+0000af56 t .long_match_3
+0000af6a t .lm_rom
+0000af76 t .lmr_jump_table
+0000b376 t .litE_mat1
+0000b378 t .litC_mat1
+0000b37a t .litA_mat1
+0000b37c t .lit8_mat1
+0000b37e t .lit6_mat1
+0000b380 t .lit4_mat1
+0000b382 t .lit2_mat1
+0000b384 t .lit0_mat1
+0000b3a2 t .litF_mat1
+0000b3a4 t .litD_mat1
+0000b3a6 t .litB_mat1
+0000b3a8 t .lit9_mat1
+0000b3aa t .lit7_mat1
+0000b3ac t .lit5_mat1
+0000b3ae t .lit3_mat1
+0000b3b0 t .lit1_mat1
+0000b3d0 t .litE_mat2
+0000b3d2 t .litC_mat2
+0000b3d4 t .litA_mat2
+0000b3d6 t .lit8_mat2
+0000b3d8 t .lit6_mat2
+0000b3da t .lit4_mat2
+0000b3dc t .lit2_mat2
+0000b3de t .lit0_mat2
+0000b3fe t .litF_mat2
+0000b400 t .litD_mat2
+0000b402 t .litB_mat2
+0000b404 t .lit9_mat2
+0000b406 t .lit7_mat2
+0000b408 t .lit5_mat2
+0000b40a t .lit3_mat2
+0000b40c t .lit1_mat2
+0000b42e t .litE_mat3
+0000b430 t .litC_mat3
+0000b432 t .litA_mat3
+0000b434 t .lit8_mat3
+0000b436 t .lit6_mat3
+0000b438 t .lit4_mat3
+0000b43a t .lit2_mat3
+0000b43c t .lit0_mat3
+0000b45e t .litF_mat3
+0000b460 t .litD_mat3
+0000b462 t .litB_mat3
+0000b464 t .lit9_mat3
+0000b466 t .lit7_mat3
+0000b468 t .lit5_mat3
+0000b46a t .lit3_mat3
+0000b46c t .lit1_mat3
+0000b490 t .litE_mat4
+0000b492 t .litC_mat4
+0000b494 t .litA_mat4
+0000b496 t .lit8_mat4
+0000b498 t .lit6_mat4
+0000b49a t .lit4_mat4
+0000b49c t .lit2_mat4
+0000b49e t .lit0_mat4
+0000b4c2 t .litF_mat4
+0000b4c4 t .litD_mat4
+0000b4c6 t .litB_mat4
+0000b4c8 t .lit9_mat4
+0000b4ca t .lit7_mat4
+0000b4cc t .lit5_mat4
+0000b4ce t .lit3_mat4
+0000b4d0 t .lit1_mat4
+0000b4f6 t .litE_mat5
+0000b4f8 t .litC_mat5
+0000b4fa t .litA_mat5
+0000b4fc t .lit8_mat5
+0000b4fe t .lit6_mat5
+0000b500 t .lit4_mat5
+0000b502 t .lit2_mat5
+0000b504 t .lit0_mat5
+0000b52a t .litF_mat5
+0000b52c t .litD_mat5
+0000b52e t .litB_mat5
+0000b530 t .lit9_mat5
+0000b532 t .lit7_mat5
+0000b534 t .lit5_mat5
+0000b536 t .lit3_mat5
+0000b538 t .lit1_mat5
+0000b560 t .litE_mat6
+0000b562 t .litC_mat6
+0000b564 t .litA_mat6
+0000b566 t .lit8_mat6
+0000b568 t .lit6_mat6
+0000b56a t .lit4_mat6
+0000b56c t .lit2_mat6
+0000b56e t .lit0_mat6
+0000b596 t .litF_mat6
+0000b598 t .litD_mat6
+0000b59a t .litB_mat6
+0000b59c t .lit9_mat6
+0000b59e t .lit7_mat6
+0000b5a0 t .lit5_mat6
+0000b5a2 t .lit3_mat6
+0000b5a4 t .lit1_mat6
+0000b5ce t .litE_mat7
+0000b5d0 t .litC_mat7
+0000b5d2 t .litA_mat7
+0000b5d4 t .lit8_mat7
+0000b5d6 t .lit6_mat7
+0000b5d8 t .lit4_mat7
+0000b5da t .lit2_mat7
+0000b5dc t .lit0_mat7
+0000b606 t .litF_mat7
+0000b608 t .litD_mat7
+0000b60a t .litB_mat7
+0000b60c t .lit9_mat7
+0000b60e t .lit7_mat7
+0000b610 t .lit5_mat7
+0000b612 t .lit3_mat7
+0000b614 t .lit1_mat7
+0000b640 t .litE_mat8
+0000b642 t .litC_mat8
+0000b644 t .litA_mat8
+0000b646 t .lit8_mat8
+0000b648 t .lit6_mat8
+0000b64a t .lit4_mat8
+0000b64c t .lit2_mat8
+0000b64e t .lit0_mat8
+0000b67a t .litF_mat8
+0000b67c t .litD_mat8
+0000b67e t .litB_mat8
+0000b680 t .lit9_mat8
+0000b682 t .lit7_mat8
+0000b684 t .lit5_mat8
+0000b686 t .lit3_mat8
+0000b688 t .lit1_mat8
+0000b6b6 t .litE_mat9
+0000b6b8 t .litC_mat9
+0000b6ba t .litA_mat9
+0000b6bc t .lit8_mat9
+0000b6be t .lit6_mat9
+0000b6c0 t .lit4_mat9
+0000b6c2 t .lit2_mat9
+0000b6c4 t .lit0_mat9
+0000b6f2 t .litF_mat9
+0000b6f4 t .litD_mat9
+0000b6f6 t .litB_mat9
+0000b6f8 t .lit9_mat9
+0000b6fa t .lit7_mat9
+0000b6fc t .lit5_mat9
+0000b6fe t .lit3_mat9
+0000b700 t .lit1_mat9
+0000b730 t .litE_matA
+0000b732 t .litC_matA
+0000b734 t .litA_matA
+0000b736 t .lit8_matA
+0000b738 t .lit6_matA
+0000b73a t .lit4_matA
+0000b73c t .lit2_matA
+0000b73e t .lit0_matA
+0000b76e t .litF_matA
+0000b770 t .litD_matA
+0000b772 t .litB_matA
+0000b774 t .lit9_matA
+0000b776 t .lit7_matA
+0000b778 t .lit5_matA
+0000b77a t .lit3_matA
+0000b77c t .lit1_matA
+0000b7ae t .litE_matB
+0000b7b0 t .litC_matB
+0000b7b2 t .litA_matB
+0000b7b4 t .lit8_matB
+0000b7b6 t .lit6_matB
+0000b7b8 t .lit4_matB
+0000b7ba t .lit2_matB
+0000b7bc t .lit0_matB
+0000b7ee t .litF_matB
+0000b7f0 t .litD_matB
+0000b7f2 t .litB_matB
+0000b7f4 t .lit9_matB
+0000b7f6 t .lit7_matB
+0000b7f8 t .lit5_matB
+0000b7fa t .lit3_matB
+0000b7fc t .lit1_matB
+0000b830 t .litE_matC
+0000b832 t .litC_matC
+0000b834 t .litA_matC
+0000b836 t .lit8_matC
+0000b838 t .lit6_matC
+0000b83a t .lit4_matC
+0000b83c t .lit2_matC
+0000b83e t .lit0_matC
+0000b872 t .litF_matC
+0000b874 t .litD_matC
+0000b876 t .litB_matC
+0000b878 t .lit9_matC
+0000b87a t .lit7_matC
+0000b87c t .lit5_matC
+0000b87e t .lit3_matC
+0000b880 t .lit1_matC
+0000b8b6 t .litE_matD
+0000b8b8 t .litC_matD
+0000b8ba t .litA_matD
+0000b8bc t .lit8_matD
+0000b8be t .lit6_matD
+0000b8c0 t .lit4_matD
+0000b8c2 t .lit2_matD
+0000b8c4 t .lit0_matD
+0000b8fa t .litF_matD
+0000b8fc t .litD_matD
+0000b8fe t .litB_matD
+0000b900 t .lit9_matD
+0000b902 t .lit7_matD
+0000b904 t .lit5_matD
+0000b906 t .lit3_matD
+0000b908 t .lit1_matD
+0000b940 t .litE_matE
+0000b942 t .litC_matE
+0000b944 t .litA_matE
+0000b946 t .lit8_matE
+0000b948 t .lit6_matE
+0000b94a t .lit4_matE
+0000b94c t .lit2_matE
+0000b94e t .lit0_matE
+0000b986 t .litF_matE
+0000b988 t .litD_matE
+0000b98a t .litB_matE
+0000b98c t .lit9_matE
+0000b98e t .lit7_matE
+0000b990 t .lit5_matE
+0000b992 t .lit3_matE
+0000b994 t .lit1_matE
+0000b9ce t .litE_matF
+0000b9d0 t .litC_matF
+0000b9d2 t .litA_matF
+0000b9d4 t .lit8_matF
+0000b9d6 t .lit6_matF
+0000b9d8 t .lit4_matF
+0000b9da t .lit2_matF
+0000b9dc t .lit0_matF
+0000ba16 t .litF_matF
+0000ba18 t .litD_matF
+0000ba1a t .litB_matF
+0000ba1c t .lit9_matF
+0000ba1e t .lit7_matF
+0000ba20 t .lit5_matF
+0000ba22 t .lit3_matF
+0000ba24 t .lit1_matF
+0000ba60 t .done
+0000ba66 t .no_byte
+0000ba72 T POOL_reset	D:/apps/SGDK/src/pool.c:72
+0000baf2 T POOL_create	D:/apps/SGDK/src/pool.c:10
+0000bc32 T POOL_destroy	D:/apps/SGDK/src/pool.c:105
+0000bc80 T POOL_allocate	D:/apps/SGDK/src/pool.c:136
+0000bcb0 T POOL_release	D:/apps/SGDK/src/pool.c:159
+0000bd36 T PSG_reset	D:/apps/SGDK/src/psg.c:9
+0000bd6e T SRAM_disable	D:/apps/SGDK/src/sram.c:16
+0000bd78 T getZeroU8	D:/apps/SGDK/src/types.c:4
+0000bd7c T YM2612_write	D:/apps/SGDK/src/ym2612.c:118
+0000bdac t writeSlotReg	D:/apps/SGDK/src/ym2612.c:11
+0000bdfa t writeChannelReg	D:/apps/SGDK/src/ym2612.c:17
+0000be3e T YM2612_reset	D:/apps/SGDK/src/ym2612.c:23
+0000bfe8 t applyInertiaAxis.constprop.0
+0000c0aa t snowEffect_init.part.0.constprop.0
+0000c1ec t SPR_end
+0000c24a t SPR_update
+0000c9c4 t XGM2_stop
+0000ca82 t XGM2_pause
+0000cb2c t setLoopNumber
+0000cbb2 t setFMVolume
+0000cc78 t setPSGVolume
+0000cd3e t gameCore_fadeToBlack
+0000ce12 t XGM2_playTrack.constprop.0
+0000cf88 t XGM2_playPCMEx.constprop.0.isra.0
+0000d1f2 t setMusicTempo
+0000d2ac t SPR_initEx.constprop.0
+0000d334 t SPR_setDefinition.isra.0
+0000d43e t SPR_addSpriteEx.constprop.0
+0000d5f8 t XGM2_load.constprop.0
+0000d6c0 t audio_play_phase1
+0000d6c0 t audio_play_phase2
+0000d6c0 t audio_play_phase4
+0000d768 T SPR_isInitialized
+0000d774 T SPR_defragVRAM
+0000d82c t spawnElf
+0000d9ce t spawnEnemy
+0000db60 t spawnTree.constprop.0
+0000dd10 T XGM2_loadDriver
+0000ddb6 T XGM2_unloadDriver
+0000ddc2 T XGM2_doVBlankFadeProcess
+0000de6c T MDDBG__SymbolDataPtr
+0000de70 t __ErrorHandler
+0000de70 t MDDBG__ErrorHandler
+0000df98 t MDDBG__Error_IdleLoop
+0000dfb2 t MDDBG__Error_InitConsole
+0000dfbe t MDDBG__Error_MaskStackBoundaries
+0000e028 t MDDBG__Error_DrawOffsetLocation
+0000e02c t MDDBG__Error_DrawOffsetLocation2
+0000e032 t MDDBG__Error_DrawOffsetLocation__inj
+0000e0c0 t MDDBG__ErrorHandler_SetupVDP
+0000e0f6 t MDDBG__ErrorHandler_VDPConfig
+0000e10c t MDDBG__ErrorHandler_VDPConfig_Nametables
+0000e148 t MDDBG__ErrorHandler_ConsoleConfig_Initial
+0000e14c t MDDBG__ErrorHandler_ConsoleConfig_Shared
+0000e17c t MDDBG__Str_OffsetLocation_24bit
+0000e185 t MDDBG__Str_OffsetLocation_32bit
+0000e1c0 t MDDBG__Art1bpp_Font
+0000e4ba t MDDBG__GetSymbolByOffset
+0000e7d4 t MDDBG__FormatString
+0000e8ae t MDDBG__Console_Init
+0000e8ec t MDDBG__Console_Reset
+0000e8ee t MDDBG__Console_InitShared
+0000e938 t MDDBG__Console_SetPosAsXY_Stack
+0000e93e t MDDBG__Console_SetPosAsXY
+0000e972 t MDDBG__Console_GetPosAsXY
+0000e998 t MDDBG__Console_StartNewLine
+0000e9c6 t MDDBG__Console_SetBasePattern
+0000e9e2 t MDDBG__Console_SetWidth
+0000ea00 t MDDBG__Console_WriteLine_WithPattern
+0000ea02 t MDDBG__Console_WriteLine
+0000ea06 t MDDBG__Console_Write
+0000eacc t MDDBG__Console_WriteLine_Formatted
+0000ead0 t MDDBG__Console_Write_Formatted
+0000eb00 t MDDBG__Decomp1bpp
+0000eb1c t MDDBG__KDebug_WriteLine_Formatted
+0000eb20 t MDDBG__KDebug_Write_Formatted
+0000eb74 t MDDBG__KDebug_FlushLine
+0000eb7e t MDDBG__KDebug_WriteLine
+0000eb82 t MDDBG__KDebug_Write
+0000ebb0 t MDDBG__ErrorHandler_ConsoleOnly
+0000ebd6 t MDDBG__ErrorHandler_ClearConsole
+0000ec00 t MDDBG__ErrorHandler_PauseConsole
+0000ec3a t MDDBG__ErrorHandler_PagesController
+0000ec9a t MDDBG__VSync
+0000ecd4 t MDDBG__ErrorHandler_ExtraDebuggerList
+0000ece0 t MDDBG__Debugger_AddressRegisters
+0000ed2c t MDDBG__Debugger_Backtrace
+0000edca T _Bus_Error
+0000edca t MDDBG__BusError
+0000edde T _Address_Error
+0000edde t MDDBG__AddressError
+0000edf6 T _Illegal_Instruction
+0000edf6 t MDDBG__IllegalInstr
+0000ee14 T _Zero_Divide
+0000ee14 t MDDBG__ZeroDivide
+0000ee2a T _Chk_Instruction
+0000ee2a t MDDBG__ChkInstr
+0000ee44 T _Trapv_Instruction
+0000ee44 t MDDBG__TrapvInstr
+0000ee60 T _Privilege_Violation
+0000ee60 t MDDBG__PrivilegeViol
+0000ee7e T _Trace
+0000ee7e t MDDBG__Trace
+0000ee8e T _Line_1010_Emulation
+0000ee8e t MDDBG__Line1010Emu
+0000eeaa T _Line_1111_Emulation
+0000eeaa t MDDBG__Line1111Emu
+0000eec6 T _Error_Exception
+0000eec6 t MDDBG__ErrorExcept
+0000ef00 T smp_null
+0000f000 T smp_null_dpcm
+0000f080 T __mulsi3	/home/runner/work/m68k-elf-gcc/m68k-elf-gcc/.build/HOST-i686-w64-mingw32/m68k-elf/src/gcc/libgcc/config/m68k/lb1sf68.S:442
+0000f080 T __mulsi3_internal	/home/runner/work/m68k-elf-gcc/m68k-elf-gcc/.build/HOST-i686-w64-mingw32/m68k-elf/src/gcc/libgcc/config/m68k/lb1sf68.S:442
+0000f0a4 T __udivsi3	/home/runner/work/m68k-elf-gcc/m68k-elf-gcc/.build/HOST-i686-w64-mingw32/m68k-elf/src/gcc/libgcc/config/m68k/lb1sf68.S:469
+0000f0a4 T __udivsi3_internal	/home/runner/work/m68k-elf-gcc/m68k-elf-gcc/.build/HOST-i686-w64-mingw32/m68k-elf/src/gcc/libgcc/config/m68k/lb1sf68.S:469
+0000f0cc t L3	/home/runner/work/m68k-elf-gcc/m68k-elf-gcc/.build/HOST-i686-w64-mingw32/m68k-elf/src/gcc/libgcc/config/m68k/lb1sf68.S:486
+0000f0ce t L4	/home/runner/work/m68k-elf-gcc/m68k-elf-gcc/.build/HOST-i686-w64-mingw32/m68k-elf/src/gcc/libgcc/config/m68k/lb1sf68.S:487
+0000f0fa t L5	/home/runner/work/m68k-elf-gcc/m68k-elf-gcc/.build/HOST-i686-w64-mingw32/m68k-elf/src/gcc/libgcc/config/m68k/lb1sf68.S:508
+0000f0fc t L6	/home/runner/work/m68k-elf-gcc/m68k-elf-gcc/.build/HOST-i686-w64-mingw32/m68k-elf/src/gcc/libgcc/config/m68k/lb1sf68.S:510
+0000f100 T __divsi3	/home/runner/work/m68k-elf-gcc/m68k-elf-gcc/.build/HOST-i686-w64-mingw32/m68k-elf/src/gcc/libgcc/config/m68k/lb1sf68.S:547
+0000f100 T __divsi3_internal	/home/runner/work/m68k-elf-gcc/m68k-elf-gcc/.build/HOST-i686-w64-mingw32/m68k-elf/src/gcc/libgcc/config/m68k/lb1sf68.S:547
+0000f10e t L1	/home/runner/work/m68k-elf-gcc/m68k-elf-gcc/.build/HOST-i686-w64-mingw32/m68k-elf/src/gcc/libgcc/config/m68k/lb1sf68.S:558
+0000f118 t L2	/home/runner/work/m68k-elf-gcc/m68k-elf-gcc/.build/HOST-i686-w64-mingw32/m68k-elf/src/gcc/libgcc/config/m68k/lb1sf68.S:567
+0000f12a t L3	/home/runner/work/m68k-elf-gcc/m68k-elf-gcc/.build/HOST-i686-w64-mingw32/m68k-elf/src/gcc/libgcc/config/m68k/lb1sf68.S:576
+0000f130 T __umodsi3	/home/runner/work/m68k-elf-gcc/m68k-elf-gcc/.build/HOST-i686-w64-mingw32/m68k-elf/src/gcc/libgcc/config/m68k/lb1sf68.S:585
+0000f160 T __modsi3	/home/runner/work/m68k-elf-gcc/m68k-elf-gcc/.build/HOST-i686-w64-mingw32/m68k-elf/src/gcc/libgcc/config/m68k/lb1sf68.S:611
+0000f190 T __CTOR_LIST__
+0000f198 T __CTOR_END__
+0000f198 T __DTOR_LIST__
+0000f1a0 T __DTOR_END__
+0000f1a0 T image_fondo_pal
+0000f1a6 T image_fondo_polo_pal
+0000f1ac T image_pista_polo_pal
+0000f1b2 T image_fondo_tejados_pal
+0000f1b8 T image_fondo_fiesta_pal
+0000f1be T image_fondo_tile
+0000f1c6 T image_fondo_map
+0000f1e2 T image_primer_plano_nieve_tile
+0000f1ea T image_primer_plano_nieve_map
+0000f206 T image_fondo_polo_tile
+0000f20e T image_fondo_polo_map
+0000f22a T image_pista_polo_tile
+0000f232 T image_pista_polo_map
+0000f24e T image_copos_fondo_tile
+0000f256 T image_copos_fondo_map
+0000f272 T image_fondo_tejados_tile
+0000f27a T image_fondo_tejados_map
+0000f296 T image_nubes_paralaje_tile
+0000f29e T image_nubes_paralaje_map
+0000f2ba T image_fondo_fiesta_tile
+0000f2c2 T image_fondo_fiesta_map
+0000f2de T image_luces_parpadeo_tile
+0000f2e6 T image_luces_parpadeo_map
+0000f302 t sprite_campana_palette
+0000f308 t sprite_campana_animation0_frame0_tileset
+0000f310 t sprite_campana_animation0_frame0
+0000f320 t sprite_campana_animation0_frames
+0000f324 t sprite_campana_animation0
+0000f32a t sprite_campana_animations
+0000f32e T sprite_campana
+0000f340 t sprite_campana_bn_animation0_frame0_tileset
+0000f348 t sprite_campana_bn_animation0_frame0
+0000f358 t sprite_campana_bn_animation0_frames
+0000f35c t sprite_campana_bn_animation0
+0000f362 t sprite_campana_bn_animations
+0000f366 T sprite_campana_bn
+0000f378 t sprite_canon_palette
+0000f37e t sprite_canon_animation0_frame0_tileset
+0000f386 t sprite_canon_animation0_frame0
+0000f39c t sprite_canon_animation0_frames
+0000f3a0 t sprite_canon_animation0
+0000f3a6 t sprite_canon_animation1_frame1_tileset
+0000f3ae t sprite_canon_animation1_frame1
+0000f3c4 t sprite_canon_animation1_frame2_tileset
+0000f3cc t sprite_canon_animation1_frame2
+0000f3e2 t sprite_canon_animation1_frame3_tileset
+0000f3ea t sprite_canon_animation1_frame3
+0000f400 t sprite_canon_animation1_frame4_tileset
+0000f408 t sprite_canon_animation1_frame4
+0000f41e t sprite_canon_animation1_frame5_tileset
+0000f426 t sprite_canon_animation1_frame5
+0000f43c t sprite_canon_animation1_frame6_tileset
+0000f444 t sprite_canon_animation1_frame6
+0000f45a t sprite_canon_animation1_frame7_tileset
+0000f462 t sprite_canon_animation1_frame7
+0000f478 t sprite_canon_animation1_frames
+0000f498 t sprite_canon_animation1
+0000f49e t sprite_canon_animations
+0000f4a6 T sprite_canon
+0000f4b8 t sprite_bomba_palette
+0000f4be t sprite_bomba_animation0_frame0_tileset
+0000f4c6 t sprite_bomba_animation0_frame0
+0000f4dc t sprite_bomba_animation0_frame1_tileset
+0000f4e4 t sprite_bomba_animation0_frame1
+0000f4f4 t sprite_bomba_animation0_frame2_tileset
+0000f4fc t sprite_bomba_animation0_frame2
+0000f512 t sprite_bomba_animation0_frames
+0000f51e t sprite_bomba_animation0
+0000f524 t sprite_bomba_animations
+0000f528 T sprite_bomba
+0000f53a t sprite_bola_confeti_animation0_frame0_tileset
+0000f542 t sprite_bola_confeti_animation0_frame0
+0000f552 t sprite_bola_confeti_animation0_frame1_tileset
+0000f55a t sprite_bola_confeti_animation0_frame1
+0000f56a t sprite_bola_confeti_animation0_frame2_tileset
+0000f572 t sprite_bola_confeti_animation0_frame2
+0000f582 t sprite_bola_confeti_animation0_frame3_tileset
+0000f58a t sprite_bola_confeti_animation0_frame3
+0000f59a t sprite_bola_confeti_animation0_frames
+0000f5aa t sprite_bola_confeti_animation0
+0000f5b0 t sprite_bola_confeti_animations
+0000f5b4 T sprite_bola_confeti
+0000f5c6 t sprite_regalo_palette
+0000f5cc t sprite_regalo_animation0_frame0_tileset
+0000f5d4 t sprite_regalo_animation0_frame0
+0000f5e4 t sprite_regalo_animation0_frames
+0000f5e8 t sprite_regalo_animation0
+0000f5ee t sprite_regalo_animations
+0000f5f2 T sprite_regalo
+0000f604 t sprite_regalo_bn_animation0_frame0_tileset
+0000f60c t sprite_regalo_bn_animation0_frame0
+0000f61c t sprite_regalo_bn_animation0_frames
+0000f620 t sprite_regalo_bn_animation0
+0000f626 t sprite_regalo_bn_animations
+0000f62a T sprite_regalo_bn
+0000f63c t sprite_canon_polo_animation0_frame0_tileset
+0000f644 t sprite_canon_polo_animation0_frame0
+0000f666 t sprite_canon_polo_animation0_frames
+0000f66a t sprite_canon_polo_animation0
+0000f670 t sprite_canon_polo_animations
+0000f674 T sprite_canon_polo
+0000f686 t sprite_red_confeti_animation0_frame0_tileset
+0000f68e t sprite_red_confeti_animation0_frame0
+0000f69e t sprite_red_confeti_animation0_frames
+0000f6a2 t sprite_red_confeti_animation0
+0000f6a8 t sprite_red_confeti_animations
+0000f6ac T sprite_red_confeti
+0000f6be t sprite_copo_grande_animation0_frame0_tileset
+0000f6c6 t sprite_copo_grande_animation0_frame0
+0000f6e8 t sprite_copo_grande_animation0_frames
+0000f6ec t sprite_copo_grande_animation0
+0000f6f2 t sprite_copo_grande_animations
+0000f6f6 T sprite_copo_grande
+0000f708 t sprite_santa_car_palette
+0000f70e t sprite_santa_car_animation0_frame0_tileset
+0000f716 t sprite_santa_car_animation0_frame0
+0000f744 t sprite_santa_car_animation0_frames
+0000f748 t sprite_santa_car_animation0
+0000f74e t sprite_santa_car_animations
+0000f752 T sprite_santa_car
+0000f764 t sprite_arbol_pista_palette
+0000f76a t sprite_arbol_pista_animation0_frame0_tileset
+0000f772 t sprite_arbol_pista_animation0_frame0
+0000f7a0 t sprite_arbol_pista_animation0_frames
+0000f7a4 t sprite_arbol_pista_animation0
+0000f7aa t sprite_arbol_pista_animations
+0000f7ae T sprite_arbol_pista
+0000f7c0 t sprite_elfo_lateral_animation0_frame0_tileset
+0000f7c8 t sprite_elfo_lateral_animation0_frame0
+0000f7d8 t sprite_elfo_lateral_animation0_frames
+0000f7dc t sprite_elfo_lateral_animation0
+0000f7e2 t sprite_elfo_lateral_animations
+0000f7e6 T sprite_elfo_lateral
+0000f7f8 t sprite_duende_malo_palette
+0000f7fe t sprite_duende_malo_animation0_frame0_tileset
+0000f806 t sprite_duende_malo_animation0_frame0
+0000f816 t sprite_duende_malo_animation0_frames
+0000f81a t sprite_duende_malo_animation0
+0000f820 t sprite_duende_malo_animations
+0000f824 T sprite_duende_malo
+0000f836 t sprite_regalo_entrega_animation0_frame0_tileset
+0000f83e t sprite_regalo_entrega_animation0_frame0
+0000f84e t sprite_regalo_entrega_animation0_frames
+0000f852 t sprite_regalo_entrega_animation0
+0000f858 t sprite_regalo_entrega_animations
+0000f85c T sprite_regalo_entrega
+0000f86e t sprite_chimenea_animation0_frame0_tileset
+0000f876 t sprite_chimenea_animation0_frame0
+0000f886 t sprite_chimenea_animation0_frames
+0000f88a t sprite_chimenea_animation0
+0000f890 t sprite_chimenea_animation1_frame0_tileset
+0000f898 t sprite_chimenea_animation1_frame0
+0000f8a8 t sprite_chimenea_animation1_frames
+0000f8ac t sprite_chimenea_animation1
+0000f8b2 t sprite_chimenea_animations
+0000f8ba T sprite_chimenea
+0000f8cc t sprite_canon_tejado_animation0_frame0_tileset
+0000f8d4 t sprite_canon_tejado_animation0_frame0
+0000f8f6 t sprite_canon_tejado_animation0_frames
+0000f8fa t sprite_canon_tejado_animation0
+0000f900 t sprite_canon_tejado_animations
+0000f904 T sprite_canon_tejado
+0000f916 t sprite_nube_animation0_frame0_tileset
+0000f91e t sprite_nube_animation0_frame0
+0000f92e t sprite_nube_animation0_frames
+0000f932 t sprite_nube_animation0
+0000f938 t sprite_nube_animations
+0000f93c T sprite_nube
+0000f94e t sprite_confeti_animation0_frame0_tileset
+0000f956 t sprite_confeti_animation0_frame0
+0000f966 t sprite_confeti_animation0_frames
+0000f96a t sprite_confeti_animation0
+0000f970 t sprite_confeti_animations
+0000f974 T sprite_confeti
+0000f986 t sprite_personaje_animation0_frame0_tileset
+0000f98e t sprite_personaje_animation0_frame0
+0000f9b0 t sprite_personaje_animation0_frames
+0000f9b4 t sprite_personaje_animation0
+0000f9ba t sprite_personaje_animations
+0000f9be T sprite_personaje
+0000f9d0 t sprite_arbol_fiesta_animation0_frame0_tileset
+0000f9d8 t sprite_arbol_fiesta_animation0_frame0
+0000f9ee t sprite_arbol_fiesta_animation0_frames
+0000f9f2 t sprite_arbol_fiesta_animation0
+0000f9f8 t sprite_arbol_fiesta_animation1_frame0_tileset
+0000fa00 t sprite_arbol_fiesta_animation1_frame0
+0000fa16 t sprite_arbol_fiesta_animation1_frames
+0000fa1a t sprite_arbol_fiesta_animation1
+0000fa20 t sprite_arbol_fiesta_animations
+0000fa28 T sprite_arbol_fiesta
+0000fa3a t sprite_globo_animation0_frame0_tileset
+0000fa42 t sprite_globo_animation0_frame0
+0000fa52 t sprite_globo_animation0_frames
+0000fa56 t sprite_globo_animation0
+0000fa5c t sprite_globo_animations
+0000fa60 T sprite_globo
+0000fbf6 t psgVolTable
+0000fc5a t fmVolTable
+0000fcbe t visibilityMask.0
+0000fd94 t xlt_all.0	D:/apps/SGDK/src/joy.c:846
+0000fda4 t xlt.1	D:/apps/SGDK/src/joy.c:970
+0000fed6 T palette_blue	D:/apps/SGDK/src/pal.c:163
+0000fef6 T palette_green	D:/apps/SGDK/src/pal.c:142
+0000ff16 T palette_red	D:/apps/SGDK/src/pal.c:121
+0000ff36 T palette_grey	D:/apps/SGDK/src/pal.c:100
+0000ff56 T palette_black_all	D:/apps/SGDK/src/pal.c:25
+0000ffdd t digits	D:/apps/SGDK/src/string.c:26
+000100a6 t lowercase_hexchars	D:/apps/SGDK/src/string.c:24
+000100b7 t uppercase_hexchars	D:/apps/SGDK/src/string.c:23
+000100c8 T sintab_f16	D:/apps/SGDK/src/tab_sin.c:1033
+00010a0f T tab_vol	D:/apps/SGDK/src/snd/pcm/tab_vol.c:4
+00011a10 t sgdk_logo_palette
+00011a16 T sgdk_logo
+00011a24 T font_default
+00011a2c T font_pal_default
+00011a32 T drv_null
+00011a6c T drv_xgm
+0001316c T drv_dpcm2
+00013f6c T drv_pcm
+00014a9c T drv_pcm4
+0001550a T drv_xgm2
+000176a0 T __INIT_SECTION__
+000176a2 T __FINI_SECTION__
+000176a4 T _etext
+000176a4 t image_fondo_pal_data
+00017724 t image_fondo_polo_pal_data
+00017744 t image_pista_polo_pal_data
+00017800 T snd_campana
+0001db00 T snd_bomba
+00020400 T snd_canon
+00021700 T snd_regalo_recogido
+00022400 T snd_disparo_red
+00023100 T snd_obstaculo_golpe
+00023e00 T snd_regalo_disparado
+00024b00 T snd_entrega_exitosa
+00025800 T snd_chimenea_activa
+00026500 T snd_confeti_choque
+00027200 t sprite_campana_palette_data
+00027220 t sprite_canon_palette_data
+00027240 t sprite_bomba_palette_data
+00027260 t sprite_regalo_palette_data
+00027280 t sprite_santa_car_palette_data
+000272a0 t sprite_arbol_pista_palette_data
+000272c0 t sprite_duende_malo_palette_data
+000272e0 t sgdk_logo_palette_data
+00027300 t font_pal_default_data
+00027320 T stop_xgm
+000273cc t font_default_data
+0002762e t sgdk_logo_data
+00027a68 t image_fondo_tile_data
+0002965a t image_primer_plano_nieve_tile_data
+000296a0 t image_fondo_polo_tile_data
+000297f4 t image_pista_polo_tile_data
+0002ab36 t image_copos_fondo_tile_data
+0002ac8a t image_fondo_tejados_tile_data
+0002adde t image_nubes_paralaje_tile_data
+0002af32 t image_fondo_fiesta_tile_data
+0002b086 t image_luces_parpadeo_tile_data
+0002b1da t image_fondo_map_metatiles
+0002b666 t image_primer_plano_nieve_map_metatiles
+0002b6ba t image_fondo_polo_map_metatiles
+0002b778 t image_pista_polo_map_metatiles
+0002c312 t image_fondo_map_mapBlockIndexes
+0002c318 t image_fondo_polo_map_mapBlockIndexes
+0002c320 t image_pista_polo_map_mapBlockIndexes
+0002c330 t image_copos_fondo_map_mapBlockIndexes
+0002c334 t image_fondo_map_mapBlockRowOffsets
+0002c338 t image_fondo_polo_map_mapBlockRowOffsets
+0002c33c t image_pista_polo_map_mapBlockRowOffsets
+0002c346 t image_copos_fondo_map_mapBlockRowOffsets
+0002c34a t image_fondo_map_mapBlocks
+0002c444 t image_primer_plano_nieve_map_mapBlocks
+0002c49a t image_fondo_polo_map_mapBlocks
+0002c504 t image_pista_polo_map_mapBlocks
+0002c9a6 t image_copos_fondo_map_mapBlocks
+0002cb00 T musica_fondo
+0002d400 T musica_test
+00031a00 t sprite_campana_animation0_frame0_tileset_data
+00031ad6 t sprite_campana_bn_animation0_frame0_tileset_data
+00031b9e t sprite_canon_animation0_frame0_tileset_data
+00031c26 t sprite_canon_animation1_frame1_tileset_data
+00031cb8 t sprite_canon_animation1_frame2_tileset_data
+00031d52 t sprite_canon_animation1_frame3_tileset_data
+00031de4 t sprite_canon_animation1_frame4_tileset_data
+00031eae t sprite_canon_animation1_frame5_tileset_data
+00031f90 t sprite_canon_animation1_frame6_tileset_data
+00032084 t sprite_canon_animation1_frame7_tileset_data
+00032158 t sprite_bomba_animation0_frame0_tileset_data
+000322d8 t sprite_bomba_animation0_frame1_tileset_data
+000323ca t sprite_bomba_animation0_frame2_tileset_data
+00032462 t sprite_bola_confeti_animation0_frame0_tileset_data
+00032482 t sprite_bola_confeti_animation0_frame1_tileset_data
+000324a2 t sprite_bola_confeti_animation0_frame2_tileset_data
+000324c2 t sprite_bola_confeti_animation0_frame3_tileset_data
+000324e2 t sprite_regalo_animation0_frame0_tileset_data
+00032524 t sprite_regalo_bn_animation0_frame0_tileset_data
+00032566 t sprite_canon_polo_animation0_frame0_tileset_data
+000325ec t sprite_red_confeti_animation0_frame0_tileset_data
+0003260c t sprite_copo_grande_animation0_frame0_tileset_data
+000326a0 t sprite_santa_car_animation0_frame0_tileset_data
+00032c40 t sprite_arbol_pista_animation0_frame0_tileset_data
+00032f58 t sprite_elfo_lateral_animation0_frame0_tileset_data
+00033036 t sprite_duende_malo_animation0_frame0_tileset_data
+00033136 t sprite_regalo_entrega_animation0_frame0_tileset_data
+0003316c t sprite_chimenea_animation0_frame0_tileset_data
+000331cc t sprite_chimenea_animation1_frame0_tileset_data
+000331f4 t sprite_canon_tejado_animation0_frame0_tileset_data
+00033282 t sprite_nube_animation0_frame0_tileset_data
+000332c4 t sprite_confeti_animation0_frame0_tileset_data
+000332e4 t sprite_personaje_animation0_frame0_tileset_data
+00033378 t sprite_arbol_fiesta_animation0_frame0_tileset_data
+000333d2 t sprite_arbol_fiesta_animation1_frame0_tileset_data
+00033432 t sprite_globo_animation0_frame0_tileset_data
+00033468 A _stext
 e0ff0000 d globalTileIndex
-e0ff0004 d randbase
-e0ff0008 D task_sr
-e0ff000a D task_pc
-e0ff000e D task_regs
-e0ff004a D task_lock
-e0ff004c D _edata
-e0ff004c B _start
-e0ff004c B bmp_buffer_write
-e0ff0050 B hintCaller
-e0ff0056 B vintCB
-e0ff005a B intCB
-e0ff005e B vtimer
-e0ff0062 B eintCB
-e0ff0066 B intLevelSave
-e0ff0068 B intTrace
-e0ff006a B dmaQueues
-e0ff006e B VBlankProcess
-e0ff0070 b state
-e0ff0072 b frameCounter.lto_priv.1
-e0ff0074 b personajes
-e0ff0088 b confetis
-e0ff02e0 b fixedBells
-e0ff0328 b bulletCooldown
-e0ff0329 b cannonFiring
-e0ff032a b cannonVelocity.lto_priv.0
-e0ff032c b frameCounter.lto_priv.0
-e0ff032e b bellsCompleted
-e0ff0330 b gameTimer
-e0ff033a b activeBullets
-e0ff033c b bullets
-e0ff035a b playerCannon
-e0ff035e b cannonX.lto_priv.0
-e0ff0360 b bombs
-e0ff0384 b bells
-e0ff03cc b snowEffect.lto_priv.0
-e0ff03e2 b frameCounter.lto_priv.2
-e0ff03e4 b entregasCompletadas
-e0ff03e6 b regalos
-e0ff043a b chimeneas
-e0ff04d0 b enemies
-e0ff04e4 b elves
-e0ff04f8 b santa
-e0ff0504 b snowEffect.lto_priv.1
-e0ff051a b mapTrack
-e0ff051e b santaMaxY
-e0ff0520 b santaMinY
-e0ff0522 b playableWidth
-e0ff0524 b frameCounter.lto_priv.3
-e0ff0526 b giftsCharge
-e0ff0528 b giftsCollected
-e0ff052a b trackMaxScroll
-e0ff052c b trackHeightPx
-e0ff052e b trackOffsetY
-e0ff0530 b currentPhase
-e0ff0532 b currentXGM
-e0ff0536 b fadeEndPal
-e0ff05b6 b vscroll_update
-e0ff05b8 b vscroll
-e0ff05bc b hscroll_update
-e0ff05be b hscroll
-e0ff05c2 b usedVDPSprite
-e0ff05c4 b trees
-e0ff05ce b santaInertia
-e0ff05d2 b lastVTimer.0
-e0ff05d4 b text_plan
-e0ff05d8 b text_basetile
-e0ff05da b lastVCnt
-e0ff05dc b windowWidthSft
-e0ff05de b planeHeightSft
-e0ff05e0 b windowWidth
-e0ff05e2 b hscrl_addr
-e0ff05e4 b window_addr
-e0ff05e6 b lastTick
-e0ff05ea b cpuFrameLoad
-e0ff05ec b frameLoadIndex
-e0ff05ee b frameLoads
-e0ff05fe b vblankCB
-e0ff0602 b flags
-e0ff0604 b screenHeight
-e0ff0606 b screenWidth
-e0ff0608 b allocStack
-e0ff0748 b slist_addr
-e0ff074a b vdpSpriteCache
-e0ff0a4a b maps_addr
-e0ff0a4c b spriteVramSize
-e0ff0a50 b vram
-e0ff0a5c b lastSprite
-e0ff0a60 b firstSprite
-e0ff0a64 b spritesPool
-e0ff0a68 b xgm2WaitTab
-e0ff0a70 b xgm2IdleTab
-e0ff0a78 b restoreVolume
-e0ff0a7a b xgmTempoCnt
-e0ff0a7c b busProtectSignalAddress
-e0ff0a80 b xgmWaitTab
-e0ff0ac0 b xgmIdleTab
-e0ff0b00 b xgmTempoDef
-e0ff0b02 b xgmTempo
-e0ff0b04 b driverFlags
-e0ff0b06 b fadeInd
-e0ff0b08 b fadeCurrentPal
-e0ff0b88 b fadeSB
-e0ff0c08 b fadeSG
-e0ff0c88 b fadeSR
-e0ff0d08 b fadeB
-e0ff0d88 b fadeG
-e0ff0e08 b fadeR
-e0ff0e88 b fadeSize
-e0ff0e8a b fadeCounter
-e0ff0e8c b heap
-e0ff0e90 b free.lto_priv.0
-e0ff0e94 b bgb_addr
-e0ff0e96 b bga_addr
-e0ff0e98 b planeWidthSft
-e0ff0e9a b planeHeight
-e0ff0e9c b planeWidth
-e0ff0e9e b randomSeedSet
-e0ff0ea0 b joyEventCB
-e0ff0ea4 b retry
-e0ff0ea5 b phase.lto_priv.1
-e0ff0ea6 b gun
-e0ff0ea7 b extSet
-e0ff0ea8 b disableIntStack
-e0ff0eaa b joyAxisY
-e0ff0eba b joyAxisX
-e0ff0eca b joyState
-e0ff0eda b joyType
-e0ff0ee2 b portSupport
-e0ff0ee4 b portType
-e0ff0ee6 b gport
-e0ff0ee8 b flag
-e0ff0eea b maxTransferPerFrame
-e0ff0eec b queueSize
-e0ff0eee b nextDataBuffer
-e0ff0ef2 b queueTransferSize
-e0ff0ef4 b queueIndexLimit
-e0ff0ef6 b queueIndex
-e0ff0ef8 b dmaDataBuffer
-e0ff0efc b dataBufferSize
-e0ff0efe b phase.lto_priv.0
-e0ff0f00 b rightLimit
-e0ff0f02 b leftLimit
-e0ff0f04 b fadeEndProcess
-e0ff0f08 b fadeCount
-e0ff0f0a b fadePSGVolStep
-e0ff0f0c b fadeFMVolStep
-e0ff0f0e b fadePSGVol
-e0ff0f10 b fadeFMVol
-e0ff0f14 b regValues
-e0ff0f28 b currentDriver
-e0ff0f2a b fmVol
-e0ff0f2c b psgVol
-e0ff0f2e B _bend
+e0ff0004 D task_sr
+e0ff0006 D task_pc
+e0ff000a D task_regs
+e0ff0046 D task_lock
+e0ff0048 d randbase	D:/apps/SGDK/src/tools.c:25
+e0ff004a D _edata
+e0ff004a B _start
+e0ff004c B spriteVramSize
+e0ff004e B spritesPool
+e0ff0052 b currentXGM
+e0ff0056 b xgm2WaitTab
+e0ff005e b xgm2IdleTab
+e0ff0066 b restoreVolume
+e0ff0068 b santaInertia
+e0ff006c b rightLimit
+e0ff006e b trackHeightPx
+e0ff0070 b elves
+e0ff0084 b trees
+e0ff008e b snowEffect.lto_priv.1
+e0ff00a4 b mapTrack
+e0ff00a8 b trackMaxScroll
+e0ff00aa b trackOffsetY
+e0ff00ac b frameCounter.lto_priv.3
+e0ff00ae b playableWidth
+e0ff00b0 b leftLimit
+e0ff00b2 b santaMinY
+e0ff00b4 b santaMaxY
+e0ff00b6 b enemies
+e0ff00ca b giftsCharge
+e0ff00cc b santa
+e0ff00d8 b giftsCollected
+e0ff00da b regalos
+e0ff012e b chimeneas
+e0ff01c4 b frameCounter.lto_priv.2
+e0ff01c6 b entregasCompletadas
+e0ff01c8 b vram
+e0ff01d4 b usedVDPSprite
+e0ff01d6 b lastSprite
+e0ff01da b firstSprite
+e0ff01de b fixedBells
+e0ff0226 b activeBullets
+e0ff0228 b bullets
+e0ff0246 b gameTimer
+e0ff0250 b bombs
+e0ff0274 b bells
+e0ff02bc b snowEffect.lto_priv.0
+e0ff02d2 b frameCounter.lto_priv.0
+e0ff02d4 b cannonFiring
+e0ff02d5 b bulletCooldown
+e0ff02d6 b playerCannon
+e0ff02da b cannonX.lto_priv.0
+e0ff02dc b cannonVelocity.lto_priv.0
+e0ff02de b bellsCompleted
+e0ff02e0 b personajes
+e0ff02f4 b confetis
+e0ff054c b frameCounter.lto_priv.1
+e0ff054e b currentPhase
+e0ff0550 b fadeEndProcess
+e0ff0554 b fadeCount
+e0ff0556 b fadePSGVolStep
+e0ff0558 b fadeFMVolStep
+e0ff055a b fadePSGVol
+e0ff055c b fadeFMVol
+e0ff055e b psgVol
+e0ff0560 b fmVol
+e0ff0562 b phase	D:/apps/SGDK/src/bmp.c:68
+e0ff0564 b queueTransferSize	D:/apps/SGDK/src/dma.c:41
+e0ff0566 b queueIndexLimit	D:/apps/SGDK/src/dma.c:40
+e0ff0568 b queueIndex	D:/apps/SGDK/src/dma.c:39
+e0ff056a b dataBufferSize	D:/apps/SGDK/src/dma.c:36
+e0ff056c b flag	D:/apps/SGDK/src/dma.c:33
+e0ff056e b maxTransferPerFrame	D:/apps/SGDK/src/dma.c:32
+e0ff0570 b queueSize	D:/apps/SGDK/src/dma.c:31
+e0ff0572 b nextDataBuffer	D:/apps/SGDK/src/dma.c:28
+e0ff0576 B dmaDataBuffer	D:/apps/SGDK/src/dma.c:27
+e0ff057a B dmaQueues	D:/apps/SGDK/src/dma.c:24
+e0ff057e b joyEventCB	D:/apps/SGDK/src/joy.c:47
+e0ff0582 b gport	D:/apps/SGDK/src/joy.c:44
+e0ff0584 b extSet	D:/apps/SGDK/src/joy.c:43
+e0ff0585 b gun	D:/apps/SGDK/src/joy.c:42
+e0ff0586 b phase	D:/apps/SGDK/src/joy.c:40
+e0ff0587 b retry	D:/apps/SGDK/src/joy.c:39
+e0ff0588 b portType	D:/apps/SGDK/src/joy.c:37
+e0ff058a b portSupport	D:/apps/SGDK/src/joy.c:36
+e0ff058c b joyAxisY	D:/apps/SGDK/src/joy.c:34
+e0ff059c b joyAxisX	D:/apps/SGDK/src/joy.c:33
+e0ff05ac b joyState	D:/apps/SGDK/src/joy.c:32
+e0ff05bc b joyType	D:/apps/SGDK/src/joy.c:31
+e0ff05c4 b heap	D:/apps/SGDK/src/memory.c:153
+e0ff05c8 b free	D:/apps/SGDK/src/memory.c:152
+e0ff05cc b fadeCounter	D:/apps/SGDK/src/pal.c:201
+e0ff05ce b fadeSize	D:/apps/SGDK/src/pal.c:200
+e0ff05d0 b fadeInd	D:/apps/SGDK/src/pal.c:199
+e0ff05d2 b fadeSB	D:/apps/SGDK/src/pal.c:197
+e0ff0652 b fadeSG	D:/apps/SGDK/src/pal.c:196
+e0ff06d2 b fadeSR	D:/apps/SGDK/src/pal.c:195
+e0ff0752 b fadeB	D:/apps/SGDK/src/pal.c:194
+e0ff07d2 b fadeG	D:/apps/SGDK/src/pal.c:193
+e0ff0852 b fadeR	D:/apps/SGDK/src/pal.c:192
+e0ff08d2 B fadeEndPal	D:/apps/SGDK/src/pal.c:190
+e0ff0952 B fadeCurrentPal	D:/apps/SGDK/src/pal.c:189
+e0ff09d2 b lastVTimer.0	D:/apps/SGDK/src/sys.c:979
+e0ff09d4 b lastSubTick	D:/apps/SGDK/src/sys.c:122
+e0ff09d8 b frameCnt	D:/apps/SGDK/src/sys.c:121
+e0ff09dc b cpuFrameLoad	D:/apps/SGDK/src/sys.c:120
+e0ff09de b frameLoadIndex	D:/apps/SGDK/src/sys.c:119
+e0ff09e0 b frameLoads	D:/apps/SGDK/src/sys.c:118
+e0ff09f0 b flags	D:/apps/SGDK/src/sys.c:115
+e0ff09f2 b disableIntStack	D:/apps/SGDK/src/sys.c:114
+e0ff09f4 B intLevelSave	D:/apps/SGDK/src/sys.c:113
+e0ff09f6 B intTrace	D:/apps/SGDK/src/sys.c:110
+e0ff09f8 B VBlankProcess	D:/apps/SGDK/src/sys.c:109
+e0ff09fa B vblankCB	D:/apps/SGDK/src/sys.c:107
+e0ff09fe B intCB	D:/apps/SGDK/src/sys.c:104
+e0ff0a02 B eintCB	D:/apps/SGDK/src/sys.c:103
+e0ff0a06 B hintCaller	D:/apps/SGDK/src/sys.c:102
+e0ff0a0c B vintCB	D:/apps/SGDK/src/sys.c:101
+e0ff0a10 b lastTick	D:/apps/SGDK/src/timer.c:39
+e0ff0a14 B vtimer	D:/apps/SGDK/src/timer.c:36
+e0ff0a18 B randomSeedSet	D:/apps/SGDK/src/tools.c:27
+e0ff0a1a B lastVCnt	D:/apps/SGDK/src/vdp.c:62
+e0ff0a1c B windowWidthSft	D:/apps/SGDK/src/vdp.c:60
+e0ff0a1e B planeHeightSft	D:/apps/SGDK/src/vdp.c:59
+e0ff0a20 B planeWidthSft	D:/apps/SGDK/src/vdp.c:58
+e0ff0a22 B windowWidth	D:/apps/SGDK/src/vdp.c:57
+e0ff0a24 B planeHeight	D:/apps/SGDK/src/vdp.c:56
+e0ff0a26 B planeWidth	D:/apps/SGDK/src/vdp.c:55
+e0ff0a28 B screenHeight	D:/apps/SGDK/src/vdp.c:54
+e0ff0a2a B screenWidth	D:/apps/SGDK/src/vdp.c:53
+e0ff0a2c B userTileMaxIndex	D:/apps/SGDK/src/vdp.c:51
+e0ff0a2e B maps_addr	D:/apps/SGDK/src/vdp.c:49
+e0ff0a30 B slist_addr	D:/apps/SGDK/src/vdp.c:48
+e0ff0a32 B hscrl_addr	D:/apps/SGDK/src/vdp.c:47
+e0ff0a34 B bgb_addr	D:/apps/SGDK/src/vdp.c:46
+e0ff0a36 B bga_addr	D:/apps/SGDK/src/vdp.c:45
+e0ff0a38 B window_addr	D:/apps/SGDK/src/vdp.c:44
+e0ff0a3a b regValues	D:/apps/SGDK/src/vdp.c:42
+e0ff0a4d b vscroll_update	D:/apps/SGDK/src/vdp_bg.c:31
+e0ff0a4e b hscroll_update	D:/apps/SGDK/src/vdp_bg.c:30
+e0ff0a50 b vscroll	D:/apps/SGDK/src/vdp_bg.c:29
+e0ff0a54 b hscroll	D:/apps/SGDK/src/vdp_bg.c:28
+e0ff0a58 B curTileInd	D:/apps/SGDK/src/vdp_bg.c:26
+e0ff0a5a b text_basetile	D:/apps/SGDK/src/vdp_bg.c:23
+e0ff0a5c b text_plan	D:/apps/SGDK/src/vdp_bg.c:22
+e0ff0a60 b free	D:/apps/SGDK/src/vdp_spr.c:24
+e0ff0a64 b allocStack	D:/apps/SGDK/src/vdp_spr.c:22
+e0ff0ba4 B highestVDPSpriteIndex	D:/apps/SGDK/src/vdp_spr.c:19
+e0ff0ba6 B vdpSpriteCache	D:/apps/SGDK/src/vdp_spr.c:14
+e0ff0ea6 B busProtectSignalAddress	D:/apps/SGDK/src/z80_ctrl.c:24
+e0ff0ea8 B driverFlags	D:/apps/SGDK/src/z80_ctrl.c:23
+e0ff0eaa B currentDriver	D:/apps/SGDK/src/z80_ctrl.c:22
+e0ff0eac b xgmWaitMean	D:/apps/SGDK/src/snd/xgm.c:41
+e0ff0eae b xgmIdleMean	D:/apps/SGDK/src/snd/xgm.c:40
+e0ff0eb0 b xgmTabInd	D:/apps/SGDK/src/snd/xgm.c:39
+e0ff0eb2 b xgmWaitTab	D:/apps/SGDK/src/snd/xgm.c:38
+e0ff0ef2 b xgmIdleTab	D:/apps/SGDK/src/snd/xgm.c:37
+e0ff0f32 B xgmTempoCnt	D:/apps/SGDK/src/snd/xgm.c:34
+e0ff0f34 b xgmTempoDef	D:/apps/SGDK/src/snd/xgm.c:32
+e0ff0f36 b xgmTempo	D:/apps/SGDK/src/snd/xgm.c:31
+e0ff0f38 B _bend
 e1000000 A __stack

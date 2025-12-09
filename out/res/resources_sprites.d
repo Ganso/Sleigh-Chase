@@ -1,23 +1,23 @@
 out/res/resources_sprites.o: res/resources_sprites.res \
-/src/res/sprites/Canon.png \
-/src/res/sprites/ArbolFiesta.png \
-/src/res/sprites/Confeti.png \
-/src/res/sprites/Regalo.png \
-/src/res/sprites/RegaloBN.png \
-/src/res/sprites/ArbolPista.png \
-/src/res/sprites/SantaCar.png \
-/src/res/sprites/Globo.png \
-/src/res/sprites/Bomba.png \
-/src/res/sprites/Regalos_Pequeno.png \
-/src/res/sprites/CanonTejado.png \
-/src/res/sprites/BolaConfeti.png \
-/src/res/sprites/CanonPolo.png \
-/src/res/sprites/PersonajeFiesta.png \
-/src/res/sprites/CopoGrande.png \
-/src/res/sprites/Nube.png \
-/src/res/sprites/Campana.png \
-/src/res/sprites/ElfoLateral.png \
-/src/res/sprites/RedConfeti.png \
-/src/res/sprites/Chimenea.png \
-/src/res/sprites/Campanabn.png \
-/src/res/sprites/DuendeMalo.png
+D:/GitHub/Feliz-2026/Feliz-2026/res/sprites/Canon.png \
+D:/GitHub/Feliz-2026/Feliz-2026/res/sprites/Campana.png \
+D:/GitHub/Feliz-2026/Feliz-2026/res/sprites/Globo.png \
+D:/GitHub/Feliz-2026/Feliz-2026/res/sprites/ArbolFiesta.png \
+D:/GitHub/Feliz-2026/Feliz-2026/res/sprites/Regalos_Pequeno.png \
+D:/GitHub/Feliz-2026/Feliz-2026/res/sprites/Regalo.png \
+D:/GitHub/Feliz-2026/Feliz-2026/res/sprites/Confeti.png \
+D:/GitHub/Feliz-2026/Feliz-2026/res/sprites/RegaloBN.png \
+D:/GitHub/Feliz-2026/Feliz-2026/res/sprites/SantaCar.png \
+D:/GitHub/Feliz-2026/Feliz-2026/res/sprites/Campanabn.png \
+D:/GitHub/Feliz-2026/Feliz-2026/res/sprites/Bomba.png \
+D:/GitHub/Feliz-2026/Feliz-2026/res/sprites/CopoGrande.png \
+D:/GitHub/Feliz-2026/Feliz-2026/res/sprites/ElfoLateral.png \
+D:/GitHub/Feliz-2026/Feliz-2026/res/sprites/RedConfeti.png \
+D:/GitHub/Feliz-2026/Feliz-2026/res/sprites/PersonajeFiesta.png \
+D:/GitHub/Feliz-2026/Feliz-2026/res/sprites/DuendeMalo.png \
+D:/GitHub/Feliz-2026/Feliz-2026/res/sprites/CanonTejado.png \
+D:/GitHub/Feliz-2026/Feliz-2026/res/sprites/Chimenea.png \
+D:/GitHub/Feliz-2026/Feliz-2026/res/sprites/CanonPolo.png \
+D:/GitHub/Feliz-2026/Feliz-2026/res/sprites/BolaConfeti.png \
+D:/GitHub/Feliz-2026/Feliz-2026/res/sprites/ArbolPista.png \
+D:/GitHub/Feliz-2026/Feliz-2026/res/sprites/Nube.png

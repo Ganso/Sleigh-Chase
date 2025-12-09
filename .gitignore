@@ -4,6 +4,7 @@ build/
 *.elf
 *.bin
 *.rom
+out/
 
 # IDE
 .vscode/
