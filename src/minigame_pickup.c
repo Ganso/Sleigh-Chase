@@ -81,7 +81,7 @@ static u8 elfSide[NUM_ELVES];
 static Map *mapTrack;
 static s16 trackHeightPx;
 static s16 trackOffsetY;
-static s16 trackMaxScroll;
+static s16 trackLoopLength;
 static u16 giftsCollected;
 static u16 giftsCharge;
 static u16 frameCounter;
@@ -421,17 +421,16 @@ static void resetSpecialIfReady(void) {
 }
 
 static void clampTrackOffset(void) {
-    if (trackHeightPx <= 0) {
+    if (trackLoopLength <= 0) {
         trackOffsetY = 0;
         return;
     }
 
-    const s16 loopLength = trackHeightPx;
     while (trackOffsetY < 0) {
-        trackOffsetY += loopLength;
+        trackOffsetY += trackLoopLength;
     }
-    while (trackOffsetY >= loopLength) {
-        trackOffsetY -= loopLength;
+    while (trackOffsetY >= trackLoopLength) {
+        trackOffsetY -= trackLoopLength;
     }
 }
 
@@ -521,7 +520,7 @@ void minigamePickup_init(void) {
     gameCore_resetTileIndex();
     trackOffsetY = 0;
     trackHeightPx = 0;
-    trackMaxScroll = 0;
+    trackLoopLength = 0;
     giftsCollected = 0;
     giftsCharge = 0;
     frameCounter = 0;
@@ -553,17 +552,22 @@ void minigamePickup_init(void) {
         TILE_ATTR_FULL(PAL_COMMON, FALSE, FALSE, FALSE, globalTileIndex));
     globalTileIndex += image_pista_polo_tile.numTile;
 
-    trackHeightPx = 240;
-    trackMaxScroll = trackHeightPx - 1;
-    if (trackMaxScroll < 0) trackMaxScroll = 0;
-    trackOffsetY = trackMaxScroll;
+    trackHeightPx = (image_pista_polo_map.h > 0)
+        ? (image_pista_polo_map.h << 3) /* 8 px por tile */
+        : SCREEN_HEIGHT;
+    if (trackHeightPx < SCREEN_HEIGHT) trackHeightPx = SCREEN_HEIGHT;
+
+    trackLoopLength = (trackHeightPx > SCREEN_HEIGHT)
+        ? (trackHeightPx - SCREEN_HEIGHT)
+        : SCREEN_HEIGHT;
+    trackOffsetY = trackLoopLength - 1;
     if (mapTrack != NULL) {
         const s16 initialOffset = trackOffsetY % trackHeightPx;
         MAP_scrollTo(mapTrack, 0, initialOffset);
         //VDP_setVerticalScroll(BG_B, initialOffset);
     } else {
         trackHeightPx = 0;
-        trackMaxScroll = 0;
+        trackLoopLength = 0;
         trackOffsetY = 0;
     }
 
@@ -640,7 +644,7 @@ void minigamePickup_update(void) {
     const s16 scrollStep = ((frameCounter % VERTICAL_SLOW_DIV) == 0) ? SCROLL_SPEED : 0;
     if (scrollStep) {
         trackOffsetY -= scrollStep;
-        clampTrackOffset(); /* envuelve en 0..223 */
+        clampTrackOffset(); /* envuelve dentro del rango visible del mapa */
         if (mapTrack != NULL) {
             MAP_scrollTo(mapTrack, 0, trackOffsetY);
             //VDP_setVerticalScroll(BG_B, trackOffsetY);
