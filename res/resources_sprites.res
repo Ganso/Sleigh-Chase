@@ -13,6 +13,7 @@ SPRITE sprite_elfo_lateral "sprites/ElfoLateral.png" 4 4 BEST 1
 SPRITE sprite_duende_malo "sprites/DuendeMalo.png" 4 4 BEST 1
 SPRITE sprite_marca_x "sprites/MarcaX.png" 2 2 BEST 1
 SPRITE sprite_sombra_regalo "sprites/SombraRegalo.png" 2 2 BEST 1
+SPRITE sprite_icono_regalo "sprites/IconoRegalo.png" 20 4 BEST 6
 
 # Fase 2
 # sprite_regalo_entrega : Placeholder (Regalo pequeño entrega tejados volador)

@@ -9,8 +9,8 @@
 #include "snow_effect.h"
 #include "resources_bg.h"
 
-#define SNOW_WIDTH_PX 320
-#define SNOW_HEIGHT_PX 480
+#define SNOW_WIDTH_PX 384
+#define SNOW_HEIGHT_PX 512
 
 void snowEffect_init(SnowEffect *effect, u32 *tileIndex, s16 angleStep, s16 verticalStep) {
     if (effect == NULL || tileIndex == NULL) return;
@@ -35,6 +35,8 @@ void snowEffect_init(SnowEffect *effect, u32 *tileIndex, s16 angleStep, s16 vert
     if (effect->map != NULL) {
         MAP_scrollTo(effect->map, 0, 0);
     }
+    SYS_doVBlankProcess();
+
 }
 
 void snowEffect_update(SnowEffect *effect, u16 frameCounter) {

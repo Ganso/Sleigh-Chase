@@ -16,6 +16,8 @@ Notas para cualquier asistente que edite el proyecto. Mantener este resumen visi
 - HUD basico (`hud.*`): texto en BG con `VDP_drawText` para contadores por fase. Fase 3 usa su propio HUD de campanas; resto puede reutilizar `hud_*`.
 - Audio central (`audio_manager.*`): `audio_init` configura volumenes y `audio_play_phaseX` dispara las pistas (`XGM2_play`). Usa `audio_stop_music` al salir.
 - Efecto de nieve (`snow_effect.*`): carga `image_primer_plano_nieve` en `BG_A` usando el `globalTileIndex` que se le pasa por puntero; se debe llamar tras cargar el fondo para mantener el orden de tiles.
+- Importante: Después de hacer el primer ScrollTo tras inicializar un MAP, y antes de hacer el siguiente, es importante hacer un refresco de pantalla con SYS_doVBlankProcess();
+- Es importante que todos los fondos se puedan organizar en bloques de 128x128.
 
 ## Detalle por fase (src/)
 - Fase 1 `minigame_pickup.c`: vista cenital con pista desplazada hacia abajo (scroll en `BG_B`). Limites jugables a 10% de cada lateral; movimiento con inercia (`applyInertiaMovement`) y hitbox reducida del trineo. Faltan el disparo especial definitivo y el sprite del regalo que lanzan los elfos laterales. `giftsCollected` sube al chocar con arboles/elfos; el fondo se desplaza con `trackOffsetY` normalizado y el overlay de nieve se mueve con `snowEffect_update`.

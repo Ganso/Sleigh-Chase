@@ -12,6 +12,9 @@
 #include "resources_sprites.h"
 #include "snow_effect.h"
 
+static void traceFunc(const char *funcName);
+#define TRACE_FUNC() traceFunc(__func__)
+
 #define NUM_TREES 1
 #define NUM_ELVES  2
 #define NUM_ENEMIES 2
@@ -19,7 +22,7 @@
 #define TARGET_GIFTS 15
 #define SCROLL_SPEED 1
 #define FORBIDDEN_PERCENT 10
-#define TRACK_LOOP_PX 480
+#define TRACK_LOOP_PX 512
 
 #define ENEMY_LATERAL_DELAY 30
 #define ENEMY_LATERAL_SPEED 1
@@ -38,13 +41,18 @@
 #define ELF_RESPAWN_DELAY_MAX_FRAMES 300  /* 5s a 60fps */
 #define GIFT_SIZE 32
 #define GIFT_ARC_HEIGHT 50
+#define GIFT_COUNTER_MAX 5
 #define SANTA_WIDTH 80
 #define SANTA_HEIGHT 128
 #define SANTA_HITBOX_PADDING 30   /* píxeles que no colisionan a cada lado */
 #define SANTA_HITBOX_WIDTH (SANTA_WIDTH - 2 * SANTA_HITBOX_PADDING)
 #define SANTA_VERTICAL_SPEED 2
-#define TRACK_HEIGHT_PX 640
+#define TRACK_HEIGHT_PX 512
 #define VERTICAL_SLOW_DIV 2  /* factor de retardo vertical (50%) */
+#define HUD_MARGIN_PX 3
+#define DEPTH_SANTA SPR_MIN_DEPTH
+#define DEPTH_HUD (SPR_MIN_DEPTH + 1)
+#define DEPTH_ACTORS_START (SPR_MIN_DEPTH + 2)
 
 typedef struct {
     Sprite* sprite;
@@ -77,13 +85,18 @@ static s16 elfShadowPosX[NUM_ELVES];
 static s16 elfShadowPosY[NUM_ELVES];
 static Sprite* elfGiftSprites[NUM_ELVES];
 static u8 elfGiftActive[NUM_ELVES];
+static u8 elfGiftHasLanded[NUM_ELVES];
+static s16 elfGiftPosX[NUM_ELVES];
+static s16 elfGiftPosY[NUM_ELVES];
 static u16 elfRespawnTimer[NUM_ELVES];
 static u8 elfSide[NUM_ELVES];
 static Map *mapTrack;
 static s16 trackOffsetY;
 static u16 giftsCollected;
 static u16 giftsCharge;
+static Sprite* giftCounterSprite;
 static u16 frameCounter;
+static u8 phaseChangeRequested;
 
 static s16 leftLimit;
 static s16 rightLimit;
@@ -92,8 +105,22 @@ static s16 santaMinY;
 static s16 santaMaxY;
 static GameInertia santaInertia;
 static SnowEffect snowEffect;
+static const char* lastTraceFunc = NULL;
+
+static void traceFunc(const char *funcName) {
+    if (funcName == NULL) return;
+    if (lastTraceFunc != funcName) {
+        lastTraceFunc = funcName;
+        kprintf("[TRACE] %s", funcName);
+    }
+}
+
+static u8 checkCollision(s16 x1, s16 y1, s16 w1, s16 h1, s16 x2, s16 y2, s16 w2, s16 h2);
+static void collectGift(void);
+static void updateGiftCounter(void);
 
 static u8 validateHorizontalRange(s16 minX, s16 maxX, const char* context) {
+    TRACE_FUNC();
     if (maxX <= minX) {
         kprintf("[%s] Rango X invalido (min=%d, max=%d)", context, minX, maxX);
         return FALSE;
@@ -102,6 +129,7 @@ static u8 validateHorizontalRange(s16 minX, s16 maxX, const char* context) {
 }
 
 static void markActorInactive(SimpleActor *actor, const char* context) {
+    TRACE_FUNC();
     actor->active = FALSE;
     kprintf("[%s] Actor desactivado por error de inicializacion", context);
     if (actor->sprite != NULL) {
@@ -110,25 +138,29 @@ static void markActorInactive(SimpleActor *actor, const char* context) {
 }
 
 static void placeActor(SimpleActor *actor, s16 minX, s16 maxX, s16 minY, s16 maxY) {
+    TRACE_FUNC();
     actor->x = minX + (random() % (maxX - minX));
     actor->y = -((random() % (maxY - minY)) + minY);
     actor->active = TRUE;
 }
 
 static u16 randomFrameDelay(u16 minFrames, u16 maxFrames) {
+    TRACE_FUNC();
     if (maxFrames <= minFrames) return minFrames;
     return minFrames + (random() % (maxFrames - minFrames + 1));
 }
 
 static void hideElfMark(u8 index) {
+    if (index >= NUM_ELVES) return;
+    TRACE_FUNC();
     elfMarkShown[index] = FALSE;
     if (elfMarkSprites[index]) {
         SPR_setVisibility(elfMarkSprites[index], HIDDEN);
     }
-    kprintf("[ELF %d] Marca X oculta", index);
 }
 
 static s16 randomPositionWithMargin(s16 totalSize, s16 elementSize, u8 marginPercent) {
+    TRACE_FUNC();
     s16 margin = (totalSize * marginPercent) / 100;
     s16 min = margin;
     s16 max = totalSize - margin - elementSize;
@@ -147,6 +179,8 @@ static s16 randomPositionWithMargin(s16 totalSize, s16 elementSize, u8 marginPer
 }
 
 static void showElfMark(u8 index) {
+    if (index >= NUM_ELVES) return;
+    TRACE_FUNC();
     s16 posX = randomPositionWithMargin(SCREEN_WIDTH, ELF_MARK_SIZE, ELF_MARK_SCREEN_MARGIN_PERCENT);
     s16 posY = randomPositionWithMargin(SCREEN_HEIGHT, ELF_MARK_SIZE, ELF_MARK_SCREEN_MARGIN_PERCENT);
     elfMarkPosX[index] = posX;
@@ -162,11 +196,11 @@ static void showElfMark(u8 index) {
         SPR_setPosition(elfMarkSprites[index], posX, posY);
         SPR_setDepth(elfMarkSprites[index], SPR_MAX_DEPTH); /* siempre al fondo */
         elfMarkShown[index] = TRUE;
-        kprintf("[ELF %d] Marca X mostrada en (%d,%d)", index, posX, posY);
     }
 }
 
 static void spawnTree(SimpleActor *tree) {
+    TRACE_FUNC();
     s16 minX = leftLimit;
     s16 maxX = rightLimit - TREE_SIZE;
     if (!validateHorizontalRange(minX, maxX, "TREE")) {
@@ -188,6 +222,8 @@ static void spawnTree(SimpleActor *tree) {
 }
 
 static void spawnElf(SimpleActor *elf, u8 side, u8 index) {
+    if (index >= NUM_ELVES) return;
+    TRACE_FUNC();
     elf->x = (side == 0) ? (leftLimit - ELF_SIZE - 5) : (rightLimit + 5);
     elf->y = -((random() % (SCREEN_HEIGHT - 60)) + 60);
     elf->active = TRUE;
@@ -218,6 +254,7 @@ static void spawnElf(SimpleActor *elf, u8 side, u8 index) {
 }
 
 static void spawnEnemy(SimpleActor *enemy) {
+    TRACE_FUNC();
     s16 minX = leftLimit;
     s16 maxX = rightLimit - ENEMY_SIZE;
     if (!validateHorizontalRange(minX, maxX, "ENEMY")) {
@@ -239,6 +276,8 @@ static void spawnEnemy(SimpleActor *enemy) {
 }
 
 static void hideElfShadow(u8 index) {
+    if (index >= NUM_ELVES) return;
+    TRACE_FUNC();
     elfShadowActive[index] = FALSE;
     if (elfShadowSprites[index]) {
         SPR_setVisibility(elfShadowSprites[index], HIDDEN);
@@ -248,6 +287,8 @@ static void hideElfShadow(u8 index) {
 }
 
 static void showElfShadow(u8 index, s16 startX, s16 startY) {
+    if (index >= NUM_ELVES) return;
+    TRACE_FUNC();
     elfShadowStartX[index] = startX;
     elfShadowStartY[index] = startY;
     elfShadowActive[index] = TRUE;
@@ -271,14 +312,22 @@ static void showElfShadow(u8 index, s16 startX, s16 startY) {
 }
 
 static void hideElfGift(u8 index) {
+    if (index >= NUM_ELVES) return;
+    TRACE_FUNC();
     elfGiftActive[index] = FALSE;
+    elfGiftHasLanded[index] = FALSE;
     if (elfGiftSprites[index]) {
         SPR_setVisibility(elfGiftSprites[index], HIDDEN);
     }
 }
 
 static void showElfGift(u8 index, s16 startX, s16 startY) {
+    if (index >= NUM_ELVES) return;
+    TRACE_FUNC();
     elfGiftActive[index] = TRUE;
+    elfGiftHasLanded[index] = FALSE;
+    elfGiftPosX[index] = startX;
+    elfGiftPosY[index] = startY;
     if (elfGiftSprites[index] == NULL) {
         elfGiftSprites[index] = SPR_addSpriteSafe(&sprite_regalo, startX, startY,
             TILE_ATTR(PAL_EFFECT, FALSE, FALSE, FALSE));
@@ -292,12 +341,17 @@ static void showElfGift(u8 index, s16 startX, s16 startY) {
 }
 
 static void updateElfGift(u8 index, fix16 progress) {
+    if (index >= NUM_ELVES) return;
+    TRACE_FUNC();
     if (!elfGiftActive[index] || elfGiftSprites[index] == NULL) {
         return;
     }
 
     if (progress <= FIX16(0)) {
         SPR_setPosition(elfGiftSprites[index], elfShadowStartX[index], elfShadowStartY[index]);
+        elfGiftPosX[index] = elfShadowStartX[index];
+        elfGiftPosY[index] = elfShadowStartY[index];
+        elfGiftHasLanded[index] = FALSE;
         return;
     }
 
@@ -314,9 +368,17 @@ static void updateElfGift(u8 index, fix16 progress) {
     s16 posX = F16_toInt(baseXf + FIX16(0.5));
     s16 posY = F16_toInt((baseYf - arcOffsetF) + FIX16(0.5));
     SPR_setPosition(elfGiftSprites[index], posX, posY);
+    elfGiftPosX[index] = posX;
+    elfGiftPosY[index] = posY;
+    elfGiftHasLanded[index] = (progress >= FIX16(1));
+    if (elfGiftHasLanded[index]) {
+        kprintf("[DEBUG GIFT] landed idx=%d pos=(%d,%d)", index, posX, posY);
+    }
 }
 
 static void scheduleElfRespawn(u8 index, u8 side) {
+    if (index >= NUM_ELVES) return;
+    TRACE_FUNC();
     elfSide[index] = side;
     elfRespawnTimer[index] = randomFrameDelay(ELF_RESPAWN_DELAY_MIN_FRAMES, ELF_RESPAWN_DELAY_MAX_FRAMES);
     elves[index].active = FALSE;
@@ -324,10 +386,12 @@ static void scheduleElfRespawn(u8 index, u8 side) {
     hideElfMark(index);
     hideElfShadow(index);
     hideElfGift(index);
-    kprintf("[ELF %d] Respawn en %u frames", index, elfRespawnTimer[index]);
+    kprintf("[ELF %d] Respawn en %u frames (side=%d)", index, elfRespawnTimer[index], side);
 }
 
 static void updateElfShadow(u8 index, fix16 progress) {
+    if (index >= NUM_ELVES) return;
+    TRACE_FUNC();
     if (!elfShadowActive[index] || elfShadowSprites[index] == NULL) {
         return;
     }
@@ -355,9 +419,10 @@ static void updateElfShadow(u8 index, fix16 progress) {
     elfShadowPosY[index] = newY;
 }
 
-static void updateElfMark(u8 index) {
+static void updateElfMark(u8 index, s16 santaHitX, s16 santaHitY, s16 santaHitW, s16 santaHitH) {
+    if (index >= NUM_ELVES) return;
+    TRACE_FUNC();
     const s16 elfBottom = elves[index].y + ELF_SIZE;
-    kprintf("[ELF %d] bottomY=%d", index, elfBottom);
 
     if (!elves[index].active) {
         hideElfMark(index);
@@ -404,6 +469,22 @@ static void updateElfMark(u8 index) {
     updateElfShadow(index, progress);
     updateElfGift(index, progress);
 
+    if (elfGiftHasLanded[index]) {
+        if (checkCollision(santaHitX, santaHitY, santaHitW, santaHitH,
+                elfGiftPosX[index], elfGiftPosY[index], GIFT_SIZE, GIFT_SIZE)) {
+            kprintf("[DEBUG GIFT] collect landed idx=%d giftPos=(%d,%d) santaHit=(%d,%d,%d,%d)", index,
+                elfGiftPosX[index], elfGiftPosY[index], santaHitX, santaHitY, santaHitW, santaHitH);
+            collectGift();
+            hideElfMark(index);
+            hideElfShadow(index);
+            hideElfGift(index);
+            scheduleElfRespawn(index, elfSide[index]);
+        } else {
+            kprintf("[DEBUG GIFT] landed no collision idx=%d giftPos=(%d,%d) santaHit=(%d,%d,%d,%d)", index,
+                elfGiftPosX[index], elfGiftPosY[index], santaHitX, santaHitY, santaHitW, santaHitH);
+        }
+    }
+
     if (aboveRange) {
         hideElfMark(index);
         hideElfShadow(index);
@@ -412,26 +493,56 @@ static void updateElfMark(u8 index) {
 }
 
 static void resetSpecialIfReady(void) {
+    TRACE_FUNC();
     if (giftsCharge >= GIFTS_FOR_SPECIAL) {
         santa.specialReady = TRUE;
-        /* Animación alternativa desactivada para evitar errores si no existe */
+        /* Animacion alternativa desactivada para evitar errores si no existe */
         SPR_setAnim(santa.sprite, 0);
     }
 }
 
+static void requestPhaseChange(void) {
+    TRACE_FUNC();
+    /* TODO: implementar cambio de fase */
+    kprintf("[PHASE] Cambio de fase solicitado (pendiente de implementar)");
+}
+
+static void updateGiftCounter(void) {
+    TRACE_FUNC();
+    if (giftCounterSprite == NULL) return;
+    u16 animIndex = giftsCollected;
+    if (animIndex > GIFT_COUNTER_MAX) animIndex = GIFT_COUNTER_MAX;
+    SPR_setAnim(giftCounterSprite, 0);
+    SPR_setFrame(giftCounterSprite, animIndex);
+    SPR_setVisibility(giftCounterSprite, VISIBLE);
+    SPR_setPosition(giftCounterSprite, HUD_MARGIN_PX, SCREEN_HEIGHT - 32 - HUD_MARGIN_PX);
+    SPR_setDepth(giftCounterSprite, DEPTH_HUD);
+    kprintf("[DEBUG HUD] counter anim=%u gifts=%u", animIndex, giftsCollected);
+}
+
 static void collectGift(void) {
+    TRACE_FUNC();
     giftsCollected++;
+    if (giftsCollected > GIFT_COUNTER_MAX) giftsCollected = GIFT_COUNTER_MAX;
     giftsCharge++;
+    kprintf("[DEBUG GIFT] collectGift giftsCollected=%u giftsCharge=%u", giftsCollected, giftsCharge);
     resetSpecialIfReady();
+    updateGiftCounter();
+    if (!phaseChangeRequested && (giftsCollected >= GIFT_COUNTER_MAX)) {
+        phaseChangeRequested = TRUE;
+        requestPhaseChange();
+    }
 }
 
 static void clearEnemies(void) {
+    TRACE_FUNC();
     for (u8 i = 0; i < NUM_ENEMIES; i++) {
         spawnEnemy(&enemies[i]);
     }
 }
 
 static u8 checkCollision(s16 x1, s16 y1, s16 w1, s16 h1, s16 x2, s16 y2, s16 w2, s16 h2) {
+    TRACE_FUNC();
     return (x1 < x2 + w2) && (x1 + w1 > x2) && (y1 < y2 + h2) && (y1 + h1 > y2);
 }
 
@@ -441,17 +552,13 @@ typedef struct {
 } DepthEntry;
 
 static void reorderDepthByBottom(void) {
-    DepthEntry entries[NUM_TREES + NUM_ENEMIES + NUM_ELVES + 1];
+    TRACE_FUNC();
+    DepthEntry entries[NUM_TREES + NUM_ENEMIES + NUM_ELVES];
     u8 count = 0;
-
-    if (santa.sprite) {
-        entries[count].sprite = santa.sprite;
-        entries[count].bottom = santa.y + SANTA_HEIGHT;
-        count++;
-    }
 
     for (u8 i = 0; i < NUM_TREES; i++) {
         if (trees[i].sprite && trees[i].active) {
+            if (count >= sizeof(entries) / sizeof(entries[0])) break;
             entries[count].sprite = trees[i].sprite;
             entries[count].bottom = trees[i].y + TREE_SIZE;
             count++;
@@ -460,6 +567,7 @@ static void reorderDepthByBottom(void) {
 
     for (u8 i = 0; i < NUM_ENEMIES; i++) {
         if (enemies[i].sprite && enemies[i].active) {
+            if (count >= sizeof(entries) / sizeof(entries[0])) break;
             entries[count].sprite = enemies[i].sprite;
             entries[count].bottom = enemies[i].y + ENEMY_SIZE;
             count++;
@@ -468,8 +576,9 @@ static void reorderDepthByBottom(void) {
 
     for (u8 i = 0; i < NUM_ELVES; i++) {
         if (elfGiftSprites[i] && elfGiftActive[i]) {
+            if (count >= sizeof(entries) / sizeof(entries[0])) break;
             entries[count].sprite = elfGiftSprites[i];
-            entries[count].bottom = elfShadowPosY[i] + GIFT_SIZE;
+            entries[count].bottom = elfGiftPosY[i] + GIFT_SIZE;
             count++;
         }
     }
@@ -485,7 +594,7 @@ static void reorderDepthByBottom(void) {
         }
     }
 
-    u16 depth = SPR_MIN_DEPTH;
+    u16 depth = DEPTH_ACTORS_START;
     for (u8 i = 0; i < count; i++) {
         SPR_setDepth(entries[i].sprite, depth++);
     }
@@ -493,26 +602,29 @@ static void reorderDepthByBottom(void) {
 
 #if DEBUG_MODE
 static void renderDebug(void) {
+    TRACE_FUNC();
 }
 #endif
 
 void minigamePickup_init(void) {
+    TRACE_FUNC();
     VDP_setScreenWidth320();
     VDP_setScreenHeight224();
     VDP_clearPlane(BG_A, TRUE);
     VDP_clearPlane(BG_B, TRUE);
-
+    VDP_setPlaneSize(64, 64, TRUE);
     gameCore_resetTileIndex();
-    trackOffsetY = 0;
     giftsCollected = 0;
     giftsCharge = 0;
+    giftCounterSprite = NULL;
     frameCounter = 0;
+    phaseChangeRequested = FALSE;
 
     leftLimit = (SCREEN_WIDTH * FORBIDDEN_PERCENT) / 100;
     rightLimit = SCREEN_WIDTH - leftLimit;
     playableWidth = rightLimit - leftLimit - SANTA_WIDTH;
     santaMinY = 0;
-    santaMaxY = SCREEN_HEIGHT - (SANTA_HEIGHT / 2);
+    santaMaxY = SCREEN_HEIGHT - SANTA_HEIGHT; /* dejar sprite completo visible */
     santaInertia.accel = 1;
     santaInertia.friction = 1;
     santaInertia.frictionDelay = 3; /* frena cada 3 frames para aumentar la inercia */
@@ -533,16 +645,16 @@ void minigamePickup_init(void) {
     VDP_loadTileSet(&image_pista_polo_tile, globalTileIndex, CPU);
     mapTrack = MAP_create(&image_pista_polo_map, BG_B,
         TILE_ATTR_FULL(PAL_COMMON, FALSE, FALSE, FALSE, globalTileIndex));
-    globalTileIndex += image_pista_polo_tile.numTile;
-    
-    trackOffsetY = 0;
+    globalTileIndex += image_pista_polo_tile.numTile;   
+    trackOffsetY = TRACK_LOOP_PX;
     if (mapTrack != NULL) {
         MAP_scrollTo(mapTrack, 0, trackOffsetY);
     }
+    SYS_doVBlankProcess();
 
     snowEffect_init(&snowEffect, &globalTileIndex, 1, -2);
 
-    santa.x = leftLimit + playableWidth / 2;
+    santa.x = leftLimit + ((playableWidth * 3) / 4); /* 75% para dejar hueco al marcador */
     santa.y = santaMaxY;
     santa.vx = 0;
     santa.vy = 0;
@@ -550,7 +662,17 @@ void minigamePickup_init(void) {
     santa.sprite = SPR_addSpriteSafe(&sprite_santa_car, santa.x, santa.y,
         TILE_ATTR(PAL_PLAYER, FALSE, FALSE, FALSE));
     SPR_setAnim(santa.sprite, 0);
-    SPR_setDepth(santa.sprite, SPR_MIN_DEPTH);
+    SPR_setDepth(santa.sprite, DEPTH_SANTA);
+
+    giftCounterSprite = SPR_addSpriteSafe(&sprite_icono_regalo, HUD_MARGIN_PX, SCREEN_HEIGHT - 32 - HUD_MARGIN_PX,
+        TILE_ATTR(PAL_EFFECT, FALSE, FALSE, FALSE));
+    if (giftCounterSprite) {
+        SPR_setAnim(giftCounterSprite, 0);
+        SPR_setFrame(giftCounterSprite, 0);
+        SPR_setDepth(giftCounterSprite, DEPTH_HUD);
+        SPR_setAutoAnimation(giftCounterSprite, FALSE);
+        SPR_setPosition(giftCounterSprite, HUD_MARGIN_PX, SCREEN_HEIGHT - 32 - HUD_MARGIN_PX);
+    }
 
     for (u8 i = 0; i < NUM_TREES; i++) {
         trees[i].sprite = NULL;
@@ -567,6 +689,9 @@ void minigamePickup_init(void) {
         elfShadowPosY[i] = 0;
         elfGiftSprites[i] = NULL;
         elfGiftActive[i] = FALSE;
+        elfGiftHasLanded[i] = FALSE;
+        elfGiftPosX[i] = 0;
+        elfGiftPosY[i] = 0;
         elfRespawnTimer[i] = randomFrameDelay(ELF_RESPAWN_DELAY_MIN_FRAMES, ELF_RESPAWN_DELAY_MAX_FRAMES);
         elfSide[i] = i % 2;
         elves[i].active = FALSE;
@@ -579,6 +704,7 @@ void minigamePickup_init(void) {
 }
 
 void minigamePickup_update(void) {
+    TRACE_FUNC();
     u16 input = gameCore_readInput();
     s8 inputDirX = 0;
     s8 inputDirY = 0;
@@ -588,6 +714,12 @@ void minigamePickup_update(void) {
 
     if (input & BUTTON_UP) inputDirY = -1;
     else if (input & BUTTON_DOWN) inputDirY = 1;
+
+    if (giftCounterSprite) {
+        SPR_setPosition(giftCounterSprite, HUD_MARGIN_PX, SCREEN_HEIGHT - 32 - HUD_MARGIN_PX);
+        SPR_setDepth(giftCounterSprite, DEPTH_HUD);
+        SPR_setVisibility(giftCounterSprite, VISIBLE);
+    }
 
     if (santa.specialReady && (input & BUTTON_B)) {
         santa.specialReady = FALSE;
@@ -602,6 +734,7 @@ void minigamePickup_update(void) {
         santaMinY, santaMaxY,
         frameCounter, &santaInertia);
     SPR_setPosition(santa.sprite, santa.x, santa.y);
+    SPR_setDepth(santa.sprite, DEPTH_SANTA);
 
     /* Caja de colisión reducida: solo los 40 px centrales (80 px de sprite) */
     const s16 santaHitX = santa.x + SANTA_HITBOX_PADDING;
@@ -637,7 +770,10 @@ void minigamePickup_update(void) {
                 trees[i].x,
                 trees[i].y + (TREE_SIZE - TREE_HITBOX_HEIGHT),
                 TREE_SIZE, TREE_HITBOX_HEIGHT)) {
-            collectGift();
+            if (giftsCollected > 0) {
+                giftsCollected--;
+                updateGiftCounter();
+            }
             spawnTree(&trees[i]);
         }
         SPR_setPosition(trees[i].sprite, trees[i].x, trees[i].y);
@@ -669,7 +805,7 @@ void minigamePickup_update(void) {
             scheduleElfRespawn(i, i % 2);
             continue;
         }
-        updateElfMark(i);
+        updateElfMark(i, santaHitX, santaHitY, santaHitW, santaHitH);
         SPR_setPosition(elves[i].sprite, elves[i].x, elves[i].y);
     }
 
@@ -690,6 +826,7 @@ void minigamePickup_update(void) {
                 ENEMY_SIZE, ENEMY_HITBOX_HEIGHT)) {
             if (giftsCollected > 0) {
                 giftsCollected--;
+                updateGiftCounter();
             }
             spawnEnemy(&enemies[i]);
         }
@@ -702,6 +839,7 @@ void minigamePickup_update(void) {
 }
 
 void minigamePickup_render(void) {
+    TRACE_FUNC();
 #if DEBUG_MODE
     renderDebug();
 #endif
@@ -711,5 +849,6 @@ void minigamePickup_render(void) {
 }
 
 u8 minigamePickup_isComplete(void) {
+    TRACE_FUNC();
     return (giftsCollected >= TARGET_GIFTS);
 }
