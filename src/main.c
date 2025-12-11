@@ -56,7 +56,6 @@ int main() {
             case PHASE_PICKUP:
                 /* Fase 1: Recogida - Polo Norte */
                 KLog("Fase 1: Recogida");
-                audio_play_phase1();
                 minigamePickup_init();
                 while (!minigamePickup_isComplete()) {
                     minigamePickup_update();

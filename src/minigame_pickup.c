@@ -8,6 +8,7 @@
  */
 
 #include "minigame_pickup.h"
+#include "audio_manager.h"
 #include "resources_bg.h"
 #include "resources_sprites.h"
 #include "resources_sfx.h"
@@ -27,6 +28,7 @@ static void traceFunc(const char *funcName);
 
 #define ENEMY_LATERAL_DELAY 30
 #define ENEMY_LATERAL_SPEED 1
+#define ENEMY_ESCAPE_SPEED 3
 
 #define TREE_SIZE 64
 #define TREE_HITBOX_HEIGHT 10
@@ -43,6 +45,7 @@ static void traceFunc(const char *funcName);
 #define GIFT_SIZE 32
 #define GIFT_ARC_HEIGHT 50
 #define GIFT_COUNTER_MAX 5
+#define MUSIC_START_DELAY_FRAMES 60
 #define MUSIC_FM_VOLUME 70
 #define MUSIC_PSG_VOLUME 100
 #define SANTA_WIDTH 80
@@ -56,7 +59,7 @@ static void traceFunc(const char *funcName);
 #define DEPTH_SANTA SPR_MIN_DEPTH
 #define DEPTH_HUD (SPR_MIN_DEPTH + 1)
 #define DEPTH_ACTORS_START (SPR_MIN_DEPTH + 2)
-#define TREE_COLLISION_BLINK_FRAMES 60
+#define TREE_COLLISION_BLINK_FRAMES 120
 #define TREE_COLLISION_BLINK_INTERVAL_FRAMES 6
 
 typedef struct {
@@ -102,6 +105,9 @@ static u16 giftsCharge;
 static Sprite* giftCounterSprite;
 static u16 frameCounter;
 static u8 phaseChangeRequested;
+static u8 musicStarted;
+static u16 musicStartDelayFrames;
+static u8 waitingMusicFadeIn;
 
 static s16 leftLimit;
 static s16 rightLimit;
@@ -117,6 +123,10 @@ static u8 recoveringFromTree;
 static u16 treeCollisionBlinkFrames;
 static u8 treeCollisionVisible;
 static SimpleActor* collidedTree;
+static u8 enemyStealActive;
+static u8 enemyStealIndex;
+static s16 enemyEscapeTargetX;
+static s16 enemyEscapeTargetY;
 
 static void traceFunc(const char *funcName) {
     if (funcName == NULL) return;
@@ -132,6 +142,13 @@ static void updateGiftCounter(void);
 static void beginTreeCollision(SimpleActor *tree);
 static void updateTreeCollisionRecovery(void);
 static void endTreeCollisionRecovery(void);
+static void selectEnemyEscapeTarget(SimpleActor *enemy, s16 *targetX, s16 *targetY);
+static void beginEnemyStealSequence(u8 enemyIndex);
+static void updateEnemyStealSequence(void);
+static void endEnemyStealSequence(void);
+static void startMusicAfterHoHoHo(void);
+static void clearEnemiesOnTreeCollision(void);
+static void clearElvesOnTreeCollision(void);
 
 static u8 validateHorizontalRange(s16 minX, s16 maxX, const char* context) {
     TRACE_FUNC();
@@ -263,6 +280,8 @@ static void spawnElf(SimpleActor *elf, u8 side, u8 index) {
     }
     elf->active = TRUE;
     SPR_setHFlip(elf->sprite, side == 1);
+    SPR_setAnim(elf->sprite, 0);
+    SPR_setAutoAnimation(elf->sprite, TRUE);
     SPR_setPosition(elf->sprite, elf->x, elf->y);
     SPR_setVisibility(elf->sprite, VISIBLE);
 }
@@ -287,6 +306,9 @@ static void spawnEnemy(SimpleActor *enemy) {
     }
     enemy->active = TRUE;
     SPR_setPosition(enemy->sprite, enemy->x, enemy->y);
+    SPR_setAnim(enemy->sprite, 0);
+    SPR_setAutoAnimation(enemy->sprite, TRUE);
+    SPR_setVisibility(enemy->sprite, VISIBLE);
 }
 
 static void hideElfShadow(u8 index) {
@@ -325,9 +347,12 @@ static void showElfShadow(u8 index, s16 startX, s16 startY) {
     }
 }
 
-static void hideElfGift(u8 index) {
+static void hideElfGift(u8 index, u8 playDisappearSfx) {
     if (index >= NUM_ELVES) return;
     TRACE_FUNC();
+    if (playDisappearSfx && elfGiftActive[index]) {
+        XGM2_playPCM(snd_regalo_desaparece, sizeof(snd_regalo_desaparece), SOUND_PCM_CH_AUTO);
+    }
     elfGiftActive[index] = FALSE;
     elfGiftHasLanded[index] = FALSE;
     if (elfGiftSprites[index]) {
@@ -349,8 +374,14 @@ static void showElfGift(u8 index, s16 startX, s16 startY) {
     if (elfGiftSprites[index]) {
         SPR_setVisibility(elfGiftSprites[index], VISIBLE);
         SPR_setPosition(elfGiftSprites[index], startX, startY);
+        XGM2_playPCM(snd_regalo_disparado, sizeof(snd_regalo_disparado), SOUND_PCM_CH_AUTO);
     } else {
         elfGiftActive[index] = FALSE;
+    }
+    /* El elfo cambia a la animacion 1 sin loop mientras lanza */
+    if (elves[index].sprite) {
+        SPR_setAnim(elves[index].sprite, 1);
+        SPR_setAnimationLoop(elves[index].sprite, FALSE);
     }
 }
 
@@ -396,10 +427,14 @@ static void scheduleElfRespawn(u8 index, u8 side) {
     elfSide[index] = side;
     elfRespawnTimer[index] = randomFrameDelay(ELF_RESPAWN_DELAY_MIN_FRAMES, ELF_RESPAWN_DELAY_MAX_FRAMES);
     elves[index].active = FALSE;
-    if (elves[index].sprite) SPR_setVisibility(elves[index].sprite, HIDDEN);
+    if (elves[index].sprite) {
+        SPR_setAnim(elves[index].sprite, 0);
+        SPR_setAutoAnimation(elves[index].sprite, TRUE);
+        SPR_setVisibility(elves[index].sprite, HIDDEN);
+    }
     hideElfMark(index);
     hideElfShadow(index);
-    hideElfGift(index);
+    hideElfGift(index, TRUE);
     kprintf("[ELF %d] Respawn en %u frames (side=%d)", index, elfRespawnTimer[index], side);
 }
 
@@ -441,7 +476,7 @@ static void updateElfMark(u8 index, s16 santaHitX, s16 santaHitY, s16 santaHitW,
     if (!elves[index].active) {
         hideElfMark(index);
         hideElfShadow(index);
-        hideElfGift(index);
+        hideElfGift(index, FALSE);
         if (elfRespawnTimer[index] > 0) {
             elfRespawnTimer[index]--;
             if (elfRespawnTimer[index] == 0) {
@@ -459,11 +494,18 @@ static void updateElfMark(u8 index, s16 santaHitX, s16 santaHitY, s16 santaHitW,
     if (belowRange) {
         hideElfMark(index);
         hideElfShadow(index);
-        hideElfGift(index);
+        hideElfGift(index, FALSE);
         return;
     }
 
-    /* Muestra solo dentro del rango visible */
+    if (aboveRange) {
+        hideElfMark(index);
+        hideElfShadow(index);
+        hideElfGift(index, TRUE);
+        return;
+    }
+
+    /* Muestra solo dentro del rango visible (una vez por aparición) */
     if (!elfMarkShown[index]) {
         showElfMark(index);
         showElfShadow(index, elves[index].x, elves[index].y);
@@ -483,7 +525,7 @@ static void updateElfMark(u8 index, s16 santaHitX, s16 santaHitY, s16 santaHitW,
     updateElfShadow(index, progress);
     updateElfGift(index, progress);
 
-    if (elfGiftHasLanded[index]) {
+    if (elfGiftActive[index] && elfGiftHasLanded[index]) {
         if (checkCollision(santaHitX, santaHitY, santaHitW, santaHitH,
                 elfGiftPosX[index], elfGiftPosY[index], GIFT_SIZE, GIFT_SIZE)) {
             kprintf("[DEBUG GIFT] collect landed idx=%d giftPos=(%d,%d) santaHit=(%d,%d,%d,%d)", index,
@@ -491,18 +533,9 @@ static void updateElfMark(u8 index, s16 santaHitX, s16 santaHitY, s16 santaHitW,
             collectGift();
             hideElfMark(index);
             hideElfShadow(index);
-            hideElfGift(index);
+            hideElfGift(index, FALSE);
             scheduleElfRespawn(index, elfSide[index]);
-        } else {
-            kprintf("[DEBUG GIFT] landed no collision idx=%d giftPos=(%d,%d) santaHit=(%d,%d,%d,%d)", index,
-                elfGiftPosX[index], elfGiftPosY[index], santaHitX, santaHitY, santaHitW, santaHitH);
         }
-    }
-
-    if (aboveRange) {
-        hideElfMark(index);
-        hideElfShadow(index);
-        hideElfGift(index);
     }
 }
 
@@ -536,6 +569,7 @@ static void updateGiftCounter(void) {
 
 static void collectGift(void) {
     TRACE_FUNC();
+    XGM2_playPCM(snd_regalo_recogido, sizeof(snd_regalo_recogido), SOUND_PCM_CH_AUTO);
     giftsCollected++;
     if (giftsCollected > GIFT_COUNTER_MAX) giftsCollected = GIFT_COUNTER_MAX;
     giftsCharge++;
@@ -577,13 +611,18 @@ static void beginTreeCollision(SimpleActor *tree) {
     recoveringFromTree = TRUE;
     treeCollisionBlinkFrames = TREE_COLLISION_BLINK_FRAMES;
     treeCollisionVisible = TRUE;
+    waitingMusicFadeIn = FALSE;
+
+    clearEnemiesOnTreeCollision();
+    clearElvesOnTreeCollision();
 
     if (giftsCollected > 0) {
         giftsCollected--;
         updateGiftCounter();
     }
 
-    XGM2_pause();
+    XGM2_setFMVolume(0);
+    XGM2_setPSGVolume(0);
     XGM2_playPCM(snd_obstaculo_golpe, sizeof(snd_obstaculo_golpe), SOUND_PCM_CH_AUTO);
     setTreeCollisionVisibility(TRUE);
 }
@@ -609,29 +648,126 @@ static void endTreeCollisionRecovery(void) {
 
     XGM2_setFMVolume(0);
     XGM2_setPSGVolume(0);
-    XGM2_resume();
     XGM2_setFMVolume(MUSIC_FM_VOLUME);
     XGM2_setPSGVolume(MUSIC_PSG_VOLUME);
     XGM2_fadeIn(60);
+    waitingMusicFadeIn = TRUE;
+    XGM2_playPCM(snd_santa_hohoho, sizeof(snd_santa_hohoho), SOUND_PCM_CH_AUTO);
 
-    recoveringFromTree = FALSE;
+    for (u8 i = 0; i < NUM_ENEMIES; i++) {
+        spawnEnemy(&enemies[i]);
+    }
+    for (u8 i = 0; i < NUM_ELVES; i++) {
+        if (elfRespawnTimer[i] == 0) {
+            elfRespawnTimer[i] = randomFrameDelay(ELF_RESPAWN_DELAY_MIN_FRAMES, ELF_RESPAWN_DELAY_MAX_FRAMES);
+        }
+    }
+
+    recoveringFromTree = TRUE;
 }
 
 static void updateTreeCollisionRecovery(void) {
     TRACE_FUNC();
     if (!recoveringFromTree) return;
 
-    if ((treeCollisionBlinkFrames % TREE_COLLISION_BLINK_INTERVAL_FRAMES) == 0) {
-        treeCollisionVisible = !treeCollisionVisible;
-        setTreeCollisionVisibility(treeCollisionVisible);
-    }
-
     if (treeCollisionBlinkFrames > 0) {
+        if ((treeCollisionBlinkFrames % TREE_COLLISION_BLINK_INTERVAL_FRAMES) == 0) {
+            treeCollisionVisible = !treeCollisionVisible;
+            setTreeCollisionVisibility(treeCollisionVisible);
+        }
         treeCollisionBlinkFrames--;
+        if (treeCollisionBlinkFrames == 0) {
+            endTreeCollisionRecovery();
+        }
+        return;
     }
 
-    if (treeCollisionBlinkFrames == 0) {
-        endTreeCollisionRecovery();
+    if (waitingMusicFadeIn) {
+        if (!XGM2_isProcessingFade()) {
+            waitingMusicFadeIn = FALSE;
+            recoveringFromTree = FALSE;
+        }
+        return;
+    }
+}
+
+static void selectEnemyEscapeTarget(SimpleActor *enemy, s16 *targetX, s16 *targetY) {
+    TRACE_FUNC();
+    const s16 cornerX[4] = { -ENEMY_SIZE, SCREEN_WIDTH, -ENEMY_SIZE, SCREEN_WIDTH };
+    const s16 cornerY[4] = { -ENEMY_SIZE, -ENEMY_SIZE, SCREEN_HEIGHT, SCREEN_HEIGHT };
+    u32 bestDist = 0xFFFFFFFF;
+    u8 bestIndex = 0;
+
+    for (u8 i = 0; i < 4; i++) {
+        s32 dx = (s32)cornerX[i] - (s32)enemy->x;
+        s32 dy = (s32)cornerY[i] - (s32)enemy->y;
+        u32 dist = (u32)(dx * dx + dy * dy);
+        if (dist < bestDist) {
+            bestDist = dist;
+            bestIndex = i;
+        }
+    }
+
+    *targetX = cornerX[bestIndex];
+    *targetY = cornerY[bestIndex];
+}
+
+static void endEnemyStealSequence(void) {
+    TRACE_FUNC();
+    enemyStealActive = FALSE;
+    spawnEnemy(&enemies[enemyStealIndex]);
+}
+
+static void beginEnemyStealSequence(u8 enemyIndex) {
+    if (enemyIndex >= NUM_ENEMIES) return;
+    TRACE_FUNC();
+    enemyStealActive = TRUE;
+    enemyStealIndex = enemyIndex;
+    selectEnemyEscapeTarget(&enemies[enemyIndex], &enemyEscapeTargetX, &enemyEscapeTargetY);
+    if (enemies[enemyIndex].sprite) {
+        SPR_setAnim(enemies[enemyIndex].sprite, 1);
+        SPR_setAutoAnimation(enemies[enemyIndex].sprite, TRUE);
+    }
+    XGM2_playPCM(snd_elfo_robando, sizeof(snd_elfo_robando), SOUND_PCM_CH_AUTO);
+}
+
+static void updateEnemyStealSequence(void) {
+    if (!enemyStealActive) return;
+    TRACE_FUNC();
+    SimpleActor *enemy = &enemies[enemyStealIndex];
+
+    if (!enemy->active || (enemy->sprite == NULL)) {
+        endEnemyStealSequence();
+        return;
+    }
+
+    s16 dx = enemyEscapeTargetX - enemy->x;
+    s16 dy = enemyEscapeTargetY - enemy->y;
+
+    s16 stepX = 0;
+    s16 stepY = 0;
+    if (dx > 0) stepX = ENEMY_ESCAPE_SPEED;
+    else if (dx < 0) stepX = -ENEMY_ESCAPE_SPEED;
+    if (dy > 0) stepY = ENEMY_ESCAPE_SPEED;
+    else if (dy < 0) stepY = -ENEMY_ESCAPE_SPEED;
+
+    enemy->x += stepX;
+    enemy->y += stepY;
+
+    if (enemy->sprite) {
+        SPR_setPosition(enemy->sprite, enemy->x, enemy->y);
+    }
+
+    if ((dx == 0) && (dy == 0)) {
+        endEnemyStealSequence();
+        return;
+    }
+
+    const u8 offScreen =
+        (enemy->x < -ENEMY_SIZE) || (enemy->x > SCREEN_WIDTH) ||
+        (enemy->y < -ENEMY_SIZE) || (enemy->y > SCREEN_HEIGHT);
+    if (offScreen) {
+        endEnemyStealSequence();
     }
 }
 
@@ -642,8 +778,14 @@ typedef struct {
 
 static void reorderDepthByBottom(void) {
     TRACE_FUNC();
-    DepthEntry entries[NUM_TREES + NUM_ENEMIES + NUM_ELVES];
+    DepthEntry entries[NUM_TREES + NUM_ENEMIES + NUM_ELVES + NUM_ELVES + 1];
     u8 count = 0;
+
+    if (santa.sprite) {
+        entries[count].sprite = santa.sprite;
+        entries[count].bottom = santa.y + SANTA_HEIGHT;
+        count++;
+    }
 
     for (u8 i = 0; i < NUM_TREES; i++) {
         if (trees[i].sprite && trees[i].active) {
@@ -659,6 +801,15 @@ static void reorderDepthByBottom(void) {
             if (count >= sizeof(entries) / sizeof(entries[0])) break;
             entries[count].sprite = enemies[i].sprite;
             entries[count].bottom = enemies[i].y + ENEMY_SIZE;
+            count++;
+        }
+    }
+
+    for (u8 i = 0; i < NUM_ELVES; i++) {
+        if (elves[i].sprite && elves[i].active) {
+            if (count >= sizeof(entries) / sizeof(entries[0])) break;
+            entries[count].sprite = elves[i].sprite;
+            entries[count].bottom = elves[i].y + ELF_SIZE;
             count++;
         }
     }
@@ -712,6 +863,13 @@ void minigamePickup_init(void) {
     treeCollisionBlinkFrames = 0;
     treeCollisionVisible = TRUE;
     collidedTree = NULL;
+    enemyStealActive = FALSE;
+    enemyStealIndex = 0;
+    enemyEscapeTargetX = 0;
+    enemyEscapeTargetY = 0;
+    musicStarted = FALSE;
+    musicStartDelayFrames = MUSIC_START_DELAY_FRAMES;
+    waitingMusicFadeIn = FALSE;
 
     leftLimit = (SCREEN_WIDTH * FORBIDDEN_PERCENT) / 100;
     rightLimit = SCREEN_WIDTH - leftLimit;
@@ -758,6 +916,7 @@ void minigamePickup_init(void) {
         TILE_ATTR(PAL_PLAYER, FALSE, FALSE, FALSE));
     SPR_setAnim(santa.sprite, 0);
     SPR_setDepth(santa.sprite, DEPTH_SANTA);
+    XGM2_playPCM(snd_santa_hohoho, sizeof(snd_santa_hohoho), SOUND_PCM_CH_AUTO);
 
     giftCounterSprite = SPR_addSpriteSafe(&sprite_icono_regalo, HUD_MARGIN_PX, SCREEN_HEIGHT - 32 - HUD_MARGIN_PX,
         TILE_ATTR(PAL_EFFECT, FALSE, FALSE, FALSE));
@@ -800,8 +959,18 @@ void minigamePickup_init(void) {
 
 void minigamePickup_update(void) {
     TRACE_FUNC();
+    startMusicAfterHoHoHo();
+    if (musicStarted && !recoveringFromTree && !waitingMusicFadeIn) {
+        audio_ensure_phase1_playing();
+    }
     updateTreeCollisionRecovery();
     if (recoveringFromTree) {
+        frameCounter++;
+        return;
+    }
+    if (enemyStealActive) {
+        updateEnemyStealSequence();
+        reorderDepthByBottom();
         frameCounter++;
         return;
     }
@@ -880,7 +1049,7 @@ void minigamePickup_update(void) {
         if (!elves[i].active) {
             hideElfMark(i);
             hideElfShadow(i);
-            hideElfGift(i);
+            hideElfGift(i, FALSE);
             if (elfRespawnTimer[i] > 0) {
                 elfRespawnTimer[i]--;
                 if (elfRespawnTimer[i] == 0) {
@@ -895,12 +1064,6 @@ void minigamePickup_update(void) {
                 scheduleElfRespawn(i, i % 2);
                 continue;
             }
-        }
-        if (checkCollision(santaHitX, santaHitY, santaHitW, santaHitH,
-                elves[i].x, elves[i].y, ELF_SIZE, ELF_SIZE)) {
-            collectGift();
-            scheduleElfRespawn(i, i % 2);
-            continue;
         }
         updateElfMark(i, santaHitX, santaHitY, santaHitW, santaHitH);
         SPR_setPosition(elves[i].sprite, elves[i].x, elves[i].y);
@@ -924,6 +1087,13 @@ void minigamePickup_update(void) {
             if (giftsCollected > 0) {
                 giftsCollected--;
                 updateGiftCounter();
+                beginEnemyStealSequence(i);
+                updateEnemyStealSequence();
+                reorderDepthByBottom();
+                frameCounter++;
+                return;
+            } else {
+                XGM2_playPCM(snd_elfo_choque, sizeof(snd_elfo_choque), SOUND_PCM_CH_AUTO);
             }
             spawnEnemy(&enemies[i]);
         }
@@ -948,4 +1118,37 @@ void minigamePickup_render(void) {
 u8 minigamePickup_isComplete(void) {
     TRACE_FUNC();
     return (giftsCollected >= TARGET_GIFTS);
+}
+
+static void startMusicAfterHoHoHo(void) {
+    if (musicStarted) return;
+    if (musicStartDelayFrames > 0) {
+        musicStartDelayFrames--;
+        return;
+    }
+    audio_play_phase1();
+    musicStarted = TRUE;
+}
+
+static void clearEnemiesOnTreeCollision(void) {
+    enemyStealActive = FALSE;
+    for (u8 i = 0; i < NUM_ENEMIES; i++) {
+        enemies[i].active = FALSE;
+        if (enemies[i].sprite) {
+            SPR_setVisibility(enemies[i].sprite, HIDDEN);
+        }
+    }
+}
+
+static void clearElvesOnTreeCollision(void) {
+    for (u8 i = 0; i < NUM_ELVES; i++) {
+        elves[i].active = FALSE;
+        elfRespawnTimer[i] = randomFrameDelay(ELF_RESPAWN_DELAY_MIN_FRAMES, ELF_RESPAWN_DELAY_MAX_FRAMES);
+        hideElfMark(i);
+        hideElfShadow(i);
+        hideElfGift(i, TRUE);
+        if (elves[i].sprite) {
+            SPR_setVisibility(elves[i].sprite, HIDDEN);
+        }
+    }
 }

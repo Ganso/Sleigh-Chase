@@ -31,6 +31,7 @@ void geesebumps_logo(void)
     PAL_setPalette(PAL3, geesebumps_pal_white.data, DMA);
 
     // Background music
+    XGM2_setLoopNumber(-1);
     XGM2_play(music_geesebumps);
     
     // Fist part of the logo (Goose)

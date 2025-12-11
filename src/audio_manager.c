@@ -41,6 +41,12 @@ void audio_stop_music(void) {
     XGM2_stop();
 }
 
+void audio_ensure_phase1_playing(void) {
+    /* Sin API para consultar estado; por si acaso reestablecemos volúmenes del loop de fase 1 */
+    XGM2_setFMVolume(70);
+    XGM2_setPSGVolume(100);
+}
+
 void audio_test_playback(const u8* vgm_track) {
     VDP_clearTextArea(0, 0, 40, 28);
     VDP_drawText("probando musica...", 10, 12);
