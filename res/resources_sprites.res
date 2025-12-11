@@ -5,6 +5,24 @@ SPRITE sprite_canon "sprites/Canon.png" 10 8 BEST 1
 SPRITE sprite_bomba "sprites/Bomba.png" 4 4 BEST 1
 SPRITE sprite_bola_confeti "sprites/BolaConfeti.png" 1 1 BEST 1
 
+# Letras FELIZ2025 (placeholder hasta actualizar a 2026)
+SPRITE sprite_letra_f "sprites/letra/LetraF.png" 4 4 BEST 1
+SPRITE sprite_letra_bn_f "sprites/letra/LetraF_bn.png" 4 4 BEST 1
+SPRITE sprite_letra_e "sprites/letra/LetraE.png" 4 4 BEST 1
+SPRITE sprite_letra_bn_e "sprites/letra/LetraE_bn.png" 4 4 BEST 1
+SPRITE sprite_letra_l "sprites/letra/LetraL.png" 4 4 BEST 1
+SPRITE sprite_letra_bn_l "sprites/letra/LetraL_bn.png" 4 4 BEST 1
+SPRITE sprite_letra_i "sprites/letra/LetraI.png" 4 4 BEST 1
+SPRITE sprite_letra_bn_i "sprites/letra/LetraI_bn.png" 4 4 BEST 1
+SPRITE sprite_letra_z "sprites/letra/LetraZ.png" 4 4 BEST 1
+SPRITE sprite_letra_bn_z "sprites/letra/LetraZ_bn.png" 4 4 BEST 1
+SPRITE sprite_letra_2 "sprites/letra/Letra2.png" 4 4 BEST 1
+SPRITE sprite_letra_bn_2 "sprites/letra/Letra2_bn.png" 4 4 BEST 1
+SPRITE sprite_letra_0 "sprites/letra/Letra0.png" 4 4 BEST 1
+SPRITE sprite_letra_bn_0 "sprites/letra/Letra0_bn.png" 4 4 BEST 1
+SPRITE sprite_letra_5 "sprites/letra/Letra5.png" 4 4 BEST 1
+SPRITE sprite_letra_bn_5 "sprites/letra/Letra5_bn.png" 4 4 BEST 1
+
 # Fase 1
 SPRITE sprite_regalo "sprites/Regalo.png" 2 2 BEST 5
 SPRITE sprite_santa_car "sprites/SantaCar.png" 10 16 BEST 2
