@@ -11,16 +11,31 @@
 #include "resources_sprites.h"
 #include "snow_effect.h"
 
+#define ENABLE_OPTIONAL_LETTER_SFX 0
+
 #define NUM_BELLS 6
 #define NUM_FIXED_BELLS 12
 #define NUM_BOMBS 3
 #define NUM_BULLETS 3
+#define NUM_LETTERS 8
+#define NUM_TARGET_LETTERS 9
 #define FRAMES_BLINK 30
 #define BULLET_VELOCITY 2
 #define CANNON_ACCEL 1
 #define CANNON_FRICTION 1
 #define CANNON_MAX_VEL 6
 #define BULLET_COOLDOWN_FRAMES 30
+#define BUTTON_B_COOLDOWN_FRAMES 30
+
+#define LETTER_WIDTH 32
+#define LETTER_HEIGHT 32
+#define LETTER_COLLISION_HEIGHT 20
+
+enum {
+    PHASE_BELLS = 0,
+    PHASE_LETTERS = 1,
+    PHASE_COMPLETED = 2,
+};
 
 /** @brief Campana móvil que cae desde la parte superior. */
 typedef struct {
@@ -53,15 +68,30 @@ typedef struct {
     s16 x, y;
 } Bullet;
 
+/** @brief Letra descendente a la que hay que disparar. */
+typedef struct {
+    Sprite* sprite;
+    s16 x, y;
+    s8 velocity;
+    u8 blinkCounter;
+    u8 isBlinking;
+} Letter;
+
 static Bell bells[NUM_BELLS];
 static FixedBell fixedBells[NUM_FIXED_BELLS];
 static Bomb bombs[NUM_BOMBS];
 static Bullet bullets[NUM_BULLETS];
+static Letter letters[NUM_LETTERS];
+static Sprite* felizSprites[NUM_TARGET_LETTERS];
 
 static Sprite* playerCannon;
 static s16 cannonX;
 static s8 cannonVelocity;
 static u8 cannonFiring;
+static u8 currentPhase;
+static u8 currentLetterIndex;
+static u8 victoryTriggered;
+static s8 buttonBCooldown;
 
 static u16 bellsCompleted;
 static u16 activeBullets;
@@ -72,8 +102,33 @@ static GameTimer gameTimer;
 static Map *mapBackground;
 static SnowEffect snowEffect;
 static const GameInertia cannonInertia = { CANNON_ACCEL, CANNON_FRICTION, 1, CANNON_MAX_VEL };
+static const SpriteDefinition* const letterSpritesColor[NUM_LETTERS] = {
+    &sprite_letra_f, &sprite_letra_e, &sprite_letra_l, &sprite_letra_i,
+    &sprite_letra_z, &sprite_letra_2, &sprite_letra_0, &sprite_letra_5
+};
+static const SpriteDefinition* const letterSpritesBW[NUM_LETTERS] = {
+    &sprite_letra_bn_f, &sprite_letra_bn_e, &sprite_letra_bn_l, &sprite_letra_bn_i,
+    &sprite_letra_bn_z, &sprite_letra_bn_2, &sprite_letra_bn_0, &sprite_letra_bn_5
+};
+static const SpriteDefinition* const felizSpritesColor[NUM_TARGET_LETTERS] = {
+    &sprite_letra_f, &sprite_letra_e, &sprite_letra_l, &sprite_letra_i,
+    &sprite_letra_z, &sprite_letra_2, &sprite_letra_0, &sprite_letra_2, &sprite_letra_5
+};
+static const SpriteDefinition* const felizSpritesBW[NUM_TARGET_LETTERS] = {
+    &sprite_letra_bn_f, &sprite_letra_bn_e, &sprite_letra_bn_l, &sprite_letra_bn_i,
+    &sprite_letra_bn_z, &sprite_letra_bn_2, &sprite_letra_bn_0, &sprite_letra_bn_2, &sprite_letra_bn_5
+};
 
 static void detectarColisionesBala(Bullet* bala);
+static void initLetter(Letter* letter, u8 index);
+static void resetLetter(Letter* letter);
+static void updateLetter(Letter* letter);
+static void initFeliz2025(void);
+static void updateFeliz2025Blink(void);
+static void handleLetterCollision(Bullet* bullet, Letter* letter);
+static void handleBombCollision(Bullet* bullet, Bomb* bomb);
+static void handleBellCollision(Bullet* bullet, Bell* bell);
+static void startLettersPhase(void);
 
 /**
  * @brief Inicializa una campana móvil con posición aleatoria.
@@ -235,6 +290,66 @@ static void updateBomb(Bomb* bomb) {
     SPR_setPosition(bomb->sprite, bomb->x, bomb->y);
 }
 
+/**
+ * @brief Inicializa una letra descendente.
+ * @param letter Letra a configurar.
+ * @param index Índice para seleccionar sprite y variar posición.
+ */
+static void initLetter(Letter* letter, u8 index) {
+    s16 posX = random() % (SCREEN_WIDTH - LETTER_WIDTH);
+
+    letter->sprite = SPR_addSpriteSafe(letterSpritesColor[index], posX, -32,
+        TILE_ATTR(PAL_PLAYER, FALSE, FALSE, FALSE));
+
+    letter->x = posX;
+    letter->y = -32 - (random() % 100);
+    letter->velocity = (random() % 4) + 1;
+    letter->blinkCounter = 0;
+    letter->isBlinking = FALSE;
+}
+
+/** @brief Reinicia posición y estado de una letra. */
+static void resetLetter(Letter* letter) {
+    letter->x = random() % (SCREEN_WIDTH - LETTER_WIDTH);
+    letter->y = -32 - (random() % 100);
+    letter->isBlinking = FALSE;
+    letter->blinkCounter = 0;
+    SPR_setVisibility(letter->sprite, VISIBLE);
+    SPR_setPosition(letter->sprite, letter->x, letter->y);
+}
+
+/**
+ * @brief Actualiza movimiento y parpadeo de una letra.
+ * @param letter Letra a actualizar.
+ */
+static void updateLetter(Letter* letter) {
+    if (letter->y + LETTER_HEIGHT >= SCREEN_HEIGHT - 64 && !letter->isBlinking) {
+        letter->isBlinking = TRUE;
+        letter->blinkCounter = FRAMES_BLINK;
+    }
+
+    if (letter->isBlinking) {
+        SPR_setVisibility(letter->sprite, (letter->blinkCounter % 2) ? HIDDEN : VISIBLE);
+        letter->blinkCounter--;
+        if (letter->blinkCounter <= 0) {
+            letter->isBlinking = FALSE;
+            SPR_setVisibility(letter->sprite, VISIBLE);
+            resetLetter(letter);
+        }
+        return;
+    }
+
+    if ((frameCounter % letter->velocity) == 0) {
+        letter->y++;
+    }
+
+    if (letter->y > SCREEN_HEIGHT) {
+        resetLetter(letter);
+    }
+
+    SPR_setPosition(letter->sprite, letter->x, letter->y);
+}
+
 /** @brief Inicializa el pool de balas disparables. */
 static void initBullets(void) {
     for (u8 i = 0; i < NUM_BULLETS; i++) {
@@ -310,59 +425,220 @@ static void detectarColisionesBala(Bullet* bala) {
     s16 balaCentroX = bala->x + 4;
     s16 balaCentroY = bala->y + 4;
 
-    /* Colisiones con campanas */
-    for (u8 i = 0; i < NUM_BELLS; i++) {
-        if (bells[i].isBlinking) continue;
+    if (currentPhase == PHASE_COMPLETED) return;
 
-        if (balaCentroX >= bells[i].x &&
-            balaCentroX < bells[i].x + 32 &&
-            balaCentroY >= bells[i].y + 6 &&
-            balaCentroY < bells[i].y + 26) {
+    if (currentPhase == PHASE_BELLS) {
+        for (u8 i = 0; i < NUM_BELLS; i++) {
+            if (bells[i].isBlinking) continue;
 
-            XGM2_playPCM(snd_campana, sizeof(snd_campana), SOUND_PCM_CH2);
-            desactivarBala(bala);
-
-            bells[i].isBlinking = TRUE;
-            bells[i].blinkCounter = FRAMES_BLINK;
-
-            if (bellsCompleted < NUM_FIXED_BELLS) {
-                SPR_setDefinition(fixedBells[bellsCompleted].sprite, &sprite_campana);
-                fixedBells[bellsCompleted].active = TRUE;
-                bellsCompleted++;
+            if (balaCentroX >= bells[i].x &&
+                balaCentroX < bells[i].x + LETTER_WIDTH &&
+                balaCentroY >= bells[i].y + 6 &&
+                balaCentroY < bells[i].y + 26) {
+                handleBellCollision(bala, &bells[i]);
+                return;
             }
-            return;
+        }
+    } else if (currentPhase == PHASE_LETTERS) {
+        for (u8 i = 0; i < NUM_LETTERS; i++) {
+            if (letters[i].isBlinking) continue;
+
+            if (balaCentroX >= letters[i].x &&
+                balaCentroX < letters[i].x + LETTER_WIDTH &&
+                balaCentroY >= letters[i].y + (LETTER_HEIGHT - LETTER_COLLISION_HEIGHT) / 2 &&
+                balaCentroY < letters[i].y + (LETTER_HEIGHT + LETTER_COLLISION_HEIGHT) / 2) {
+                handleLetterCollision(bala, &letters[i]);
+                return;
+            }
         }
     }
 
-    /* Colisiones con bombas */
     for (u8 i = 0; i < NUM_BOMBS; i++) {
         if (bombs[i].isBlinking) continue;
 
         if (balaCentroX >= bombs[i].x &&
-            balaCentroX < bombs[i].x + 32 &&
+            balaCentroX < bombs[i].x + LETTER_WIDTH &&
             balaCentroY >= bombs[i].y + 6 &&
             balaCentroY < bombs[i].y + 26) {
-
-            XGM2_playPCM(snd_bomba, sizeof(snd_bomba), SOUND_PCM_CH_AUTO);
-            desactivarBala(bala);
-
-            for (u8 j = 0; j < NUM_BOMBS; j++) {
-                bombs[j].isBlinking = TRUE;
-                bombs[j].blinkCounter = FRAMES_BLINK;
-            }
-
-            for (u8 j = 0; j < NUM_BELLS; j++) {
-                bells[j].isBlinking = TRUE;
-                bells[j].blinkCounter = FRAMES_BLINK;
-            }
-
-            bellsCompleted = 0;
-            for (u8 j = 0; j < NUM_FIXED_BELLS; j++) {
-                SPR_setDefinition(fixedBells[j].sprite, &sprite_campana_bn);
-            }
+            handleBombCollision(bala, &bombs[i]);
             return;
         }
     }
+}
+
+/**
+ * @brief Maneja el impacto de bala sobre una campana.
+ * @param bullet Bala implicada (puede ser NULL para simulaciones).
+ * @param bell Campana alcanzada.
+ */
+static void handleBellCollision(Bullet* bullet, Bell* bell) {
+    if (bullet) desactivarBala(bullet);
+
+    XGM2_playPCM(snd_campana, sizeof(snd_campana), SOUND_PCM_CH2);
+
+    bell->isBlinking = TRUE;
+    bell->blinkCounter = FRAMES_BLINK;
+
+    if (bellsCompleted < NUM_FIXED_BELLS) {
+        SPR_setDefinition(fixedBells[bellsCompleted].sprite, &sprite_campana);
+        fixedBells[bellsCompleted].active = TRUE;
+        bellsCompleted++;
+    }
+}
+
+/**
+ * @brief Calcula el índice de letra objetivo según el progreso actual.
+ * @return Índice de la letra que se debe acertar en esta ronda.
+ */
+static u8 getTargetLetterIndex(void) {
+    if (currentLetterIndex < 7) {
+        return currentLetterIndex;
+    } else if (currentLetterIndex == 7) {
+        return 5; /* Segundo "2" */
+    }
+    return 7; /* "5" final */
+}
+
+/**
+ * @brief Procesa la colisión de bala con una letra.
+ * @param bullet Bala implicada (puede ser NULL para simulaciones).
+ * @param letter Letra alcanzada.
+ */
+static void handleLetterCollision(Bullet* bullet, Letter* letter) {
+    if (bullet) desactivarBala(bullet);
+
+    u8 targetIndex = getTargetLetterIndex();
+    u8 hitIndex = 0xFF;
+    for (u8 i = 0; i < NUM_LETTERS; i++) {
+        if (&letters[i] == letter) {
+            hitIndex = i;
+            break;
+        }
+    }
+
+    if (hitIndex == 0xFF) return;
+
+    if (hitIndex == targetIndex) {
+        #if ENABLE_OPTIONAL_LETTER_SFX
+        XGM2_playPCM(snd_letra_ok, sizeof(snd_letra_ok), SOUND_PCM_CH_AUTO);
+        #endif
+        SPR_setDefinition(felizSprites[currentLetterIndex], felizSpritesColor[targetIndex]);
+        currentLetterIndex++;
+
+        if (currentLetterIndex >= NUM_TARGET_LETTERS) {
+            victoryTriggered = TRUE;
+            currentPhase = PHASE_COMPLETED;
+        #if ENABLE_OPTIONAL_LETTER_SFX
+        XGM2_playPCM(snd_victoria, sizeof(snd_victoria), SOUND_PCM_CH_AUTO);
+        #endif
+        }
+    } else {
+        #if ENABLE_OPTIONAL_LETTER_SFX
+        XGM2_playPCM(snd_letra_no, sizeof(snd_letra_no), SOUND_PCM_CH_AUTO);
+        #endif
+    }
+
+    letter->isBlinking = TRUE;
+    letter->blinkCounter = FRAMES_BLINK;
+    SPR_setDefinition(letter->sprite, letterSpritesBW[hitIndex]);
+}
+
+/**
+ * @brief Gestiona el impacto de una bomba durante la fase activa.
+ * @param bullet Bala implicada (puede ser NULL para simulaciones).
+ * @param bomb Bomba impactada.
+ */
+static void handleBombCollision(Bullet* bullet, Bomb* bomb) {
+    (void)bomb;
+    XGM2_playPCM(snd_bomba, sizeof(snd_bomba), SOUND_PCM_CH_AUTO);
+
+    if (bullet) desactivarBala(bullet);
+
+    for (u8 j = 0; j < NUM_BOMBS; j++) {
+        bombs[j].isBlinking = TRUE;
+        bombs[j].blinkCounter = FRAMES_BLINK;
+    }
+
+    if (currentPhase == PHASE_BELLS) {
+        for (u8 j = 0; j < NUM_BELLS; j++) {
+            bells[j].isBlinking = TRUE;
+            bells[j].blinkCounter = FRAMES_BLINK;
+        }
+
+        bellsCompleted = 0;
+        for (u8 j = 0; j < NUM_FIXED_BELLS; j++) {
+            SPR_setDefinition(fixedBells[j].sprite, &sprite_campana_bn);
+        }
+    } else if (currentPhase == PHASE_LETTERS) {
+        for (u8 j = 0; j < NUM_LETTERS; j++) {
+            letters[j].isBlinking = TRUE;
+            letters[j].blinkCounter = FRAMES_BLINK;
+        }
+
+        currentLetterIndex = 0;
+        for (u8 j = 0; j < NUM_TARGET_LETTERS; j++) {
+            SPR_setDefinition(felizSprites[j], felizSpritesBW[j]);
+        }
+    }
+}
+
+/** @brief Crea los indicadores de "FELIZ2025" en la parte inferior. */
+static void initFeliz2025(void) {
+    s16 x = 0;
+    s16 y = SCREEN_HEIGHT - 4 - LETTER_HEIGHT;
+
+    felizSprites[0] = SPR_addSpriteSafe(&sprite_letra_bn_f, x, y, TILE_ATTR(PAL_PLAYER, FALSE, FALSE, FALSE));
+    x += LETTER_WIDTH / 2;
+    felizSprites[1] = SPR_addSpriteSafe(&sprite_letra_bn_e, x + 4, y, TILE_ATTR(PAL_PLAYER, FALSE, FALSE, FALSE));
+    x += LETTER_WIDTH / 2;
+    felizSprites[2] = SPR_addSpriteSafe(&sprite_letra_bn_l, x + 4, y, TILE_ATTR(PAL_PLAYER, FALSE, FALSE, FALSE));
+    x += LETTER_WIDTH / 2;
+    felizSprites[3] = SPR_addSpriteSafe(&sprite_letra_bn_i, x, y, TILE_ATTR(PAL_PLAYER, FALSE, FALSE, FALSE));
+    x += LETTER_WIDTH / 2;
+    felizSprites[4] = SPR_addSpriteSafe(&sprite_letra_bn_z, x, y, TILE_ATTR(PAL_PLAYER, FALSE, FALSE, FALSE));
+    x += 20;
+    felizSprites[5] = SPR_addSpriteSafe(&sprite_letra_bn_2, x, y, TILE_ATTR(PAL_PLAYER, FALSE, FALSE, FALSE));
+    x += LETTER_WIDTH / 2;
+    felizSprites[6] = SPR_addSpriteSafe(&sprite_letra_bn_0, x, y, TILE_ATTR(PAL_PLAYER, FALSE, FALSE, FALSE));
+    x += LETTER_WIDTH / 2;
+    felizSprites[7] = SPR_addSpriteSafe(&sprite_letra_bn_2, x, y, TILE_ATTR(PAL_PLAYER, FALSE, FALSE, FALSE));
+    x += LETTER_WIDTH / 2;
+    felizSprites[8] = SPR_addSpriteSafe(&sprite_letra_bn_5, x, y, TILE_ATTR(PAL_PLAYER, FALSE, FALSE, FALSE));
+}
+
+/** @brief Hace parpadear la letra objetivo de "FELIZ2025". */
+static void updateFeliz2025Blink(void) {
+    if (currentPhase != PHASE_LETTERS || currentLetterIndex >= NUM_TARGET_LETTERS) return;
+
+    u8 useColor = (frameCounter % 4) < 2;
+    SPR_setDefinition(felizSprites[currentLetterIndex], useColor ? felizSpritesColor[currentLetterIndex] : felizSpritesBW[currentLetterIndex]);
+}
+
+/** @brief Transición de campanas a letras replicando la versión 2025. */
+static void startLettersPhase(void) {
+    currentPhase = PHASE_LETTERS;
+            #if ENABLE_OPTIONAL_LETTER_SFX
+            XGM2_playPCM(snd_aplausos, sizeof(snd_aplausos), SOUND_PCM_CH3);
+            #endif
+
+    for (u8 i = 0; i < NUM_BELLS; i++) {
+        if (bells[i].sprite) {
+            SPR_releaseSprite(bells[i].sprite);
+            bells[i].sprite = NULL;
+        }
+    }
+    for (u8 i = 0; i < NUM_FIXED_BELLS; i++) {
+        if (fixedBells[i].sprite) {
+            SPR_releaseSprite(fixedBells[i].sprite);
+            fixedBells[i].sprite = NULL;
+        }
+    }
+
+    for (u8 i = 0; i < NUM_LETTERS; i++) {
+        initLetter(&letters[i], i);
+    }
+    initFeliz2025();
+    currentLetterIndex = 0;
 }
 
 /** @brief Configura recursos, sprites y estado inicial de la fase. */
@@ -433,6 +709,10 @@ void minigameBells_init(void) {
     cannonVelocity = 0;
     cannonFiring = FALSE;
     bulletCooldown = 0;
+    buttonBCooldown = 0;
+    currentPhase = PHASE_BELLS;
+    currentLetterIndex = 0;
+    victoryTriggered = FALSE;
 }
 
 /** @brief Actualiza entrada, física y entidades de la fase. */
@@ -442,16 +722,46 @@ void minigameBells_update(void) {
     if (input & BUTTON_LEFT) inputDirX = -1;
     else if (input & BUTTON_RIGHT) inputDirX = 1;
 
+    if (currentPhase == PHASE_BELLS && bellsCompleted >= NUM_FIXED_BELLS) {
+        startLettersPhase();
+    }
+
     /* Cañón */
     gameCore_applyInertiaAxis(&cannonX, &cannonVelocity, -32, SCREEN_WIDTH - 32, inputDirX, frameCounter, &cannonInertia);
     SPR_setPosition(playerCannon, cannonX, SCREEN_HEIGHT - 64);
 
     /* Disparos */
-    if ((input & BUTTON_A) && bulletCooldown <= 0) {
+    if ((input & BUTTON_A) && bulletCooldown <= 0 && currentPhase != PHASE_COMPLETED) {
         cannonFiring = TRUE;
         SPR_setAnim(playerCannon, 1);
         fireBullet();
         bulletCooldown = BULLET_COOLDOWN_FRAMES;
+    }
+
+    /* Ataque alternativo con botón B (impacto directo). */
+    if ((input & BUTTON_B) && buttonBCooldown <= 0 && currentPhase != PHASE_COMPLETED) {
+        buttonBCooldown = BUTTON_B_COOLDOWN_FRAMES;
+        if (currentPhase == PHASE_BELLS) {
+            s16 lowestY = -32;
+            Bell* targetBell = NULL;
+            for (u8 i = 0; i < NUM_BELLS; i++) {
+                if (!bells[i].isBlinking && bells[i].y > lowestY) {
+                    lowestY = bells[i].y;
+                    targetBell = &bells[i];
+                }
+            }
+            if (targetBell) {
+                handleBellCollision(NULL, targetBell);
+            }
+        } else if (currentPhase == PHASE_LETTERS) {
+            u8 targetIndex = getTargetLetterIndex();
+            for (u8 i = 0; i < NUM_LETTERS; i++) {
+                if (i == targetIndex && !letters[i].isBlinking) {
+                    handleLetterCollision(NULL, &letters[i]);
+                    break;
+                }
+            }
+        }
     }
 
     if (cannonFiring) {
@@ -465,11 +775,17 @@ void minigameBells_update(void) {
     snowEffect_update(&snowEffect, frameCounter);
 
     /* Actualizar objetos */
-    for (u8 i = 0; i < NUM_BELLS; i++) {
-        updateBell(&bells[i]);
+    if (currentPhase == PHASE_BELLS) {
+        for (u8 i = 0; i < NUM_BELLS; i++) {
+            updateBell(&bells[i]);
+        }
+        updateFixedBells();
+    } else if (currentPhase == PHASE_LETTERS) {
+        for (u8 i = 0; i < NUM_LETTERS; i++) {
+            updateLetter(&letters[i]);
+        }
+        updateFeliz2025Blink();
     }
-
-    updateFixedBells();
 
     for (u8 i = 0; i < NUM_BOMBS; i++) {
         updateBomb(&bombs[i]);
@@ -481,6 +797,7 @@ void minigameBells_update(void) {
     gameCore_updateTimer(&gameTimer);
     frameCounter++;
     if (bulletCooldown > 0) bulletCooldown--;
+    if (buttonBCooldown > 0) buttonBCooldown--;
 }
 
 /** @brief Renderiza sprites y sincroniza con VBlank. */
@@ -494,5 +811,5 @@ void minigameBells_render(void) {
  * @return TRUE cuando se activaron todas las campanillas fijas.
  */
 u8 minigameBells_isComplete(void) {
-    return (bellsCompleted >= NUM_FIXED_BELLS);
+    return (currentPhase == PHASE_COMPLETED && victoryTriggered);
 }
