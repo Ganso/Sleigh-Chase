@@ -1,6 +1,6 @@
 /**
- * src/minigame_bells.c - VERSIÓN DEFINITIVA CORREGIDA
- * Fase 3: Campanadas (100% funcional)
+ * @file minigame_bells.c
+ * @brief Fase 3: Campanadas (implementación completa y corregida).
  */
 
 #include <genesis.h>
@@ -22,6 +22,7 @@
 #define CANNON_MAX_VEL 6
 #define BULLET_COOLDOWN_FRAMES 30
 
+/** @brief Campana móvil que cae desde la parte superior. */
 typedef struct {
     Sprite* sprite;
     s16 x, y;
@@ -30,11 +31,13 @@ typedef struct {
     u8 isBlinking;
 } Bell;
 
+/** @brief Campana fija del marcador inferior. */
 typedef struct {
     Sprite* sprite;
     u8 active;
 } FixedBell;
 
+/** @brief Bomba que penaliza al jugador si la impacta. */
 typedef struct {
     Sprite* sprite;
     s16 x, y;
@@ -43,6 +46,7 @@ typedef struct {
     u8 isBlinking;
 } Bomb;
 
+/** @brief Proyectil disparado por el cañón del jugador. */
 typedef struct {
     Sprite* sprite;
     u8 active;
@@ -71,6 +75,11 @@ static const GameInertia cannonInertia = { CANNON_ACCEL, CANNON_FRICTION, 1, CAN
 
 static void detectarColisionesBala(Bullet* bala);
 
+/**
+ * @brief Inicializa una campana móvil con posición aleatoria.
+ * @param bell Campana a configurar.
+ * @param index Índice para desfasar posición inicial.
+ */
 static void initBell(Bell* bell, u8 index) {
     s16 posX = random() % (SCREEN_WIDTH - 32);
 
@@ -85,6 +94,7 @@ static void initBell(Bell* bell, u8 index) {
     (void)index;
 }
 
+/** @brief Reinicia posición y estado de una campana móvil. */
 static void resetBell(Bell* bell) {
     bell->x = random() % (SCREEN_WIDTH - 32);
     bell->y = -32 - (random() % 100);
@@ -94,6 +104,10 @@ static void resetBell(Bell* bell) {
     SPR_setPosition(bell->sprite, bell->x, bell->y);
 }
 
+/**
+ * @brief Actualiza la animación y reciclado de una campana móvil.
+ * @param bell Campana a actualizar.
+ */
 static void updateBell(Bell* bell) {
     if (bell->y + 32 >= SCREEN_HEIGHT - 64 && !bell->isBlinking) {
         bell->isBlinking = TRUE;
@@ -127,6 +141,7 @@ static void updateBell(Bell* bell) {
     SPR_setPosition(bell->sprite, bell->x, bell->y);
 }
 
+/** @brief Crea el conjunto de campanas fijas del marcador inferior. */
 static void initFixedBells(void) {
     s16 separador_x = 24, separador_y = 16;
     s16 x = 0;
@@ -145,6 +160,7 @@ static void initFixedBells(void) {
     }
 }
 
+/** @brief Actualiza la animación de la siguiente campanilla fija a iluminar. */
 static void updateFixedBells(void) {
     if (bellsCompleted < NUM_FIXED_BELLS) {
         u8 usarColor = (frameCounter % 4) < 2;
@@ -153,6 +169,11 @@ static void updateFixedBells(void) {
     }
 }
 
+/**
+ * @brief Inicializa una bomba móvil.
+ * @param bomb Bomba a configurar.
+ * @param index Índice para variar la posición inicial.
+ */
 static void initBomb(Bomb* bomb, u8 index) {
     s16 posX = random() % (SCREEN_WIDTH - 32);
 
@@ -167,6 +188,7 @@ static void initBomb(Bomb* bomb, u8 index) {
     bomb->y -= (index * 8);
 }
 
+/** @brief Reinicia posición y estado de una bomba. */
 static void resetBomb(Bomb* bomb) {
     bomb->x = random() % (SCREEN_WIDTH - 32);
     bomb->y = -32;
@@ -176,6 +198,10 @@ static void resetBomb(Bomb* bomb) {
     SPR_setPosition(bomb->sprite, bomb->x, bomb->y);
 }
 
+/**
+ * @brief Actualiza movimiento y blinking de una bomba.
+ * @param bomb Bomba a actualizar.
+ */
 static void updateBomb(Bomb* bomb) {
     if (bomb->y + 32 >= SCREEN_HEIGHT - 64 && !bomb->isBlinking) {
         bomb->isBlinking = TRUE;
@@ -209,6 +235,7 @@ static void updateBomb(Bomb* bomb) {
     SPR_setPosition(bomb->sprite, bomb->x, bomb->y);
 }
 
+/** @brief Inicializa el pool de balas disparables. */
 static void initBullets(void) {
     for (u8 i = 0; i < NUM_BULLETS; i++) {
         bullets[i].sprite = NULL;
@@ -219,6 +246,7 @@ static void initBullets(void) {
     activeBullets = 0;
 }
 
+/** @brief Dispara una nueva bala si hay hueco libre en el pool. */
 static void fireBullet(void) {
     if (activeBullets >= NUM_BULLETS) return;
 
@@ -241,6 +269,7 @@ static void fireBullet(void) {
     }
 }
 
+/** @brief Actualiza todas las balas activas, reciclándolas cuando salen de pantalla. */
 static void updateBullets(void) {
     for (u8 i = 0; i < NUM_BULLETS; i++) {
         if (bullets[i].active) {
@@ -263,6 +292,7 @@ static void updateBullets(void) {
     }
 }
 
+/** @brief Libera una bala activa y la marca como disponible. */
 static void desactivarBala(Bullet* bala) {
     if (bala->active) {
         SPR_releaseSprite(bala->sprite);
@@ -272,6 +302,10 @@ static void desactivarBala(Bullet* bala) {
     }
 }
 
+/**
+ * @brief Detecta impactos de una bala sobre campanas o bombas.
+ * @param bala Bala a comprobar.
+ */
 static void detectarColisionesBala(Bullet* bala) {
     s16 balaCentroX = bala->x + 4;
     s16 balaCentroY = bala->y + 4;
@@ -331,6 +365,7 @@ static void detectarColisionesBala(Bullet* bala) {
     }
 }
 
+/** @brief Configura recursos, sprites y estado inicial de la fase. */
 void minigameBells_init(void) {
     VDP_setScreenWidth320();
     VDP_setScreenHeight224();
@@ -361,7 +396,7 @@ void minigameBells_init(void) {
 
     snowEffect_init(&snowEffect, &globalTileIndex, 2, -1);
 
-    /* Musica */
+    /* Música */
     audio_play_phase3();
 
     /* Campanas */
@@ -377,7 +412,7 @@ void minigameBells_init(void) {
         initBomb(&bombs[i], i);
     }
 
-    /* Canon */
+    /* Cañón */
     cannonX = (SCREEN_WIDTH - 80) / 2 + 80;
     playerCannon = SPR_addSpriteSafe(&sprite_canon, cannonX,
         SCREEN_HEIGHT - 64,
@@ -400,13 +435,14 @@ void minigameBells_init(void) {
     bulletCooldown = 0;
 }
 
+/** @brief Actualiza entrada, física y entidades de la fase. */
 void minigameBells_update(void) {
     u16 input = gameCore_readInput();
     s8 inputDirX = 0;
     if (input & BUTTON_LEFT) inputDirX = -1;
     else if (input & BUTTON_RIGHT) inputDirX = 1;
 
-    /* Canon */
+    /* Cañón */
     gameCore_applyInertiaAxis(&cannonX, &cannonVelocity, -32, SCREEN_WIDTH - 32, inputDirX, frameCounter, &cannonInertia);
     SPR_setPosition(playerCannon, cannonX, SCREEN_HEIGHT - 64);
 
@@ -447,11 +483,16 @@ void minigameBells_update(void) {
     if (bulletCooldown > 0) bulletCooldown--;
 }
 
+/** @brief Renderiza sprites y sincroniza con VBlank. */
 void minigameBells_render(void) {
     SPR_update();
     SYS_doVBlankProcess();
 }
 
+/**
+ * @brief Comprueba si se completó el objetivo de campanas iluminadas.
+ * @return TRUE cuando se activaron todas las campanillas fijas.
+ */
 u8 minigameBells_isComplete(void) {
     return (bellsCompleted >= NUM_FIXED_BELLS);
 }

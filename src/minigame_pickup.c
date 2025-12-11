@@ -7,6 +7,9 @@
  * ═════════════════════════════════════════════════════════════════════════════
  */
 
+/** @file minigame_pickup.c
+ *  @brief Fase 1: Recogida con scroll vertical, nieve y gestión de regalos.
+ */
 #include "minigame_pickup.h"
 #include "audio_manager.h"
 #include "resources_bg.h"
@@ -62,12 +65,14 @@ static void traceFunc(const char *funcName);
 #define TREE_COLLISION_BLINK_FRAMES 120
 #define TREE_COLLISION_BLINK_INTERVAL_FRAMES 6
 
+/** @brief Actor básico con sprite y coordenadas. */
 typedef struct {
     Sprite* sprite;
     s16 x, y;
     u8 active;
 } SimpleActor;
 
+/** @brief Datos principales del trineo de Santa. */
 typedef struct {
     Sprite* sprite;
     s16 x, y;
@@ -128,6 +133,10 @@ static u8 enemyStealIndex;
 static s16 enemyEscapeTargetX;
 static s16 enemyEscapeTargetY;
 
+/**
+ * @brief Traza cambios de función para depuración ligera.
+ * @param funcName Nombre de la función llamada.
+ */
 static void traceFunc(const char *funcName) {
     if (funcName == NULL) return;
     if (lastTraceFunc != funcName) {
@@ -150,6 +159,13 @@ static void startMusicAfterHoHoHo(void);
 static void clearEnemiesOnTreeCollision(void);
 static void clearElvesOnTreeCollision(void);
 
+/**
+ * @brief Comprueba un rango horizontal y registra errores si es inválido.
+ * @param minX Límite izquierdo permitido.
+ * @param maxX Límite derecho permitido.
+ * @param context Texto para identificar el origen del chequeo.
+ * @return TRUE si el rango es válido.
+ */
 static u8 validateHorizontalRange(s16 minX, s16 maxX, const char* context) {
     TRACE_FUNC();
     if (maxX <= minX) {
@@ -159,6 +175,11 @@ static u8 validateHorizontalRange(s16 minX, s16 maxX, const char* context) {
     return TRUE;
 }
 
+/**
+ * @brief Desactiva un actor y oculta su sprite reportando el contexto.
+ * @param actor Actor a desactivar.
+ * @param context Etiqueta para trazas.
+ */
 static void markActorInactive(SimpleActor *actor, const char* context) {
     TRACE_FUNC();
     actor->active = FALSE;
@@ -168,6 +189,14 @@ static void markActorInactive(SimpleActor *actor, const char* context) {
     }
 }
 
+/**
+ * @brief Sitúa un actor en una posición aleatoria dentro de un rango.
+ * @param actor Actor a posicionar.
+ * @param minX Límite izquierdo.
+ * @param maxX Límite derecho.
+ * @param minY Límite superior.
+ * @param maxY Límite inferior.
+ */
 static void placeActor(SimpleActor *actor, s16 minX, s16 maxX, s16 minY, s16 maxY) {
     TRACE_FUNC();
     actor->x = minX + (random() % (maxX - minX));
@@ -175,12 +204,19 @@ static void placeActor(SimpleActor *actor, s16 minX, s16 maxX, s16 minY, s16 max
     actor->active = TRUE;
 }
 
+/**
+ * @brief Devuelve un retardo aleatorio entre dos límites de frames.
+ */
 static u16 randomFrameDelay(u16 minFrames, u16 maxFrames) {
     TRACE_FUNC();
     if (maxFrames <= minFrames) return minFrames;
     return minFrames + (random() % (maxFrames - minFrames + 1));
 }
 
+/**
+ * @brief Oculta la marca superior del elfo indicado.
+ * @param index Índice del elfo en el array.
+ */
 static void hideElfMark(u8 index) {
     if (index >= NUM_ELVES) return;
     TRACE_FUNC();
@@ -190,6 +226,9 @@ static void hideElfMark(u8 index) {
     }
 }
 
+/**
+ * @brief Calcula una posición aleatoria dejando un margen porcentual.
+ */
 static s16 randomPositionWithMargin(s16 totalSize, s16 elementSize, u8 marginPercent) {
     TRACE_FUNC();
     s16 margin = (totalSize * marginPercent) / 100;
@@ -209,6 +248,10 @@ static s16 randomPositionWithMargin(s16 totalSize, s16 elementSize, u8 marginPer
     return min + (random() % (range + 1));
 }
 
+/**
+ * @brief Muestra la marca superior del elfo indicado.
+ * @param index Índice del elfo en el array.
+ */
 static void showElfMark(u8 index) {
     if (index >= NUM_ELVES) return;
     TRACE_FUNC();
@@ -230,6 +273,7 @@ static void showElfMark(u8 index) {
     }
 }
 
+/** @brief Posiciona un árbol aleatorio en el escenario. */
 static void spawnTree(SimpleActor *tree) {
     TRACE_FUNC();
     s16 minX = leftLimit;
@@ -252,6 +296,12 @@ static void spawnTree(SimpleActor *tree) {
     SPR_setPosition(tree->sprite, tree->x, tree->y);
 }
 
+/**
+ * @brief Spawnea un elfo que lanza regalo desde un lado concreto.
+ * @param elf Actor a inicializar.
+ * @param side 0 izquierda, 1 derecha.
+ * @param index Índice del elfo para tablas auxiliares.
+ */
 static void spawnElf(SimpleActor *elf, u8 side, u8 index) {
     if (index >= NUM_ELVES) return;
     TRACE_FUNC();
@@ -286,6 +336,7 @@ static void spawnElf(SimpleActor *elf, u8 side, u8 index) {
     SPR_setVisibility(elf->sprite, VISIBLE);
 }
 
+/** @brief Crea un enemigo lateral que intentará robar el regalo. */
 static void spawnEnemy(SimpleActor *enemy) {
     TRACE_FUNC();
     s16 minX = leftLimit;
@@ -311,6 +362,7 @@ static void spawnEnemy(SimpleActor *enemy) {
     SPR_setVisibility(enemy->sprite, VISIBLE);
 }
 
+/** @brief Oculta la sombra asociada al elfo indicado. */
 static void hideElfShadow(u8 index) {
     if (index >= NUM_ELVES) return;
     TRACE_FUNC();
@@ -322,6 +374,12 @@ static void hideElfShadow(u8 index) {
     elfShadowPosY[index] = elfShadowStartY[index];
 }
 
+/**
+ * @brief Activa y posiciona la sombra de un elfo.
+ * @param index Índice del elfo.
+ * @param startX Posición X inicial.
+ * @param startY Posición Y inicial.
+ */
 static void showElfShadow(u8 index, s16 startX, s16 startY) {
     if (index >= NUM_ELVES) return;
     TRACE_FUNC();
@@ -347,6 +405,11 @@ static void showElfShadow(u8 index, s16 startX, s16 startY) {
     }
 }
 
+/**
+ * @brief Oculta el regalo lanzado por el elfo.
+ * @param index Índice del elfo.
+ * @param playDisappearSfx TRUE para reproducir sonido de desaparición.
+ */
 static void hideElfGift(u8 index, u8 playDisappearSfx) {
     if (index >= NUM_ELVES) return;
     TRACE_FUNC();
@@ -360,6 +423,12 @@ static void hideElfGift(u8 index, u8 playDisappearSfx) {
     }
 }
 
+/**
+ * @brief Activa el regalo lanzado por el elfo y lo posiciona.
+ * @param index Índice del elfo.
+ * @param startX Posición inicial X.
+ * @param startY Posición inicial Y.
+ */
 static void showElfGift(u8 index, s16 startX, s16 startY) {
     if (index >= NUM_ELVES) return;
     TRACE_FUNC();
@@ -385,6 +454,11 @@ static void showElfGift(u8 index, s16 startX, s16 startY) {
     }
 }
 
+/**
+ * @brief Actualiza la posición del regalo siguiendo una parábola.
+ * @param index Índice del elfo asociado.
+ * @param progress Progreso normalizado del lanzamiento (0-1).
+ */
 static void updateElfGift(u8 index, fix16 progress) {
     if (index >= NUM_ELVES) return;
     TRACE_FUNC();
@@ -421,6 +495,11 @@ static void updateElfGift(u8 index, fix16 progress) {
     }
 }
 
+/**
+ * @brief Programa el respawn de un elfo tras completar su acción.
+ * @param index Índice del elfo.
+ * @param side Lado desde el que reaparecerá.
+ */
 static void scheduleElfRespawn(u8 index, u8 side) {
     if (index >= NUM_ELVES) return;
     TRACE_FUNC();
@@ -438,6 +517,11 @@ static void scheduleElfRespawn(u8 index, u8 side) {
     kprintf("[ELF %d] Respawn en %u frames (side=%d)", index, elfRespawnTimer[index], side);
 }
 
+/**
+ * @brief Interpola la posición de la sombra del elfo durante el salto.
+ * @param index Índice del elfo.
+ * @param progress Progreso normalizado del salto.
+ */
 static void updateElfShadow(u8 index, fix16 progress) {
     if (index >= NUM_ELVES) return;
     TRACE_FUNC();
@@ -468,6 +552,14 @@ static void updateElfShadow(u8 index, fix16 progress) {
     elfShadowPosY[index] = newY;
 }
 
+/**
+ * @brief Controla cuándo mostrar la marca X del elfo para facilitar su captura.
+ * @param index Índice del elfo.
+ * @param santaHitX Posición X de la hitbox de Santa.
+ * @param santaHitY Posición Y de la hitbox de Santa.
+ * @param santaHitW Anchura de la hitbox.
+ * @param santaHitH Altura de la hitbox.
+ */
 static void updateElfMark(u8 index, s16 santaHitX, s16 santaHitY, s16 santaHitW, s16 santaHitH) {
     if (index >= NUM_ELVES) return;
     TRACE_FUNC();
@@ -539,6 +631,7 @@ static void updateElfMark(u8 index, s16 santaHitX, s16 santaHitY, s16 santaHitW,
     }
 }
 
+/** @brief Reinicia el ataque especial si ya estaba cargado. */
 static void resetSpecialIfReady(void) {
     TRACE_FUNC();
     if (giftsCharge >= GIFTS_FOR_SPECIAL) {
@@ -548,12 +641,14 @@ static void resetSpecialIfReady(void) {
     }
 }
 
+/** @brief Marca que la fase ha cumplido objetivo y debe finalizar. */
 static void requestPhaseChange(void) {
     TRACE_FUNC();
     /* TODO: implementar cambio de fase */
     kprintf("[PHASE] Cambio de fase solicitado (pendiente de implementar)");
 }
 
+/** @brief Refleja en el HUD el contador de regalos y carga especial. */
 static void updateGiftCounter(void) {
     TRACE_FUNC();
     if (giftCounterSprite == NULL) return;
@@ -567,6 +662,7 @@ static void updateGiftCounter(void) {
     kprintf("[DEBUG HUD] counter anim=%u gifts=%u", animIndex, giftsCollected);
 }
 
+/** @brief Procesa la recogida de un regalo y avanza la misión. */
 static void collectGift(void) {
     TRACE_FUNC();
     XGM2_playPCM(snd_regalo_recogido, sizeof(snd_regalo_recogido), SOUND_PCM_CH_AUTO);
@@ -582,6 +678,7 @@ static void collectGift(void) {
     }
 }
 
+/** @brief Resetea y oculta todos los enemigos activos. */
 static void clearEnemies(void) {
     TRACE_FUNC();
     for (u8 i = 0; i < NUM_ENEMIES; i++) {
@@ -589,11 +686,15 @@ static void clearEnemies(void) {
     }
 }
 
+/**
+ * @brief Comprueba solapamiento de dos AABB sencillas.
+ */
 static u8 checkCollision(s16 x1, s16 y1, s16 w1, s16 h1, s16 x2, s16 y2, s16 w2, s16 h2) {
     TRACE_FUNC();
     return (x1 < x2 + w2) && (x1 + w1 > x2) && (y1 < y2 + h2) && (y1 + h1 > y2);
 }
 
+/** @brief Alterna la visibilidad de Santa durante el parpadeo por colisión. */
 static void setTreeCollisionVisibility(u8 visible) {
     if (santa.sprite) {
         SPR_setVisibility(santa.sprite, visible ? VISIBLE : HIDDEN);
@@ -603,6 +704,10 @@ static void setTreeCollisionVisibility(u8 visible) {
     }
 }
 
+/**
+ * @brief Inicia el estado de colisión con un árbol.
+ * @param tree Árbol con el que colisionó Santa.
+ */
 static void beginTreeCollision(SimpleActor *tree) {
     TRACE_FUNC();
     if (recoveringFromTree) return;
@@ -627,6 +732,7 @@ static void beginTreeCollision(SimpleActor *tree) {
     setTreeCollisionVisibility(TRUE);
 }
 
+/** @brief Finaliza el parpadeo y estado de invulnerabilidad tras un choque. */
 static void endTreeCollisionRecovery(void) {
     TRACE_FUNC();
 
@@ -666,6 +772,7 @@ static void endTreeCollisionRecovery(void) {
     recoveringFromTree = TRUE;
 }
 
+/** @brief Gestiona el parpadeo y temporizador tras chocar con un árbol. */
 static void updateTreeCollisionRecovery(void) {
     TRACE_FUNC();
     if (!recoveringFromTree) return;
@@ -691,6 +798,12 @@ static void updateTreeCollisionRecovery(void) {
     }
 }
 
+/**
+ * @brief Calcula una posición de huida para el enemigo ladrón.
+ * @param enemy Referencia al enemigo.
+ * @param targetX Salida X objetivo.
+ * @param targetY Salida Y objetivo.
+ */
 static void selectEnemyEscapeTarget(SimpleActor *enemy, s16 *targetX, s16 *targetY) {
     TRACE_FUNC();
     const s16 cornerX[4] = { -ENEMY_SIZE, SCREEN_WIDTH, -ENEMY_SIZE, SCREEN_WIDTH };
@@ -712,12 +825,17 @@ static void selectEnemyEscapeTarget(SimpleActor *enemy, s16 *targetX, s16 *targe
     *targetY = cornerY[bestIndex];
 }
 
+/** @brief Restaura estado tras finalizar la secuencia de robo. */
 static void endEnemyStealSequence(void) {
     TRACE_FUNC();
     enemyStealActive = FALSE;
     spawnEnemy(&enemies[enemyStealIndex]);
 }
 
+/**
+ * @brief Activa la secuencia en la que un enemigo roba el regalo.
+ * @param enemyIndex Índice del enemigo implicado.
+ */
 static void beginEnemyStealSequence(u8 enemyIndex) {
     if (enemyIndex >= NUM_ENEMIES) return;
     TRACE_FUNC();
@@ -731,6 +849,7 @@ static void beginEnemyStealSequence(u8 enemyIndex) {
     XGM2_playPCM(snd_elfo_robando, sizeof(snd_elfo_robando), SOUND_PCM_CH_AUTO);
 }
 
+/** @brief Mueve al enemigo ladrón y resuelve final de secuencia. */
 static void updateEnemyStealSequence(void) {
     if (!enemyStealActive) return;
     TRACE_FUNC();
@@ -776,6 +895,7 @@ typedef struct {
     s16 bottom;
 } DepthEntry;
 
+/** @brief Ordena la profundidad de sprites según su base (eje Y). */
 static void reorderDepthByBottom(void) {
     TRACE_FUNC();
     DepthEntry entries[NUM_TREES + NUM_ENEMIES + NUM_ELVES + NUM_ELVES + 1];
@@ -841,11 +961,13 @@ static void reorderDepthByBottom(void) {
 }
 
 #if DEBUG_MODE
+/** @brief Dibuja overlays de depuración en pantalla. */
 static void renderDebug(void) {
     TRACE_FUNC();
 }
 #endif
 
+/** @brief Inicializa recursos, estado y entidades de la fase de recogida. */
 void minigamePickup_init(void) {
     TRACE_FUNC();
     VDP_setScreenWidth320();
@@ -957,6 +1079,7 @@ void minigamePickup_init(void) {
     }
 }
 
+/** @brief Actualiza entrada, físicas y lógica de la fase cada frame. */
 void minigamePickup_update(void) {
     TRACE_FUNC();
     startMusicAfterHoHoHo();
@@ -1105,6 +1228,7 @@ void minigamePickup_update(void) {
     frameCounter++;
 }
 
+/** @brief Renderiza sprites, HUD y efectos de la fase de recogida. */
 void minigamePickup_render(void) {
     TRACE_FUNC();
 #if DEBUG_MODE
@@ -1115,11 +1239,16 @@ void minigamePickup_render(void) {
     SYS_doVBlankProcess();
 }
 
+/**
+ * @brief Indica si se alcanzó el objetivo de regalos.
+ * @return TRUE cuando se recolectan los regalos necesarios o hay cambio de fase.
+ */
 u8 minigamePickup_isComplete(void) {
     TRACE_FUNC();
     return (giftsCollected >= TARGET_GIFTS);
 }
 
+/** @brief Activa la música de fase tras reproducir el grito de Santa. */
 static void startMusicAfterHoHoHo(void) {
     if (musicStarted) return;
     if (musicStartDelayFrames > 0) {
@@ -1130,6 +1259,7 @@ static void startMusicAfterHoHoHo(void) {
     musicStarted = TRUE;
 }
 
+/** @brief Limpia enemigos cuando Santa choca con un árbol. */
 static void clearEnemiesOnTreeCollision(void) {
     enemyStealActive = FALSE;
     for (u8 i = 0; i < NUM_ENEMIES; i++) {
@@ -1140,6 +1270,7 @@ static void clearEnemiesOnTreeCollision(void) {
     }
 }
 
+/** @brief Oculta elfos y objetos cuando hay colisión con árbol. */
 static void clearElvesOnTreeCollision(void) {
     for (u8 i = 0; i < NUM_ELVES; i++) {
         elves[i].active = FALSE;

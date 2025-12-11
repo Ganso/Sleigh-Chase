@@ -1,9 +1,6 @@
 /**
- * ═════════════════════════════════════════════════════════════════════════════
- * ARCHIVO: src/main.c
- * 
- * Orquestador principal - coordina las 4 fases del juego
- * ═════════════════════════════════════════════════════════════════════════════
+ * @file main.c
+ * @brief Orquestador principal que encadena las cuatro fases del juego.
  */
 
 #include <genesis.h>
@@ -29,6 +26,11 @@ enum {
 /* Variables globales */
 static u8 currentPhase = PHASE_INTRO;
 
+/**
+ * @brief Punto de entrada principal del cartucho.
+ *
+ * Inicializa subsistemas SGDK y ejecuta las fases en orden secuencial.
+ */
 int main() {
     /* Inicialización */
     VDP_init();
@@ -37,9 +39,6 @@ int main() {
     Z80_init();
     Z80_loadDriver(Z80_DRIVER_XGM2, 1);
     audio_init();
-
-    // Loop infinito de prueba de música (borrar en versión definitiva)
-    //audio_test_playback(musica_test);
 
     /* Loop principal */
     while (1) {

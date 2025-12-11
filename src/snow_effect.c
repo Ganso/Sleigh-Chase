@@ -1,9 +1,6 @@
 /**
- * ═════════════════════════════════════════════════════════════════════════════
- * ARCHIVO: src/snow_effect.c
- * 
- * Implementación reutilizable del efecto de nieve en primer plano.
- * ═════════════════════════════════════════════════════════════════════════════
+ * @file snow_effect.c
+ * @brief Implementación reutilizable del efecto de nieve en primer plano.
  */
 
 #include "snow_effect.h"
@@ -12,6 +9,13 @@
 #define SNOW_WIDTH_PX 384
 #define SNOW_HEIGHT_PX 512
 
+/**
+ * @brief Inicializa el mapa de nieve y sus parámetros de movimiento.
+ * @param effect Estructura a preparar.
+ * @param tileIndex Índice global de tiles; se incrementa tras cargar el tileset.
+ * @param angleStep Incremento de ángulo por frame para el desplazamiento sinusoidal.
+ * @param verticalStep Desplazamiento vertical por frame.
+ */
 void snowEffect_init(SnowEffect *effect, u32 *tileIndex, s16 angleStep, s16 verticalStep) {
     if (effect == NULL || tileIndex == NULL) return;
 
@@ -39,6 +43,11 @@ void snowEffect_init(SnowEffect *effect, u32 *tileIndex, s16 angleStep, s16 vert
 
 }
 
+/**
+ * @brief Actualiza el scroll de nieve en función del tiempo.
+ * @param effect Estructura inicializada con snowEffect_init.
+ * @param frameCounter Contador de frames que gobierna la animación.
+ */
 void snowEffect_update(SnowEffect *effect, u16 frameCounter) {
     if (effect == NULL || effect->map == NULL) return;
 
