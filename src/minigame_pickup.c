@@ -10,6 +10,7 @@
 #include "minigame_pickup.h"
 #include "resources_bg.h"
 #include "resources_sprites.h"
+#include "resources_sfx.h"
 #include "snow_effect.h"
 
 static void traceFunc(const char *funcName);
@@ -42,6 +43,8 @@ static void traceFunc(const char *funcName);
 #define GIFT_SIZE 32
 #define GIFT_ARC_HEIGHT 50
 #define GIFT_COUNTER_MAX 5
+#define MUSIC_FM_VOLUME 70
+#define MUSIC_PSG_VOLUME 100
 #define SANTA_WIDTH 80
 #define SANTA_HEIGHT 128
 #define SANTA_HITBOX_PADDING 30   /* píxeles que no colisionan a cada lado */
@@ -53,6 +56,8 @@ static void traceFunc(const char *funcName);
 #define DEPTH_SANTA SPR_MIN_DEPTH
 #define DEPTH_HUD (SPR_MIN_DEPTH + 1)
 #define DEPTH_ACTORS_START (SPR_MIN_DEPTH + 2)
+#define TREE_COLLISION_BLINK_FRAMES 60
+#define TREE_COLLISION_BLINK_INTERVAL_FRAMES 6
 
 typedef struct {
     Sprite* sprite;
@@ -103,9 +108,15 @@ static s16 rightLimit;
 static s16 playableWidth;
 static s16 santaMinY;
 static s16 santaMaxY;
+static s16 santaStartX;
+static s16 santaStartY;
 static GameInertia santaInertia;
 static SnowEffect snowEffect;
 static const char* lastTraceFunc = NULL;
+static u8 recoveringFromTree;
+static u16 treeCollisionBlinkFrames;
+static u8 treeCollisionVisible;
+static SimpleActor* collidedTree;
 
 static void traceFunc(const char *funcName) {
     if (funcName == NULL) return;
@@ -118,6 +129,9 @@ static void traceFunc(const char *funcName) {
 static u8 checkCollision(s16 x1, s16 y1, s16 w1, s16 h1, s16 x2, s16 y2, s16 w2, s16 h2);
 static void collectGift(void);
 static void updateGiftCounter(void);
+static void beginTreeCollision(SimpleActor *tree);
+static void updateTreeCollisionRecovery(void);
+static void endTreeCollisionRecovery(void);
 
 static u8 validateHorizontalRange(s16 minX, s16 maxX, const char* context) {
     TRACE_FUNC();
@@ -546,6 +560,81 @@ static u8 checkCollision(s16 x1, s16 y1, s16 w1, s16 h1, s16 x2, s16 y2, s16 w2,
     return (x1 < x2 + w2) && (x1 + w1 > x2) && (y1 < y2 + h2) && (y1 + h1 > y2);
 }
 
+static void setTreeCollisionVisibility(u8 visible) {
+    if (santa.sprite) {
+        SPR_setVisibility(santa.sprite, visible ? VISIBLE : HIDDEN);
+    }
+    if (collidedTree && collidedTree->sprite) {
+        SPR_setVisibility(collidedTree->sprite, visible ? VISIBLE : HIDDEN);
+    }
+}
+
+static void beginTreeCollision(SimpleActor *tree) {
+    TRACE_FUNC();
+    if (recoveringFromTree) return;
+
+    collidedTree = tree;
+    recoveringFromTree = TRUE;
+    treeCollisionBlinkFrames = TREE_COLLISION_BLINK_FRAMES;
+    treeCollisionVisible = TRUE;
+
+    if (giftsCollected > 0) {
+        giftsCollected--;
+        updateGiftCounter();
+    }
+
+    XGM2_pause();
+    XGM2_playPCM(snd_obstaculo_golpe, sizeof(snd_obstaculo_golpe), SOUND_PCM_CH_AUTO);
+    setTreeCollisionVisibility(TRUE);
+}
+
+static void endTreeCollisionRecovery(void) {
+    TRACE_FUNC();
+
+    setTreeCollisionVisibility(TRUE);
+
+    if (collidedTree) {
+        spawnTree(collidedTree);
+    }
+    collidedTree = NULL;
+
+    santa.x = santaStartX;
+    santa.y = santaStartY;
+    santa.vx = 0;
+    santa.vy = 0;
+    if (santa.sprite) {
+        SPR_setPosition(santa.sprite, santa.x, santa.y);
+        SPR_setVisibility(santa.sprite, VISIBLE);
+    }
+
+    XGM2_setFMVolume(0);
+    XGM2_setPSGVolume(0);
+    XGM2_resume();
+    XGM2_setFMVolume(MUSIC_FM_VOLUME);
+    XGM2_setPSGVolume(MUSIC_PSG_VOLUME);
+    XGM2_fadeIn(60);
+
+    recoveringFromTree = FALSE;
+}
+
+static void updateTreeCollisionRecovery(void) {
+    TRACE_FUNC();
+    if (!recoveringFromTree) return;
+
+    if ((treeCollisionBlinkFrames % TREE_COLLISION_BLINK_INTERVAL_FRAMES) == 0) {
+        treeCollisionVisible = !treeCollisionVisible;
+        setTreeCollisionVisibility(treeCollisionVisible);
+    }
+
+    if (treeCollisionBlinkFrames > 0) {
+        treeCollisionBlinkFrames--;
+    }
+
+    if (treeCollisionBlinkFrames == 0) {
+        endTreeCollisionRecovery();
+    }
+}
+
 typedef struct {
     Sprite* sprite;
     s16 bottom;
@@ -619,6 +708,10 @@ void minigamePickup_init(void) {
     giftCounterSprite = NULL;
     frameCounter = 0;
     phaseChangeRequested = FALSE;
+    recoveringFromTree = FALSE;
+    treeCollisionBlinkFrames = 0;
+    treeCollisionVisible = TRUE;
+    collidedTree = NULL;
 
     leftLimit = (SCREEN_WIDTH * FORBIDDEN_PERCENT) / 100;
     rightLimit = SCREEN_WIDTH - leftLimit;
@@ -654,8 +747,10 @@ void minigamePickup_init(void) {
 
     snowEffect_init(&snowEffect, &globalTileIndex, 1, -2);
 
-    santa.x = leftLimit + ((playableWidth * 3) / 4); /* 75% para dejar hueco al marcador */
-    santa.y = santaMaxY;
+    santaStartX = leftLimit + ((playableWidth * 3) / 4); /* 75% para dejar hueco al marcador */
+    santaStartY = santaMaxY;
+    santa.x = santaStartX;
+    santa.y = santaStartY;
     santa.vx = 0;
     santa.vy = 0;
     santa.specialReady = FALSE;
@@ -705,6 +800,12 @@ void minigamePickup_init(void) {
 
 void minigamePickup_update(void) {
     TRACE_FUNC();
+    updateTreeCollisionRecovery();
+    if (recoveringFromTree) {
+        frameCounter++;
+        return;
+    }
+
     u16 input = gameCore_readInput();
     s8 inputDirX = 0;
     s8 inputDirY = 0;
@@ -770,11 +871,7 @@ void minigamePickup_update(void) {
                 trees[i].x,
                 trees[i].y + (TREE_SIZE - TREE_HITBOX_HEIGHT),
                 TREE_SIZE, TREE_HITBOX_HEIGHT)) {
-            if (giftsCollected > 0) {
-                giftsCollected--;
-                updateGiftCounter();
-            }
-            spawnTree(&trees[i]);
+            beginTreeCollision(&trees[i]);
         }
         SPR_setPosition(trees[i].sprite, trees[i].x, trees[i].y);
     }
