@@ -487,16 +487,16 @@ static void updateElfGift(u8 index, fix16 progress) {
 
     const s16 dx = elfMarkPosX[index] - elfShadowStartX[index];
     const s16 dy = elfMarkPosY[index] - elfShadowStartY[index];
-    fix16 baseXf = FIX16(elfShadowStartX[index]) + fix16Mul(FIX16(dx), progress);
-    fix16 baseYf = FIX16(elfShadowStartY[index]) + fix16Mul(FIX16(dy), progress);
+    fix16 baseXf = FIX16(elfShadowStartX[index]) + F16_mul(FIX16(dx), progress);
+    fix16 baseYf = FIX16(elfShadowStartY[index]) + F16_mul(FIX16(dy), progress);
 
     /* Arco parabólico: altura máxima GIFT_ARC_HEIGHT en t=0.5 */
     fix16 t = progress;
-    fix16 arcFactor = fix16Mul(FIX16(4), fix16Mul(t, (FIX16(1) - t)));
-    fix16 arcOffsetF = fix16Mul(FIX16(GIFT_ARC_HEIGHT), arcFactor);
+    fix16 arcFactor = F16_mul(FIX16(4), F16_mul(t, (FIX16(1) - t)));
+    fix16 arcOffsetF = F16_mul(FIX16(GIFT_ARC_HEIGHT), arcFactor);
 
-    s16 posX = fix16ToInt(baseXf + FIX16(0.5));
-    s16 posY = fix16ToInt((baseYf - arcOffsetF) + FIX16(0.5));
+    s16 posX = F16_toInt(baseXf + FIX16(0.5));
+    s16 posY = F16_toInt((baseYf - arcOffsetF) + FIX16(0.5));
     SPR_setPosition(elfGiftSprites[index], posX, posY);
     elfGiftPosX[index] = posX;
     elfGiftPosY[index] = posY;
@@ -554,10 +554,10 @@ static void updateElfShadow(u8 index, fix16 progress) {
 
     const s16 dx = elfMarkPosX[index] - elfShadowStartX[index];
     const s16 dy = elfMarkPosY[index] - elfShadowStartY[index];
-    fix16 offsetX = fix16Mul(FIX16(dx), progress);
-    fix16 offsetY = fix16Mul(FIX16(dy), progress);
-    s16 newX = elfShadowStartX[index] + fix16ToInt(offsetX + FIX16(0.5));
-    s16 newY = elfShadowStartY[index] + fix16ToInt(offsetY + FIX16(0.5));
+    fix16 offsetX = F16_mul(FIX16(dx), progress);
+    fix16 offsetY = F16_mul(FIX16(dy), progress);
+    s16 newX = elfShadowStartX[index] + F16_toInt(offsetX + FIX16(0.5));
+    s16 newY = elfShadowStartY[index] + F16_toInt(offsetY + FIX16(0.5));
     SPR_setPosition(elfShadowSprites[index], newX, newY);
     elfShadowPosX[index] = newX;
     elfShadowPosY[index] = newY;
@@ -620,7 +620,7 @@ static void updateElfMark(u8 index, s16 santaHitX, s16 santaHitY, s16 santaHitW,
     fix16 progress = FIX16(0);
     if (travelSpan > 0) {
         progress = FIX16(elfBottom - minVisibleY);
-        progress = fix16Div(progress, FIX16(travelSpan));
+        progress = F16_div(progress, FIX16(travelSpan));
     }
     if (progress < FIX16(0)) progress = FIX16(0);
     if (progress > FIX16(1)) progress = FIX16(1);
@@ -700,9 +700,9 @@ static void updateGiftCounter(void) {
 
 /** @brief Log de depuracion para el estado del scroll vertical. */
 static void debugPrintScrollState(const char* context, s16 scrollStep) {
-    s32 speedInt = fix16ToInt(scrollSpeedPerFrame);
+    s32 speedInt = F16_toInt(scrollSpeedPerFrame);
     s32 speedFrac = ((u32)(scrollSpeedPerFrame & 0xFFFF) * 1000) / 65536;
-    s32 accInt = fix16ToInt(scrollAccumulator);
+    s32 accInt = F16_toInt(scrollAccumulator);
     s32 accFrac = ((u32)(scrollAccumulator & 0xFFFF) * 1000) / 65536;
 
     kprintf("[DEBUG SCROLL] %s speed=%ld.%03ld acc=%ld.%03ld step=%d gifts=%u max=%u frame=%u",
