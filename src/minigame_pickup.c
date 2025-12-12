@@ -634,7 +634,7 @@ static void updateElfMark(u8 index, s16 santaHitX, s16 santaHitY, s16 santaHitW,
     updateElfShadow(index, progress);
     updateElfGift(index, progress);
 
-    if (elfGiftActive[index] && elfGiftHasLanded[index]) {
+    if (elfGiftActive[index]  && progress >= FIX16(0.9)) { // Empieza a checkear desde el 90% de caída
         if (checkCollision(santa.x, santa.y - 10, SANTA_WIDTH, SANTA_HEIGHT + 16, // Al recoger regalos, todo el sprite cuenta como hitbox para que sea más fácil. Se añaden px arriba y abajo por si el regalo cae desde arriba o desde abajo
                 elfGiftPosX[index], elfGiftPosY[index], GIFT_SIZE, GIFT_SIZE)) {
             kprintf("[DEBUG GIFT] collect landed idx=%d giftPos=(%d,%d) santaHit=(%d,%d,%d,%d)", index,
