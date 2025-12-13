@@ -3,6 +3,7 @@
 #ifndef _RES_RESOURCES_SPRITES_H_
 #define _RES_RESOURCES_SPRITES_H_
 
+extern const u8 sprite_chimenea_animation11_frame0_tileset_data[0];
 extern const SpriteDefinition sprite_campana;
 extern const SpriteDefinition sprite_campana_bn;
 extern const SpriteDefinition sprite_canon;
