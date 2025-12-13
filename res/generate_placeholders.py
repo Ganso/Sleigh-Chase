@@ -39,6 +39,15 @@ PALETTE = [
 ENTRIES = [
     # Paletas fondo
     {
+        "path": "bg/Fondo.png",
+        "resource_line": 'PALETTE image_fondo_pal "bg/Fondo.png" BEST # Placeholder (Paleta fondo base nieve general)',
+        "width": 512,
+        "height": 256,
+        "final_size": "320x224 pixeles (tileset 512x256)",
+        "usage": "Paleta comun para el fondo generico nevado usado en intro/campanadas",
+        "palette": "PAL_COMMON con azules oscuros y nieve clara",
+    },
+    {
         "path": "bg/FondoPolo.png",
         "resource_line": 'PALETTE image_fondo_polo_pal "bg/FondoPolo.png" BEST # Placeholder (Paleta fondo polar fase uno)',
         "width": 512,
@@ -148,14 +157,14 @@ ENTRIES = [
     },
     {
         "path": "sprites/Chimenea.png",
-        "resource_line": 'SPRITE sprite_chimenea "sprites/Chimenea.png" 3 10 BEST 1 # Placeholder (Chimenea activable con regalo encendida)',
-        "width": 24,
-        "height": 160,
-        "final_size": "24x80 pixeles por frame (2 frames apilados)",
-        "usage": "Chimenea objetivo en fase tejados; cambia a encendida tras recibir regalo",
-        "frames": 2,
+        "resource_line": 'SPRITE sprite_chimenea "sprites/Chimenea.png" 6 6 BEST 1 # Placeholder (Chimenea activable con regalo encendida)',
+        "width": 48,
+        "height": 48,
+        "final_size": "Sprite 48x48 en una sola celda",
+        "usage": "Chimenea objetivo en fase tejados; cambia de estado al entregar regalos",
+        "frames": 1,
         "palette": "PAL_PLAYER ladrillo gris/rojo con brillos de fuego",
-        "visual": "Chimenea vertical estrecha con version apagada y otra con humo y brasas",
+        "visual": "Chimenea cuadrada vista lateral con ladrillos y un borde superior",
     },
     {
         "path": "sprites/CanonTejado.png",
@@ -220,6 +229,42 @@ ENTRIES = [
         "visual": "Globo ovalado con cuerda fina, 3 variantes de color",
     },
     # Tilemaps y mapas fase 1
+    {
+        "path": "bg/Fondo.png",
+        "resource_line": 'TILESET image_fondo_tile "bg/Fondo.png" BEST # Placeholder (Fondo generico nevado pantalla completa)',
+        "width": 512,
+        "height": 256,
+        "final_size": "320x224 pixeles visibles (tileset 512x256)",
+        "usage": "Fondo base reutilizado para intro y campanadas",
+        "visual": "Cielo nocturno con nieve suave y horizonte lejano",
+    },
+    {
+        "path": "bg/Fondo.png",
+        "resource_line": 'MAP image_fondo_map "bg/Fondo.png" image_fondo_tile BEST # Placeholder (Mapa fondo generico nevado)',
+        "width": 512,
+        "height": 256,
+        "final_size": "Mapa 40x28 tiles (320x224 en pantalla)",
+        "usage": "Distribucion principal del fondo generico",
+        "visual": "Nieve, cielo azul oscuro y casas lejanas",
+    },
+    {
+        "path": "bg/PrimerPlanoNieve.png",
+        "resource_line": 'TILESET image_primer_plano_nieve_tile "bg/PrimerPlanoNieve.png" BEST # Placeholder (Capa primer plano nieve)',
+        "width": 384,
+        "height": 512,
+        "final_size": "Overlay 384x512 para scroll sinusoidal",
+        "usage": "Efecto de copos en primer plano reutilizable",
+        "visual": "Copos semitransparentes y bruma ligera",
+    },
+    {
+        "path": "bg/PrimerPlanoNieve.png",
+        "resource_line": 'MAP image_primer_plano_nieve_map "bg/PrimerPlanoNieve.png" image_primer_plano_nieve_tile BEST # Placeholder (Mapa capa nieve primer plano)',
+        "width": 384,
+        "height": 512,
+        "final_size": "Mapa 48x64 tiles para desplazamiento continuo",
+        "usage": "Mapa de copos en primer plano con loop vertical",
+        "visual": "Patron generico de nieve cayendo",
+    },
     {
         "path": "bg/FondoPolo.png",
         "resource_line": 'TILESET image_fondo_polo_tile "bg/FondoPolo.png" BEST # Placeholder (Fondo tileset fase polo principal)',
@@ -333,7 +378,7 @@ ENTRIES = [
     {
         "path": "bg/LucesParpadeo.png",
         "resource_line": 'TILESET image_luces_parpadeo_tile "bg/LucesParpadeo.png" BEST # Placeholder (Capa luces parpadeo fiesta animada)',
-        "width": 256,
+        "width": 512,
         "height": 256,
         "final_size": "320x224 pixeles (overlay de luces)",
         "usage": "Capa de luces parpadeantes en la fiesta, anima cada 10 frames",
@@ -342,7 +387,7 @@ ENTRIES = [
     {
         "path": "bg/LucesParpadeo.png",
         "resource_line": 'MAP image_luces_parpadeo_map "bg/LucesParpadeo.png" image_luces_parpadeo_tile BEST # Placeholder (Mapa luces parpadeo fiesta animada)',
-        "width": 256,
+        "width": 512,
         "height": 256,
         "final_size": "Mapa 40x28 tiles (overlay de luces)",
         "usage": "MapDefinition de la capa animada de luces de fiesta",

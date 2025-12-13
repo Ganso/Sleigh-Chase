@@ -46,6 +46,14 @@ para entregar 10 de tus 20 regalos en chimeneas objetivo.
 ─────────────────────────────────────────────────────────────
 ```
 
+### Estado de implementación (baseline en código)
+
+- Fondo `image_fondo_tejados` cargado en `BG_B` con cámara sobre un ancho de 512 px y overlay de nieve reutilizando `snow_effect`.
+- Santa se mueve libremente por toda la pantalla con inercia compartida y puede soltar regalos con **A** al situarse sobre una chimenea.
+- Ocho chimeneas de 48×48 px colocadas en coordenadas fijas (mitad izquierda/derecha) que entran en cooldown tras recibir un regalo.
+- Contador de regalos inicializado a **10** unidades; cada entrega resta uno hasta completar la fase.
+- Enemigos placeholder basados en el sprite de duende: al colisionar con Santa se pausa la acción y se reinicia la posición tras un breve parpadeo.
+
 ### Especificaciones de Fase
 
 | Aspecto | Valor | Detalles |

@@ -37,7 +37,7 @@ SPRITE sprite_icono_regalo "sprites/IconoRegalo.png" 16 4 BEST 6
 # sprite_regalo_entrega : Placeholder (Regalo pequeño entrega tejados volador)
 SPRITE sprite_regalo_entrega "sprites/Regalos_Pequeno.png" 3 3 BEST 1
 # sprite_chimenea : Placeholder (Chimenea activable con regalo encendida)
-SPRITE sprite_chimenea "sprites/Chimenea.png" 3 10 BEST 1
+SPRITE sprite_chimenea "sprites/Chimenea.png" 6 6 BEST 1
 # sprite_canon_tejado : Placeholder (Canon tejado entrega regalos principal)
 SPRITE sprite_canon_tejado "sprites/CanonTejado.png" 8 12 BEST 1
 # sprite_nube : Placeholder (Nube decorativa paralaje tejados suave)
