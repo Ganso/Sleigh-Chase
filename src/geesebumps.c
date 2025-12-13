@@ -4,11 +4,20 @@
 /**
  * @file geesebumps.c
  * @brief Presentación inicial con logo, música y fades animados.
+ *
+ * Recursos empleados:
+ * - `res_geesebumps.h`: contiene el fondo `geesebumps_logo_bg` y las paletas
+ *   `geesebumps_pal_black`, `geesebumps_pal_white`, `geesebumps_pal_white2` y
+ *   `geesebumps_pal_lines`, además de los sprites `geesebumps_logo_text` y las
+ *   dos líneas animadas. Cada sprite consume la paleta declarada junto a sus
+ *   datos en el mismo fichero de recursos.
+ * - `music_geesebumps` (también en `res_geesebumps.h`): pista reproducida en
+ *   bucle durante la animación. No precisa paleta adicional al ser audio.
  */
 
-#define SCREEN_FPS 60
+#define SCREEN_FPS 60 /**< Frecuencia de refresco base de la Mega Drive. */
 
-static bool should_exit = false;
+static bool should_exit = false; /**< Señal para abandonar la intro al pulsar. */
 
 /**
  * @brief Manejador de eventos de joystick durante la pantalla de logo.
@@ -31,10 +40,10 @@ static void joyEvent_Geesebumps(u16 joy, u16 changed, u16 state)
  */
 void geesebumps_logo(void)
 {
-    Sprite *logo_text, *logo_lines1, *logo_lines2;
-    should_exit = false;
+    Sprite *logo_text, *logo_lines1, *logo_lines2; /**< Sprites del logo. */
+    should_exit = false; /**< Reinicia la bandera de salida temprana. */
 
-    int indice_tiles = TILE_USER_INDEX;
+    int indice_tiles = TILE_USER_INDEX; /**< Primer tile libre para cargar BG. */
     
     /* Configura el manejador de joystick */
     JOY_setEventHandler(&joyEvent_Geesebumps);

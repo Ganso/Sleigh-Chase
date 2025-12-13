@@ -19,14 +19,14 @@
 void snowEffect_init(SnowEffect *effect, u32 *tileIndex, s16 angleStep, s16 verticalStep) {
     if (effect == NULL || tileIndex == NULL) return;
 
-    effect->offsetX = 0;
-    effect->offsetY = 0;
-    effect->angle = 0;
-    effect->angleStep = 0;
-    effect->verticalStep = 0;
-    effect->map = NULL;
-    effect->widthPx = SNOW_WIDTH_PX;
-    effect->heightPx = SNOW_HEIGHT_PX;
+    effect->offsetX = 0;           /**< Desplazamiento horizontal inicial. */
+    effect->offsetY = 0;           /**< Desplazamiento vertical inicial. */
+    effect->angle = 0;             /**< Ángulo para el movimiento sinusoidal. */
+    effect->angleStep = 0;         /**< Se rellenará con el paso deseado. */
+    effect->verticalStep = 0;      /**< Se rellenará con la velocidad vertical. */
+    effect->map = NULL;            /**< El mapa se asignará tras cargar tiles. */
+    effect->widthPx = SNOW_WIDTH_PX; /**< Ancho del patrón de nieve. */
+    effect->heightPx = SNOW_HEIGHT_PX; /**< Alto del patrón de nieve. */
 
     effect->angleStep = angleStep;
     effect->verticalStep = verticalStep;

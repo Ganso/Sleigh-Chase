@@ -18,10 +18,11 @@ Notas para cualquier asistente que edite el proyecto. Mantener este resumen visi
 - Efecto de nieve (`snow_effect.*`): carga `image_primer_plano_nieve` en `BG_A` usando el `globalTileIndex` que se le pasa por puntero; se debe llamar tras cargar el fondo para mantener el orden de tiles.
 - Importante: Después de hacer el primer ScrollTo tras inicializar un MAP, y antes de hacer el siguiente, es importante hacer un refresco de pantalla con SYS_doVBlankProcess();
 - Es importante que todos los fondos se puedan organizar en bloques de 128x128.
+- Documenta todas las inicializaciones de variables en C con un comentario breve de propósito usando formato compatible con Doxygen (`/**< ... */`).
 
 ## Detalle por fase (src/)
 - Fase 1 `minigame_pickup.c`: vista cenital con pista desplazada hacia abajo (scroll en `BG_B`). Limites jugables a 10% de cada lateral; movimiento con inercia (`applyInertiaMovement`) y hitbox reducida del trineo. Faltan el disparo especial definitivo y el sprite del regalo que lanzan los elfos laterales. `giftsCollected` sube al chocar con arboles/elfos; el fondo se desplaza con `trackOffsetY` normalizado y el overlay de nieve se mueve con `snowEffect_update`.
-- Fase 2 `minigame_delivery.c`: placeholder; contadores automaticos (`entregasCompletadas`) cada 45 frames hasta 10. No hay assets ni HUD activo aun.
+- Fase 2 `minigame_delivery.c`: fase jugable con chimeneas activas, enemigos y nieve compartida. El mapa de tejados (`resources_bg.h`) se carga en BG, Santa mueve su trineo con inercia y suelta regalos con cooldown (`DROP_COOLDOWN_FRAMES`). `snow_effect` se puede reutilizar tal cual y los contadores gráficos se renderizan con sprites dedicados.
 - Fase 3 `minigame_bells.c`: fase completa. Fondo en `BG_B` + nieve en `BG_A`; canion lateral con inercia y cooldown de disparo (`BULLET_COOLDOWN_FRAMES`). Arreglos: `bells` (caida con parpadeo al llegar abajo), `bombs` (resetean progreso y parpadean todas), `fixedBells` muestran progreso y cambian a color al acertar. `fireBullet` crea sprites de confeti y `detectarColisionesBala` decide impacto con campana o bomba (reproduce SFX desde `resources_sfx.h`).
 - Fase 4 `minigame_celebration.c`: placeholder temporal; solo cuenta frames (`DURACION_CELEBRACION`) y llama a `SPR_update`/`SYS_doVBlankProcess`.
 - Intro `geesebumps.c`: muestra logo con fades y musica `music_geesebumps`; usa `SPR_addSpriteSafe` y eventos de joystick para saltar.

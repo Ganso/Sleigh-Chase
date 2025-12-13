@@ -5,12 +5,19 @@
 
 /** @file audio_manager.c
  *  @brief Rutinas de conveniencia para reproducir música y efectos comunes.
+ *
+ * Recursos usados:
+ * - `resources_music.h`: define `musica_fondo` para las fases 1-4 y
+ *   `music_geesebumps` para la intro. Ambas pistas incluyen su propia tabla de
+ *   instrumento FM/PSG y no requieren paletas de color.
+ * - `res_geesebumps.h`: incluye el tema de presentación reproducido desde
+ *   @ref audio_play_intro.
  */
 
 void audio_init(void) {
-    XGM2_setLoopNumber(-1);
-    XGM2_setFMVolume(80);
-    XGM2_setPSGVolume(110);
+    XGM2_setLoopNumber(-1); /**< Configura reproducción en bucle infinito. */
+    XGM2_setFMVolume(80);   /**< Volumen FM base para mantener headroom. */
+    XGM2_setPSGVolume(110); /**< Volumen PSG ligeramente superior para brillo. */
 }
 
 /**
@@ -18,14 +25,14 @@ void audio_init(void) {
  * @param track Puntero al buffer VGM a reproducir.
  */
 static void audio_play_loop(const u8* track) {
-    XGM2_setLoopNumber(-1);
-    XGM2_setFMVolume(70);
-    XGM2_setPSGVolume(100);
+    XGM2_setLoopNumber(-1); /**< Fuerza el bucle hasta cambio de fase. */
+    XGM2_setFMVolume(70);   /**< Baja FM para dejar espacio a efectos SFX. */
+    XGM2_setPSGVolume(100); /**< Nivel estándar de PSG para ambientes. */
     XGM2_play(track);
 }
 
 void audio_play_intro(void) {
-    XGM2_setLoopNumber(0);
+    XGM2_setLoopNumber(0); /**< Intro se reproduce una sola vez. */
     XGM2_play(music_geesebumps);
 }
 
