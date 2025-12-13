@@ -1,5 +1,6 @@
 # 📊 DIAGRAMA TÉCNICO COMPLETO - FELIZ 2026
 
+> Nota: Se han a�adido cutscenes previas a cada fase con fondo `FondoSanta.png` y texto progresivo.
 ## 🏗️ ARQUITECTURA GENERAL DEL PROYECTO
 
 ```

@@ -11,9 +11,9 @@
 
 #include "minigame_celebration.h"
 
-#define NUM_CONFETI 50
-#define NUM_PERSONAJES 2
-#define DURACION_CELEBRACION 300
+#define NUM_CONFETI 50           /* Número de partículas de confeti simuladas. */
+#define NUM_PERSONAJES 2         /* Personajes decorativos en pantalla. */
+#define DURACION_CELEBRACION 300 /* Duración total de la fase en frames. */
 
 /** @brief Partícula de confeti simple. */
 typedef struct {

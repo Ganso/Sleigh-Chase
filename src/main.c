@@ -29,6 +29,7 @@
 #include "geesebumps.h"
 #include "audio_manager.h"
 #include "resources_music.h"
+#include "cutscene.h"
 
 /* Fases del juego */
 enum {
@@ -72,6 +73,7 @@ int main() {
             case PHASE_PICKUP:
                 /* Fase 1: Recogida - Polo Norte */
                 KLog("Fase 1: Recogida");
+                cutscene_phase1_intro();
                 minigamePickup_init();
                 while (!minigamePickup_isComplete()) {
                     minigamePickup_update();
@@ -85,6 +87,7 @@ int main() {
             case PHASE_DELIVERY:
                 /* Fase 2: Entrega - Tejados */
                 KLog("Fase 2: Entrega");
+                cutscene_phase2_intro();
                 audio_play_phase2();
                 minigameDelivery_init();
                 while (!minigameDelivery_isComplete()) {
@@ -99,6 +102,7 @@ int main() {
             case PHASE_BELLS:
                 /* Fase 3: Campanadas - IMPLEMENTADA */
                 KLog("Fase 3: Campanadas");
+                cutscene_phase3_intro();
                 minigameBells_init();
                 while (!minigameBells_isComplete()) {
                     minigameBells_update();

@@ -3,6 +3,7 @@
 Juego de minijuegos navidenos para Sega Genesis/Mega Drive desarrollado con SGDK.
 
 ## Estado actual
+- **Cutscenes**: Antes de cada fase se muestra una escena con `FondoSanta.png` y texto progresivo que introduce los objetivos.
 - **Fase 1**: Recogida (Polo Norte) - ¡Completada a nivel mecánicas! Scroll vertical, inercia completa, recogida de regalos, marcas de elfos, robo de enemigos y gestión de HUD/música. Pendientes solo ajustes de arte/SFX finales si se desea.
 - **Fase 2**: Entrega (Tejados) - Base jugable creada: fondo de tejados con nieve, movimiento libre, chimeneas 48x48 en posiciones fijas y entrega manual de regalos (botón A) con contador decreciente desde 10. Enemigos placeholder reutilizados de los elfos con reinicio al contacto.
 - **Fase 3**: Campanadas (Iglesia) - Implementada: fondo + paralaje de nieve, canion lateral con cooldown, campanas/bombas con SFX y HUD propio.

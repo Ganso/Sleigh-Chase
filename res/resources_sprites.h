@@ -3,7 +3,6 @@
 #ifndef _RES_RESOURCES_SPRITES_H_
 #define _RES_RESOURCES_SPRITES_H_
 
-extern const u8 sprite_chimenea_animation11_frame0_tileset_data[0];
 extern const SpriteDefinition sprite_campana;
 extern const SpriteDefinition sprite_campana_bn;
 extern const SpriteDefinition sprite_canon;
@@ -33,10 +32,11 @@ extern const SpriteDefinition sprite_duende_malo;
 extern const SpriteDefinition sprite_marca_x;
 extern const SpriteDefinition sprite_sombra_regalo;
 extern const SpriteDefinition sprite_icono_regalo;
-extern const SpriteDefinition sprite_regalo_entrega;
 extern const SpriteDefinition sprite_chimenea;
+extern const SpriteDefinition sprite_chimenea_prohibida;
 extern const SpriteDefinition sprite_canon_tejado;
 extern const SpriteDefinition sprite_nube;
+extern const SpriteDefinition sprite_regalo_entrega;
 extern const SpriteDefinition sprite_confeti;
 extern const SpriteDefinition sprite_personaje;
 extern const SpriteDefinition sprite_arbol_fiesta;

@@ -105,3 +105,10 @@ void gameCore_applyInertiaMovement(s16 *x, s16 *y, s8 *vx, s8 *vy,
     gameCore_applyInertiaAxis(x, vx, minX, maxX, inputX, frameIndex, config);
     gameCore_applyInertiaAxis(y, vy, minY, maxY, inputY, frameIndex, config);
 }
+
+/**
+ * @brief Comprueba solapamiento de dos AABB sencillas.
+ */
+u8 gameCore_checkCollision(s16 x1, s16 y1, s16 w1, s16 h1, s16 x2, s16 y2, s16 w2, s16 h2) {
+    return (x1 < x2 + w2) && (x1 + w1 > x2) && (y1 < y2 + h2) && (y1 + h1 > y2);
+}

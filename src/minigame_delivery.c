@@ -16,23 +16,31 @@
  */
 
 #include "minigame_delivery.h"
-
-#include <string.h>
-
 #include "audio_manager.h"
-#include "hud.h"
 #include "resources_bg.h"
 #include "resources_sfx.h"
 #include "resources_sprites.h"
 #include "snow_effect.h"
 
-#define DELIVERY_TARGET 10
-#define NUM_CHIMNEYS 8
-#define NUM_ENEMIES 3
-#define NUM_GIFT_DROPS 3
-#define WORLD_WIDTH 512
-#define WORLD_HEIGHT SCREEN_HEIGHT
-#define CHIMNEY_SIZE 48
+/* Sprite adicional para chimeneas bloqueadas (32x32). */
+extern const SpriteDefinition sprite_chimenea_prohibida;
+
+#define DELIVERY_TARGET 10              /* Regalos totales a entregar en la fase. */
+#define MAX_VISIBLE_CHIMNEYS 4          /* Máximo de chimeneas simultáneas en pantalla. */
+#define NUM_CHIMNEYS MAX_VISIBLE_CHIMNEYS /* Pool de chimeneas reutilizado. */
+#define NUM_ENEMIES 3                   /* Enemigos concurrentes en el tejado. */
+#define NUM_GIFT_DROPS 3                /* Regalos simultáneos en caída. */
+#define WORLD_WIDTH SCREEN_WIDTH        /* Ancho jugable fijado a la pantalla. */
+#define WORLD_HEIGHT 512                /* Altura total del bucle vertical. */
+#define SCROLL_LOOP_PX WORLD_HEIGHT     /* Tamaño del loop de scroll en píxeles. */
+#define SCROLL_SPEED_PER_FRAME FIX16(1.5) /* Velocidad de avance vertical. */
+#define CHIMNEY_SIZE 32                 /* Tamaño (ancho/alto) de cada chimenea. */
+#define CHIMNEY_MARGIN_X 4              /* Margen lateral respecto al borde. */
+#define CHIMNEY_X_LEFT CHIMNEY_MARGIN_X /* Posición X para chimeneas de la izquierda. */
+#define CHIMNEY_X_RIGHT (SCREEN_WIDTH - CHIMNEY_SIZE - CHIMNEY_MARGIN_X) /* X derecha. */
+#define CHIMNEY_PROHIBITED_PERCENT 60   /* Probabilidad % de chimenea prohibida. */
+#define HOUSE_HEIGHT 96                 /* Altura de cada casa en el fondo. */
+#define CHIMNEY_ROW_OFFSET 32           /* Offset vertical para centrar en las casas. */
 #define ENEMY_SIZE 32
 #define DROP_COOLDOWN_FRAMES 18
 #define CHIMNEY_RESET_FRAMES 90
@@ -58,11 +66,13 @@ enum {
 
 typedef struct {
     Sprite* sprite;
+    Sprite* blockedSprite;
     s16 x;
     s16 y;
     u8 state;
     u16 cooldown;
     u8 blink;
+    u8 prohibited;
 } Chimney;
 
 typedef struct {
@@ -91,24 +101,22 @@ typedef struct {
 } Santa;
 
 static const GameInertia santaInertia = { 1, 1, 2, 5 }; /**< Configura aceleración, fricción y velocidad máxima del trineo. */
-static const Vect2D_s16 chimneyPositions[NUM_CHIMNEYS] = {
-    { 30, 144 }, { 96, 120 }, { 160, 136 }, { 220, 116 },
-    { 300, 132 }, { 360, 118 }, { 428, 140 }, { 482, 124 },
-}; /**< Coordenadas de cada chimenea en el scroll horizontal. */
-
 static Chimney chimneys[NUM_CHIMNEYS]; /**< Chimeneas activas en el tejado. */
 static Enemy enemies[NUM_ENEMIES]; /**< Enemigos que roban regalos. */
 static GiftDrop drops[NUM_GIFT_DROPS]; /**< Regalos en caída hacia chimeneas. */
 static Santa santa; /**< Control del sprite principal. */
 
 static Map* mapBackground; /**< Mapa del plano B para el tejado. */
+static s16 backgroundOffsetY; /**< Offset vertical del scroll de fondo. */
+static fix16 scrollAccumulator; /**< Acumulador de scroll fraccional. */
+static fix16 scrollSpeedPerFrame; /**< Velocidad de scroll por frame. */
 static SnowEffect snowEffect; /**< Efecto de nieve compartido. */
 static GameTimer gameTimer; /**< Temporizador de la fase para derrota. */
 
 static Sprite* giftCounterTop; /**< Contador gráfico fila superior. */
 static Sprite* giftCounterBottom; /**< Contador gráfico fila inferior. */
 
-static s16 cameraX; /**< Offset horizontal de cámara para scroll. */
+static s16 nextChimneySpawnY; /**< Cursor vertical para nuevas chimeneas. */
 static u16 frameCounter; /**< Contador global de frames. */
 static u8 giftsRemaining; /**< Regalos que faltan por entregar. */
 static u8 deliveriesCompleted; /**< Chimeneas servidas con éxito. */
@@ -123,10 +131,15 @@ static void initChimneys(void);
 static void initEnemies(void);
 static void initGiftDrops(void);
 static void initGiftCounterSprites(void);
-static void updateCamera(void);
-static void updateChimneys(void);
-static void updateEnemies(void);
-static void updateGiftDrops(void);
+static s16 advanceVerticalScroll(void);
+static void applyBackgroundScroll(void);
+static void updateChimneys(s16 scrollStep);
+static void updateEnemies(s16 scrollStep);
+static void updateGiftDrops(s16 scrollStep);
+static void resetChimneySpawnCursor(void);
+static s16 takeNextChimneySpawnY(void);
+static s16 pickChimneyX(void);
+static u8 rollChimneyProhibited(void);
 static void updateGiftCounter(void);
 static void spawnGiftDrop(void);
 static void handleGiftDrop(void);
@@ -134,15 +147,15 @@ static void checkEnemyCollision(void);
 static void startRecovery(void);
 static void updateRecovery(void);
 static u8 isSantaOverChimney(const Chimney* chimney);
-static u8 checkCollision(s16 x1, s16 y1, s16 w1, s16 h1, s16 x2, s16 y2, s16 w2, s16 h2);
 
-/** @brief Configura recursos, HUD y estado inicial de la fase. */
+/** @brief Configura recursos, estado inicial de la fase. */
 void minigameDelivery_init(void) {
     VDP_setScreenWidth320();
     VDP_setScreenHeight224();
 
     VDP_clearPlane(BG_A, TRUE);
     VDP_clearPlane(BG_B, TRUE);
+    VDP_setPlaneSize(64, 64, TRUE);
 
     frameCounter = 0;
     giftsRemaining = DELIVERY_TARGET;
@@ -151,11 +164,12 @@ void minigameDelivery_init(void) {
     dropCooldown = 0;
     recoveringFrames = 0;
     previousInput = 0;
-    cameraX = 0;
+    backgroundOffsetY = SCROLL_LOOP_PX;
+    backgroundOffsetY %= SCROLL_LOOP_PX;
+    scrollAccumulator = FIX16(0);
+    scrollSpeedPerFrame = SCROLL_SPEED_PER_FRAME;
 
-    hud_init();
-    hud_reset_phase(2);
-
+    
     initBackground();
     initChimneys();
     initEnemies();
@@ -190,7 +204,7 @@ void minigameDelivery_update(void) {
         gameCore_applyInertiaMovement(&santa.x, &santa.y, &santa.vx, &santa.vy,
             dirX, dirY,
             0, WORLD_WIDTH - SANTA_WIDTH,
-            0, WORLD_HEIGHT - SANTA_HEIGHT,
+            0, SCREEN_HEIGHT - SANTA_HEIGHT,
             frameCounter, &santaInertia);
 
         if (dropCooldown > 0) {
@@ -202,12 +216,13 @@ void minigameDelivery_update(void) {
         }
     }
 
-    updateCamera();
-    updateChimneys();
-    updateEnemies();
-    updateGiftDrops();
+    s16 scrollStep = advanceVerticalScroll();
+    applyBackgroundScroll();
+    updateChimneys(scrollStep);
+    updateEnemies(scrollStep);
+    updateGiftDrops(scrollStep);
 
-    SPR_setPosition(santa.sprite, santa.x - cameraX, santa.y);
+    SPR_setPosition(santa.sprite, santa.x, santa.y);
 
     if (recoveringFrames == 0) {
         checkEnemyCollision();
@@ -215,7 +230,6 @@ void minigameDelivery_update(void) {
 
     s32 remainingFrames = gameCore_updateTimer(&gameTimer);
     u16 secondsRemaining = remainingFrames > 0 ? (remainingFrames / 60) : 0;
-    hud_draw_delivery(deliveriesCompleted, DELIVERY_TARGET, secondsRemaining);
     updateGiftCounter();
 
     if (giftsRemaining == 0 || deliveriesCompleted >= DELIVERY_TARGET) {
@@ -239,6 +253,9 @@ u8 minigameDelivery_isComplete(void) {
 static void initBackground(void) {
     gameCore_resetTileIndex();
 
+    scrollAccumulator = FIX16(0);
+    scrollSpeedPerFrame = SCROLL_SPEED_PER_FRAME;
+
     if (image_fondo_tejados_pal.data) {
         PAL_setPalette(PAL_COMMON, image_fondo_tejados_pal.data, CPU);
     }
@@ -256,7 +273,7 @@ static void initBackground(void) {
         TILE_ATTR_FULL(PAL_COMMON, FALSE, FALSE, FALSE, globalTileIndex));
     globalTileIndex += image_fondo_tejados_tile.numTile;
     if (mapBackground != NULL) {
-        MAP_scrollTo(mapBackground, 0, 0);
+        MAP_scrollTo(mapBackground, 0, backgroundOffsetY);
     }
     SYS_doVBlankProcess();
 
@@ -277,17 +294,32 @@ static void initSanta(void) {
 
 static void initChimneys(void) {
     memset(chimneys, 0, sizeof(chimneys));
+    resetChimneySpawnCursor();
     for (u8 i = 0; i < NUM_CHIMNEYS; i++) {
-        chimneys[i].x = chimneyPositions[i].x;
-        chimneys[i].y = chimneyPositions[i].y;
         chimneys[i].state = CHIMNEY_ACTIVE;
         chimneys[i].cooldown = 0;
         chimneys[i].blink = 0;
+        chimneys[i].x = pickChimneyX();
+        chimneys[i].y = takeNextChimneySpawnY();
+        chimneys[i].prohibited = rollChimneyProhibited();
+        chimneys[i].state = chimneys[i].prohibited ? CHIMNEY_INACTIVE : CHIMNEY_ACTIVE;
+
         chimneys[i].sprite = SPR_addSpriteSafe(&sprite_chimenea,
             chimneys[i].x, chimneys[i].y,
             TILE_ATTR(PAL_PLAYER, FALSE, FALSE, FALSE));
+        chimneys[i].blockedSprite = SPR_addSpriteSafe(&sprite_chimenea_prohibida,
+            chimneys[i].x, chimneys[i].y,
+            TILE_ATTR(PAL_PLAYER, FALSE, FALSE, FALSE));
+        const u8 visible = (chimneys[i].y + CHIMNEY_SIZE > 0) && (chimneys[i].y < SCREEN_HEIGHT);
         if (chimneys[i].sprite) {
             SPR_setDepth(chimneys[i].sprite, DEPTH_BACKGROUND);
+            SPR_setVisibility(chimneys[i].sprite,
+                (!chimneys[i].prohibited && visible) ? VISIBLE : HIDDEN);
+        }
+        if (chimneys[i].blockedSprite) {
+            SPR_setDepth(chimneys[i].blockedSprite, DEPTH_BACKGROUND);
+            SPR_setVisibility(chimneys[i].blockedSprite,
+                (chimneys[i].prohibited && visible) ? VISIBLE : HIDDEN);
         }
     }
 }
@@ -341,21 +373,57 @@ static void initGiftCounterSprites(void) {
     }
 }
 
-static void updateCamera(void) {
-    s16 desiredX = santa.x - (SCREEN_WIDTH / 2) + (SANTA_WIDTH / 2);
-    if (desiredX < 0) desiredX = 0;
-    if (desiredX > (WORLD_WIDTH - SCREEN_WIDTH)) desiredX = WORLD_WIDTH - SCREEN_WIDTH;
-    cameraX = desiredX;
+static s16 advanceVerticalScroll(void) {
+    scrollAccumulator += scrollSpeedPerFrame;
+    s16 scrollStep = 0;
+    while (scrollAccumulator >= FIX16(1)) {
+        scrollStep++;
+        scrollAccumulator -= FIX16(1);
+    }
 
+    if (scrollStep > 0) {
+        backgroundOffsetY -= scrollStep;
+        if (backgroundOffsetY < 0) {
+            backgroundOffsetY += SCROLL_LOOP_PX;
+        }
+    }
+
+    return scrollStep;
+}
+
+static void applyBackgroundScroll(void) {
     if (mapBackground != NULL) {
-        MAP_scrollTo(mapBackground, cameraX, 0);
+        MAP_scrollTo(mapBackground, 0, backgroundOffsetY);
     }
 }
 
-static void updateChimneys(void) {
+static void resetChimneySpawnCursor(void) {
+    nextChimneySpawnY = CHIMNEY_ROW_OFFSET;
+}
+
+static u8 rollChimneyProhibited(void) {
+    u16 roll = random() % 100;
+    return (roll < CHIMNEY_PROHIBITED_PERCENT) ? TRUE : FALSE;
+}
+
+static s16 takeNextChimneySpawnY(void) {
+    s16 y = nextChimneySpawnY;
+    u8 rowsAdvance = (random() & 1) ? 2 : 1; /* 1 o 2 casas */
+    nextChimneySpawnY -= (rowsAdvance * HOUSE_HEIGHT);
+    while (nextChimneySpawnY < -SCROLL_LOOP_PX) {
+        nextChimneySpawnY += SCROLL_LOOP_PX;
+    }
+    return y;
+}
+
+static s16 pickChimneyX(void) {
+    return (random() & 1) ? CHIMNEY_X_RIGHT : CHIMNEY_X_LEFT;
+}
+
+static void updateChimneys(s16 scrollStep) {
     for (u8 i = 0; i < NUM_CHIMNEYS; i++) {
         Chimney* chimney = &chimneys[i];
-        if (chimney->state == CHIMNEY_COOLDOWN) {
+        if (!chimney->prohibited && chimney->state == CHIMNEY_COOLDOWN) {
             if (chimney->cooldown > 0) {
                 chimney->cooldown--;
                 if ((chimney->cooldown % 6) == 0) {
@@ -367,20 +435,60 @@ static void updateChimneys(void) {
             }
         }
 
-        s16 screenX = chimney->x - cameraX;
-        u8 visible = (screenX > -CHIMNEY_SIZE) && (screenX < SCREEN_WIDTH);
+        if (scrollStep) {
+            chimney->y += scrollStep;
+        }
+        if (chimney->y > SCREEN_HEIGHT) {
+            chimney->x = pickChimneyX();
+            chimney->y = takeNextChimneySpawnY();
+            chimney->prohibited = rollChimneyProhibited();
+            chimney->state = chimney->prohibited ? CHIMNEY_INACTIVE : CHIMNEY_ACTIVE;
+            chimney->cooldown = 0;
+            chimney->blink = 0;
+        }
+
+        s16 screenX = chimney->x;
+        u8 visible = (chimney->y + CHIMNEY_SIZE > 0) && (chimney->y < SCREEN_HEIGHT);
         if (chimney->sprite) {
             SPR_setPosition(chimney->sprite, screenX, chimney->y);
-            if (chimney->state == CHIMNEY_COOLDOWN && chimney->blink) {
+        }
+        if (chimney->blockedSprite) {
+            SPR_setPosition(chimney->blockedSprite, screenX, chimney->y);
+        }
+
+        if (chimney->prohibited) {
+            if (chimney->blockedSprite) {
+                SPR_setVisibility(chimney->blockedSprite, visible ? VISIBLE : HIDDEN);
+            }
+            if (chimney->sprite) {
                 SPR_setVisibility(chimney->sprite, HIDDEN);
-            } else {
+            }
+            continue;
+        }
+
+        if (chimney->state == CHIMNEY_COOLDOWN) {
+            if (chimney->sprite) {
+                if (chimney->blink) {
+                    SPR_setVisibility(chimney->sprite, HIDDEN);
+                } else {
+                    SPR_setVisibility(chimney->sprite, visible ? VISIBLE : HIDDEN);
+                }
+            }
+            if (chimney->blockedSprite) {
+                SPR_setVisibility(chimney->blockedSprite, HIDDEN);
+            }
+        } else {
+            if (chimney->sprite) {
                 SPR_setVisibility(chimney->sprite, visible ? VISIBLE : HIDDEN);
+            }
+            if (chimney->blockedSprite) {
+                SPR_setVisibility(chimney->blockedSprite, HIDDEN);
             }
         }
     }
 }
 
-static void updateEnemies(void) {
+static void updateEnemies(s16 scrollStep) {
     for (u8 i = 0; i < NUM_ENEMIES; i++) {
         Enemy* enemy = &enemies[i];
         if (!enemy->active || enemy->sprite == NULL) continue;
@@ -395,29 +503,35 @@ static void updateEnemies(void) {
         }
 
         enemy->y += (frameCounter % 60 == 0) ? 1 : 0;
-        if (enemy->y > (SCREEN_HEIGHT - ENEMY_SIZE - 40)) {
-            enemy->y = 40;
+        if (scrollStep) {
+            enemy->y += scrollStep;
+        }
+        if (enemy->y > SCREEN_HEIGHT) {
+            enemy->y -= SCROLL_LOOP_PX;
         }
 
-        s16 screenX = enemy->x - cameraX;
+        s16 screenX = enemy->x;
         SPR_setPosition(enemy->sprite, screenX, enemy->y);
         SPR_setVisibility(enemy->sprite, (screenX > -ENEMY_SIZE && screenX < SCREEN_WIDTH) ? VISIBLE : HIDDEN);
     }
 }
 
-static void updateGiftDrops(void) {
+static void updateGiftDrops(s16 scrollStep) {
     for (u8 i = 0; i < NUM_GIFT_DROPS; i++) {
         GiftDrop* drop = &drops[i];
         if (!drop->active || drop->sprite == NULL) continue;
 
         drop->y += drop->vy;
+        if (scrollStep) {
+            drop->y += scrollStep;
+        }
         if (drop->y > SCREEN_HEIGHT) {
             drop->active = FALSE;
             SPR_setVisibility(drop->sprite, HIDDEN);
             continue;
         }
 
-        SPR_setPosition(drop->sprite, drop->x - cameraX, drop->y);
+        SPR_setPosition(drop->sprite, drop->x, drop->y);
         SPR_setVisibility(drop->sprite, VISIBLE);
     }
 }
@@ -456,7 +570,7 @@ static void spawnGiftDrop(void) {
         drop->active = TRUE;
         drop->x = santa.x + (SANTA_WIDTH / 2) - 12;
         drop->y = santa.y + (SANTA_HEIGHT / 2);
-        SPR_setPosition(drop->sprite, drop->x - cameraX, drop->y);
+        SPR_setPosition(drop->sprite, drop->x, drop->y);
         SPR_setVisibility(drop->sprite, VISIBLE);
         break;
     }
@@ -467,7 +581,7 @@ static void handleGiftDrop(void) {
 
     for (u8 i = 0; i < NUM_CHIMNEYS; i++) {
         Chimney* chimney = &chimneys[i];
-        if (chimney->state != CHIMNEY_ACTIVE) continue;
+        if (chimney->prohibited || chimney->state != CHIMNEY_ACTIVE) continue;
 
         if (isSantaOverChimney(chimney)) {
             chimney->state = CHIMNEY_COOLDOWN;
@@ -490,7 +604,7 @@ static void checkEnemyCollision(void) {
         Enemy* enemy = &enemies[i];
         if (!enemy->active) continue;
 
-        if (checkCollision(santaHitX, santaHitY, SANTA_HITBOX_WIDTH, SANTA_HITBOX_HEIGHT,
+        if (gameCore_checkCollision(santaHitX, santaHitY, SANTA_HITBOX_WIDTH, SANTA_HITBOX_HEIGHT,
                 enemy->x, enemy->y, ENEMY_SIZE, ENEMY_SIZE)) {
             startRecovery();
             break;
@@ -505,7 +619,7 @@ static void startRecovery(void) {
     santa.y = SANTA_START_Y;
     santa.vx = 0;
     santa.vy = 0;
-    SPR_setPosition(santa.sprite, santa.x - cameraX, santa.y);
+    SPR_setPosition(santa.sprite, santa.x, santa.y);
 }
 
 static void updateRecovery(void) {
@@ -531,15 +645,6 @@ static u8 isSantaOverChimney(const Chimney* chimney) {
     s16 santaHitX = santa.x + ((SANTA_WIDTH - SANTA_HITBOX_WIDTH) / 2);
     s16 santaHitY = santa.y + (SANTA_HEIGHT - SANTA_HITBOX_HEIGHT);
 
-    return checkCollision(santaHitX, santaHitY, SANTA_HITBOX_WIDTH, SANTA_HITBOX_HEIGHT,
+    return gameCore_checkCollision(santaHitX, santaHitY, SANTA_HITBOX_WIDTH, SANTA_HITBOX_HEIGHT,
         chimney->x, chimney->y, CHIMNEY_SIZE, CHIMNEY_SIZE);
 }
-
-static u8 checkCollision(s16 x1, s16 y1, s16 w1, s16 h1, s16 x2, s16 y2, s16 w2, s16 h2) {
-    if (x1 + w1 < x2) return FALSE;
-    if (x2 + w2 < x1) return FALSE;
-    if (y1 + h1 < y2) return FALSE;
-    if (y2 + h2 < y1) return FALSE;
-    return TRUE;
-}
-

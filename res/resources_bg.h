@@ -5,6 +5,7 @@
 
 extern const TileSet image_primer_plano_nieve_tile;
 extern const MapDefinition image_primer_plano_nieve_map;
+extern const Image image_fondo_cutscene;
 extern const TileSet image_pista_polo_tile;
 extern const MapDefinition image_pista_polo_map;
 extern const Palette image_pista_polo_pal;

@@ -1,3 +1,5 @@
+#include <genesis.h>
+
 #ifndef _RES_RESOURCES_SFX_H_
 #define _RES_RESOURCES_SFX_H_
 

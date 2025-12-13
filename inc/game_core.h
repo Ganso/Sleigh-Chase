@@ -99,4 +99,9 @@ void gameCore_applyInertiaMovement(s16 *x, s16 *y, s8 *vx, s8 *vy,
     s8 inputX, s8 inputY, s16 minX, s16 maxX, s16 minY, s16 maxY,
     u16 frameIndex, const GameInertia *config);
 
+/**
+ * @brief Comprueba el solapamiento de dos AABB.
+ */
+u8 gameCore_checkCollision(s16 x1, s16 y1, s16 w1, s16 h1, s16 x2, s16 y2, s16 w2, s16 h2);
+
 #endif

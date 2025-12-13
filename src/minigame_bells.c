@@ -21,25 +21,25 @@
 #include "resources_sprites.h"
 #include "snow_effect.h"
 
-#define ENABLE_OPTIONAL_LETTER_SFX 0
+#define ENABLE_OPTIONAL_LETTER_SFX 0     /* Activa SFX opcional al colocar letras. */
 
-#define NUM_BELLS 6
-#define NUM_FIXED_BELLS 12
-#define NUM_BOMBS 3
-#define NUM_BULLETS 3
-#define NUM_LETTERS 8
-#define NUM_TARGET_LETTERS 9
-#define FRAMES_BLINK 30
-#define BULLET_VELOCITY 2
-#define CANNON_ACCEL 1
-#define CANNON_FRICTION 1
-#define CANNON_MAX_VEL 6
-#define BULLET_COOLDOWN_FRAMES 30
-#define BUTTON_B_COOLDOWN_FRAMES 30
+#define NUM_BELLS 6                      /* Campanas móviles en caída. */
+#define NUM_FIXED_BELLS 12               /* Campanas fijas del marcador. */
+#define NUM_BOMBS 3                      /* Bombas concurrentes en pantalla. */
+#define NUM_BULLETS 3                    /* Munición simultánea del cañón. */
+#define NUM_LETTERS 8                    /* Letras que caen para formar el mensaje. */
+#define NUM_TARGET_LETTERS 9             /* Letras totales del mensaje objetivo. */
+#define FRAMES_BLINK 30                  /* Intervalo de parpadeo en frames. */
+#define BULLET_VELOCITY 2                /* Velocidad vertical de cada disparo. */
+#define CANNON_ACCEL 1                   /* Aceleración horizontal del cañón. */
+#define CANNON_FRICTION 1                /* Fricción horizontal del cañón. */
+#define CANNON_MAX_VEL 6                 /* Velocidad máxima del cañón. */
+#define BULLET_COOLDOWN_FRAMES 30        /* Enfriamiento entre disparos. */
+#define BUTTON_B_COOLDOWN_FRAMES 30      /* Enfriamiento entre acciones con B. */
 
-#define LETTER_WIDTH 32
-#define LETTER_HEIGHT 32
-#define LETTER_COLLISION_HEIGHT 20
+#define LETTER_WIDTH 32                  /* Ancho de cada letra en píxeles. */
+#define LETTER_HEIGHT 32                 /* Alto de cada letra en píxeles. */
+#define LETTER_COLLISION_HEIGHT 20       /* Altura útil para colisiones de letra. */
 
 enum {
     PHASE_BELLS = 0,

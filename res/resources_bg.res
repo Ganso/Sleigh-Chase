@@ -2,6 +2,9 @@
 TILESET image_primer_plano_nieve_tile "bg/PrimerPlanoNieve.png" BEST
 MAP image_primer_plano_nieve_map "bg/PrimerPlanoNieve.png" image_primer_plano_nieve_tile BEST
 
+# Cutscenes
+IMAGE image_fondo_cutscene "bg/FondoSanta.png" BEST
+
 # Fase 1
 TILESET image_pista_polo_tile "bg/PistaPolo.png" BEST
 MAP image_pista_polo_map "bg/PistaPolo.png" image_pista_polo_tile BEST

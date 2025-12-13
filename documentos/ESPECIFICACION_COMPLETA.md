@@ -1,5 +1,6 @@
 # 🎄 ESPECIFICACIÓN TÉCNICA COMPLETA - FELIZ 2026
 
+> Nota: Se han a�adido cutscenes previas a cada fase con fondo `FondoSanta.png` y texto progresivo.
 **Proyecto Navideño Sega Mega Drive - Especificación Exhaustiva y Metódica**
 
 ---

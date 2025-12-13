@@ -31,58 +31,58 @@
 static void traceFunc(const char *funcName);
 #define TRACE_FUNC() traceFunc(__func__)
 
-#define NUM_TREES 1
-#define NUM_ELVES  4
-#define NUM_ENEMIES 3
-#define GIFTS_FOR_SPECIAL 3
-#define TARGET_GIFTS 10
-#define SCROLL_SPEED 1
-#define FORBIDDEN_PERCENT 10
-#define TRACK_LOOP_PX 512
+#define NUM_TREES 1              /* Árboles simultáneos en pista. */
+#define NUM_ELVES  4             /* Elfos que aparecen en oleadas. */
+#define NUM_ENEMIES 3            /* Enemigos concurrentes. */
+#define GIFTS_FOR_SPECIAL 3      /* Regalos necesarios para cargar especial. */
+#define TARGET_GIFTS 1           /* Objetivo de regalos para cambiar de fase. */
+#define SCROLL_SPEED 1           /* Velocidad base de scroll vertical. */
+#define FORBIDDEN_PERCENT 10     /* Margen lateral no jugable (porcentaje). */
+#define TRACK_LOOP_PX 512        /* Altura del bucle de pista. */
 
-#define ENEMY_LATERAL_DELAY 10
-#define ENEMY_LATERAL_SPEED 1
-#define ENEMY_ESCAPE_SPEED 3
+#define ENEMY_LATERAL_DELAY 10   /* Retardo entre ajustes laterales del enemigo. */
+#define ENEMY_LATERAL_SPEED 1    /* Velocidad lateral del enemigo. */
+#define ENEMY_ESCAPE_SPEED 3     /* Velocidad de escape tras robar. */
 
-#define TREE_SIZE 64
+#define TREE_SIZE 64             /* Tamaño de sprite del árbol. */
 #define TREE_HITBOX_OFFSET_X 8     /* Margen izquierdo desde el origen del sprite */
 #define TREE_HITBOX_OFFSET_Y 52    /* Margen superior desde el origen del sprite */
 #define TREE_HITBOX_WIDTH 45       /* Ancho de la zona colisionable (53 - 8) */
 #define TREE_HITBOX_HEIGHT 6       /* Alto de la zona colisionable (58 - 52) */
-#define ENEMY_SIZE 32
-#define ENEMY_HITBOX_HEIGHT 10
-#define ELF_SIZE 32
-#define ELF_MARK_SIZE 16
+#define ENEMY_SIZE 32            /* Tamaño del enemigo lateral. */
+#define ENEMY_HITBOX_HEIGHT 10   /* Altura útil del hitbox de enemigo. */
+#define ELF_SIZE 32              /* Tamaño del elfo lateral. */
+#define ELF_MARK_SIZE 16         /* Tamaño del icono indicador de elfo. */
 #define ELF_MARK_VISIBLE_MIN_Y 150       /* y inferior mínima para mostrar X (arriba) */
 #define ELF_MARK_VISIBLE_MAX_Y 210      /* y inferior máxima para mostrar X (abajo) */
-#define ELF_MARK_SCREEN_MARGIN_PERCENT 20
-#define ELF_SHADOW_MIN_DEPTH SPR_MAX_DEPTH
+#define ELF_MARK_SCREEN_MARGIN_PERCENT 20 /* Margen lateral para marcas en pantalla. */
+#define ELF_SHADOW_MIN_DEPTH SPR_MAX_DEPTH /* Profundidad mínima para sombras. */
 #define ELF_RESPAWN_DELAY_MIN_FRAMES 60   /* 1s a 60fps */
 #define ELF_RESPAWN_DELAY_MAX_FRAMES 300  /* 5s a 60fps */
-#define GIFT_SIZE 32
-#define GIFT_ARC_HEIGHT 50
-#define GIFT_COUNTER_ROW_SIZE 5
-#define GIFT_COUNTER_SPRITE_WIDTH 128
-#define GIFT_COUNTER_ROW_OFFSET_Y 20
-#define GIFT_COUNTER_SECOND_ROW_OFFSET_X 10
-#define GIFT_COUNTER_MAX 10
-#define MUSIC_START_DELAY_FRAMES 40
-#define MUSIC_FM_VOLUME 70
-#define MUSIC_PSG_VOLUME 100
-#define SANTA_WIDTH 80
-#define SANTA_HEIGHT 128
+#define GIFT_SIZE 32             /* Tamaño del sprite de regalo. */
+#define GIFT_ARC_HEIGHT 50       /* Altura máxima de la parábola del regalo. */
+#define GIFT_COUNTER_ROW_SIZE 5  /* Regalos por fila en HUD. */
+#define GIFT_COUNTER_SPRITE_WIDTH 128 /* Ancho del sprite contador. */
+#define GIFT_COUNTER_ROW_OFFSET_Y 20 /* Separación vertical entre filas de contador. */
+#define GIFT_COUNTER_SECOND_ROW_OFFSET_X 10 /* Desfase X de la segunda fila HUD. */
+#define GIFT_COUNTER_MAX 10      /* Límite de regalos mostrados. */
+#define MUSIC_START_DELAY_FRAMES 40 /* Frames de retraso antes de arrancar música. */
+#define MUSIC_FM_VOLUME 70          /* Volumen FM para la pista de fase 1. */
+#define MUSIC_PSG_VOLUME 100        /* Volumen PSG para la pista de fase 1. */
+#define SANTA_WIDTH 80              /* Ancho del sprite de Santa. */
+#define SANTA_HEIGHT 128            /* Alto del sprite de Santa. */
 #define SANTA_HITBOX_PADDING 30   /* píxeles que no colisionan a cada lado */
-#define SANTA_HITBOX_WIDTH (SANTA_WIDTH - 2 * SANTA_HITBOX_PADDING)
-#define SANTA_VERTICAL_SPEED 2
-#define TRACK_HEIGHT_PX 512
-#define SCROLL_SPEED_MIN FIX16(0.5)
-#define SCROLL_SPEED_MAX FIX16(1.5)
-#define HUD_MARGIN_PX 3
-#define DEPTH_SANTA SPR_MIN_DEPTH
+#define SANTA_HITBOX_WIDTH (SANTA_WIDTH - 2 * SANTA_HITBOX_PADDING) /* Ancho hitbox. */
+#define SANTA_VERTICAL_SPEED 2      /* Velocidad vertical base de Santa. */
+#define TRACK_HEIGHT_PX 512         /* Altura total del trazado. */
+#define SCROLL_SPEED_MIN FIX16(0.5) /* Velocidad mínima del scroll. */
+#define SCROLL_SPEED_MAX FIX16(1.5) /* Velocidad máxima del scroll. */
+#define HUD_MARGIN_PX 3             /* Margen de HUD en píxeles. */
+#define DEPTH_SANTA SPR_MIN_DEPTH   /* Profundidad base de Santa. */
 #define DEPTH_HUD (SPR_MIN_DEPTH + 50)      /* HUD muy delante para no quedar tapado */
-#define DEPTH_ACTORS_START (SPR_MIN_DEPTH + 2)
-#define TREE_COLLISION_BLINK_FRAMES 120
-#define TREE_COLLISION_BLINK_INTERVAL_FRAMES 6
+#define DEPTH_ACTORS_START (SPR_MIN_DEPTH + 2) /* Profundidad inicial de actores. */
+#define TREE_COLLISION_BLINK_FRAMES 120 /* Duración del parpadeo tras choque. */
+#define TREE_COLLISION_BLINK_INTERVAL_FRAMES 6 /* Intervalo de parpadeo. */
 
 /** @brief Actor básico con sprite y coordenadas. */
 typedef struct {
@@ -171,7 +171,6 @@ static void traceFunc(const char *funcName) {
     #endif
 }
 
-static u8 checkCollision(s16 x1, s16 y1, s16 w1, s16 h1, s16 x2, s16 y2, s16 w2, s16 h2);
 static void collectGift(void);
 static void updateGiftCounter(void);
 static void beginTreeCollision(SimpleActor *tree);
@@ -646,7 +645,7 @@ static void updateElfMark(u8 index, s16 santaHitX, s16 santaHitY, s16 santaHitW,
     updateElfGift(index, progress);
 
     if (elfGiftActive[index]  && progress >= FIX16(0.9)) { // Empieza a checkear desde el 90% de caída
-        if (checkCollision(santa.x, santa.y - 10, SANTA_WIDTH, SANTA_HEIGHT + 16, // Al recoger regalos, todo el sprite cuenta como hitbox para que sea más fácil. Se añaden px arriba y abajo por si el regalo cae desde arriba o desde abajo
+        if (gameCore_checkCollision(santa.x, santa.y - 10, SANTA_WIDTH, SANTA_HEIGHT + 16, // Al recoger regalos, todo el sprite cuenta como hitbox para que sea más fácil. Se añaden px arriba y abajo por si el regalo cae desde arriba o desde abajo
                 elfGiftPosX[index], elfGiftPosY[index], GIFT_SIZE, GIFT_SIZE)) {
             kprintf("[DEBUG GIFT] collect landed idx=%d giftPos=(%d,%d) santaHit=(%d,%d,%d,%d)", index,
                 elfGiftPosX[index], elfGiftPosY[index], santaHitX, santaHitY, santaHitW, santaHitH);
@@ -767,14 +766,6 @@ static void clearEnemies(void) {
     for (u8 i = 0; i < activeEnemyCount; i++) {
         spawnEnemy(&enemies[i]);
     }
-}
-
-/**
- * @brief Comprueba solapamiento de dos AABB sencillas.
- */
-static u8 checkCollision(s16 x1, s16 y1, s16 w1, s16 h1, s16 x2, s16 y2, s16 w2, s16 h2) {
-    TRACE_FUNC();
-    return (x1 < x2 + w2) && (x1 + w1 > x2) && (y1 < y2 + h2) && (y1 + h1 > y2);
 }
 
 /** @brief Alterna la visibilidad de Santa durante el parpadeo por colisión. */
@@ -1286,7 +1277,7 @@ void minigamePickup_update(void) {
                 spawnTree(&trees[i]);
             }
         }
-        if (checkCollision(santaHitX, santaHitY, santaHitW, santaHitH,
+        if (gameCore_checkCollision(santaHitX, santaHitY, santaHitW, santaHitH,
                         trees[i].x + TREE_HITBOX_OFFSET_X, 
                         trees[i].y + TREE_HITBOX_OFFSET_Y, 
                         TREE_HITBOX_WIDTH, 
@@ -1330,7 +1321,7 @@ void minigamePickup_update(void) {
         if (enemies[i].y > SCREEN_HEIGHT) {
             spawnEnemy(&enemies[i]);
         }
-        if (checkCollision(
+        if (gameCore_checkCollision(
                 santaHitX, santaHitY, santaHitW, santaHitH,
                 enemies[i].x,
                 enemies[i].y + (ENEMY_SIZE - ENEMY_HITBOX_HEIGHT),

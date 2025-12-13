@@ -6,8 +6,8 @@
 #include "snow_effect.h"
 #include "resources_bg.h"
 
-#define SNOW_WIDTH_PX 384
-#define SNOW_HEIGHT_PX 512
+#define SNOW_WIDTH_PX 384   /* Ancho del patrón de nieve en píxeles. */
+#define SNOW_HEIGHT_PX 512  /* Alto del patrón de nieve en píxeles. */
 
 /**
  * @brief Inicializa el mapa de nieve y sus parámetros de movimiento.

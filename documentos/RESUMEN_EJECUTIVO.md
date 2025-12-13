@@ -1,5 +1,6 @@
 # 🎄 RESUMEN EJECUTIVO FINAL - PROYECTO FELIZ 2026
 
+> Nota: Se han a�adido cutscenes previas a cada fase con fondo `FondoSanta.png` y texto progresivo.
 **Especificación Completa del Proyecto Navideño Sega Mega Drive**
 
 ---

@@ -1,5 +1,6 @@
 # 🏠 FASE 2 - ENTREGA (TEJADOS) - ESPECIFICACIÓN ULTRAPRECISA
 
+> Nota: Se han a�adido cutscenes previas a cada fase con fondo `FondoSanta.png` y texto progresivo.
 **Especificación Técnica Detallada para Implementación**
 
 ---
