@@ -4,6 +4,17 @@
  *
  * Fase 1: Recogida - Paseo cenital con pista de nieve y scroll vertical.
  * Estado actual: mecanicas acotadas; falta disparo especial definitivo y sprite de regalo lateral.
+ *
+ * Recursos y paletas usados en la fase:
+ * - Fondos: `resources_bg.h` aporta el `mapTrack` y su paleta de nieve aplicada
+ *   al plano B con el índice `globalTileIndex` como base de carga.
+ * - Sprites: definidos en `resources_sprites.h` para Santa, árboles, elfos y
+ *   regalos. Cada sprite usa su propia paleta incluida en el mismo fichero.
+ * - Efectos de sonido: `resources_sfx.h` (aterrizaje de regalos, colisiones y
+ *   enemigos) sin impacto en paletas.
+ * - Efectos visuales: `snow_effect.h` genera partículas independientes que
+ *   reutilizan la paleta del fondo nevado.
+ * - Música: gestionada por `audio_manager.h` a partir de `resources_music.h`.
  * ═════════════════════════════════════════════════════════════════════════════
  */
 
@@ -89,62 +100,62 @@ typedef struct {
     u8 specialReady;
 } Santa;
 
-static Santa santa;
-static SimpleActor trees[NUM_TREES];
-static SimpleActor elves[NUM_ELVES];
-static SimpleActor enemies[NUM_ENEMIES];
-static s16 elfSpawnY[NUM_ELVES];
-static u8 elfMarkShown[NUM_ELVES];
-static Sprite* elfMarkSprites[NUM_ELVES];
-static s16 elfMarkPosX[NUM_ELVES];
-static s16 elfMarkPosY[NUM_ELVES];
-static Sprite* elfShadowSprites[NUM_ELVES];
-static s16 elfShadowStartX[NUM_ELVES];
-static s16 elfShadowStartY[NUM_ELVES];
-static u8 elfShadowActive[NUM_ELVES];
-static s16 elfShadowPosX[NUM_ELVES];
-static s16 elfShadowPosY[NUM_ELVES];
-static Sprite* elfGiftSprites[NUM_ELVES];
-static u8 elfGiftActive[NUM_ELVES];
-static u8 elfGiftHasLanded[NUM_ELVES];
-static s16 elfGiftPosX[NUM_ELVES];
-static s16 elfGiftPosY[NUM_ELVES];
-static u16 elfRespawnTimer[NUM_ELVES];
-static u8 elfSide[NUM_ELVES];
-static Map *mapTrack;
-static s16 trackOffsetY;
-static fix16 scrollSpeedPerFrame;
-static fix16 scrollAccumulator;
-static u16 giftsCollected;
-static u16 maxGiftsCollected;
-static u16 giftsCharge;
-static Sprite* giftCounterSpriteFirstRow;
-static Sprite* giftCounterSpriteSecondRow;
-static u16 frameCounter;
-static u8 phaseChangeRequested;
-static u8 musicStarted;
-static u16 musicStartDelayFrames;
-static u8 santaAnimationPaused;
+static Santa santa; /**< Estado del sprite controlable de Santa. */
+static SimpleActor trees[NUM_TREES]; /**< Obstáculos de árboles en pista. */
+static SimpleActor elves[NUM_ELVES]; /**< Peatones que reciben regalos. */
+static SimpleActor enemies[NUM_ENEMIES]; /**< Enemigos que roban regalos. */
+static s16 elfSpawnY[NUM_ELVES]; /**< Puntos de aparición vertical de elfos. */
+static u8 elfMarkShown[NUM_ELVES]; /**< Indicador de X mostrado sobre cada elfo. */
+static Sprite* elfMarkSprites[NUM_ELVES]; /**< Sprites de las marcas flotantes. */
+static s16 elfMarkPosX[NUM_ELVES]; /**< Posición X del indicador de elfo. */
+static s16 elfMarkPosY[NUM_ELVES]; /**< Posición Y del indicador de elfo. */
+static Sprite* elfShadowSprites[NUM_ELVES]; /**< Sprites de sombra de los elfos. */
+static s16 elfShadowStartX[NUM_ELVES]; /**< Punto inicial X para desplazar sombras. */
+static s16 elfShadowStartY[NUM_ELVES]; /**< Punto inicial Y para desplazar sombras. */
+static u8 elfShadowActive[NUM_ELVES]; /**< Estado visible/activo de cada sombra. */
+static s16 elfShadowPosX[NUM_ELVES]; /**< Posición X actual de la sombra. */
+static s16 elfShadowPosY[NUM_ELVES]; /**< Posición Y actual de la sombra. */
+static Sprite* elfGiftSprites[NUM_ELVES]; /**< Sprites de regalo lanzado a elfos. */
+static u8 elfGiftActive[NUM_ELVES]; /**< Si el regalo está volando hacia el elfo. */
+static u8 elfGiftHasLanded[NUM_ELVES]; /**< Si el regalo ya aterrizó junto al elfo. */
+static s16 elfGiftPosX[NUM_ELVES]; /**< Posición X del regalo en vuelo. */
+static s16 elfGiftPosY[NUM_ELVES]; /**< Posición Y del regalo en vuelo. */
+static u16 elfRespawnTimer[NUM_ELVES]; /**< Temporizador de reaparición por elfo. */
+static u8 elfSide[NUM_ELVES]; /**< Lado del camino donde aparece cada elfo. */
+static Map *mapTrack; /**< Mapa de la pista nevosa en BG. */
+static s16 trackOffsetY; /**< Desfase vertical acumulado del scroll. */
+static fix16 scrollSpeedPerFrame; /**< Velocidad actual de scroll en fix16. */
+static fix16 scrollAccumulator; /**< Acumulador de scroll fraccional. */
+static u16 giftsCollected; /**< Regalos entregados hasta ahora. */
+static u16 maxGiftsCollected; /**< Máximo histórico para estadísticas. */
+static u16 giftsCharge; /**< Carga para activar disparo especial. */
+static Sprite* giftCounterSpriteFirstRow; /**< Contador HUD fila superior. */
+static Sprite* giftCounterSpriteSecondRow; /**< Contador HUD fila inferior. */
+static u16 frameCounter; /**< Contador general de frames. */
+static u8 phaseChangeRequested; /**< Marca cuando se debe pasar de fase. */
+static u8 musicStarted; /**< Indica si la música ya se lanzó. */
+static u16 musicStartDelayFrames; /**< Retraso hasta reproducir música. */
+static u8 santaAnimationPaused; /**< Pausa animación de Santa tras choque. */
 
-static s16 leftLimit;
-static s16 rightLimit;
-static s16 playableWidth;
-static s16 santaMinY;
-static s16 santaMaxY;
-static s16 santaStartX;
-static s16 santaStartY;
-static GameInertia santaInertia;
-static SnowEffect snowEffect;
-static const char* lastTraceFunc = NULL;
-static u8 recoveringFromTree;
-static u16 treeCollisionBlinkFrames;
-static u8 treeCollisionVisible;
-static SimpleActor* collidedTree;
-static u8 enemyStealActive;
-static u8 enemyStealIndex;
-static s16 enemyEscapeTargetX;
-static s16 enemyEscapeTargetY;
-static u8 activeEnemyCount;  // Número actual de enemigos activos (empieza en 1)
+static s16 leftLimit; /**< Límite izquierdo de la pista jugable. */
+static s16 rightLimit; /**< Límite derecho de la pista jugable. */
+static s16 playableWidth; /**< Ancho utilizable entre límites. */
+static s16 santaMinY; /**< Límite superior para Santa. */
+static s16 santaMaxY; /**< Límite inferior para Santa. */
+static s16 santaStartX; /**< Coordenada X inicial de Santa. */
+static s16 santaStartY; /**< Coordenada Y inicial de Santa. */
+static GameInertia santaInertia; /**< Parámetros de inercia de movimiento. */
+static SnowEffect snowEffect; /**< Sistema de partículas de nieve. */
+static const char* lastTraceFunc = NULL; /**< Última función trazada. */
+static u8 recoveringFromTree; /**< Flag de recuperación tras chocar con árbol. */
+static u16 treeCollisionBlinkFrames; /**< Duración del parpadeo de colisión. */
+static u8 treeCollisionVisible; /**< Controla la visibilidad durante parpadeo. */
+static SimpleActor* collidedTree; /**< Referencia al árbol con el que chocó Santa. */
+static u8 enemyStealActive; /**< Secuencia de robo de regalo en curso. */
+static u8 enemyStealIndex; /**< Índice del enemigo que roba. */
+static s16 enemyEscapeTargetX; /**< Destino X del enemigo al huir. */
+static s16 enemyEscapeTargetY; /**< Destino Y del enemigo al huir. */
+static u8 activeEnemyCount;  /**< Número actual de enemigos activos (empieza en 1). */
 
 /**
  * @brief Traza cambios de función para depuración ligera.

@@ -1,6 +1,18 @@
 /**
  * @file minigame_delivery.c
  * @brief Fase 2: Entrega - estructura base jugable con chimeneas y enemigos.
+ *
+ * Recursos y paletas empleados en la fase:
+ * - Fondos y tiles de tejados definidos en `resources_bg.h` (mapa y tileset del
+ *   tejado). La paleta asociada al fondo se carga desde ese mismo fichero y se
+ *   aplica al `mapBackground`.
+ * - Sprites de Santa, enemigos y regalos procedentes de `resources_sprites.h`.
+ *   Cada sprite usa la paleta incluida en dicho fichero; se hace referencia a
+ *   ella al crear los sprites en `initSanta`, `initEnemies` y `initGiftDrops`.
+ * - Efectos de sonido de `resources_sfx.h`, compartiendo la paleta de sprites
+ *   activa porque son muestras PCM sin influencia gráfica.
+ * - Música de fase gestionada por `audio_manager.h`, que reutiliza
+ *   `resources_music.h` como origen de los tracks.
  */
 
 #include "minigame_delivery.h"
@@ -78,32 +90,32 @@ typedef struct {
     s8 vy;
 } Santa;
 
-static const GameInertia santaInertia = { 1, 1, 2, 5 };
+static const GameInertia santaInertia = { 1, 1, 2, 5 }; /**< Configura aceleración, fricción y velocidad máxima del trineo. */
 static const Vect2D_s16 chimneyPositions[NUM_CHIMNEYS] = {
     { 30, 144 }, { 96, 120 }, { 160, 136 }, { 220, 116 },
     { 300, 132 }, { 360, 118 }, { 428, 140 }, { 482, 124 },
-};
+}; /**< Coordenadas de cada chimenea en el scroll horizontal. */
 
-static Chimney chimneys[NUM_CHIMNEYS];
-static Enemy enemies[NUM_ENEMIES];
-static GiftDrop drops[NUM_GIFT_DROPS];
-static Santa santa;
+static Chimney chimneys[NUM_CHIMNEYS]; /**< Chimeneas activas en el tejado. */
+static Enemy enemies[NUM_ENEMIES]; /**< Enemigos que roban regalos. */
+static GiftDrop drops[NUM_GIFT_DROPS]; /**< Regalos en caída hacia chimeneas. */
+static Santa santa; /**< Control del sprite principal. */
 
-static Map* mapBackground;
-static SnowEffect snowEffect;
-static GameTimer gameTimer;
+static Map* mapBackground; /**< Mapa del plano B para el tejado. */
+static SnowEffect snowEffect; /**< Efecto de nieve compartido. */
+static GameTimer gameTimer; /**< Temporizador de la fase para derrota. */
 
-static Sprite* giftCounterTop;
-static Sprite* giftCounterBottom;
+static Sprite* giftCounterTop; /**< Contador gráfico fila superior. */
+static Sprite* giftCounterBottom; /**< Contador gráfico fila inferior. */
 
-static s16 cameraX;
-static u16 frameCounter;
-static u8 giftsRemaining;
-static u8 deliveriesCompleted;
-static u8 phaseCompleted;
-static s8 dropCooldown;
-static u16 recoveringFrames;
-static u16 previousInput;
+static s16 cameraX; /**< Offset horizontal de cámara para scroll. */
+static u16 frameCounter; /**< Contador global de frames. */
+static u8 giftsRemaining; /**< Regalos que faltan por entregar. */
+static u8 deliveriesCompleted; /**< Chimeneas servidas con éxito. */
+static u8 phaseCompleted; /**< Marca de finalización de fase. */
+static s8 dropCooldown; /**< Enfriamiento entre lanzamientos de regalo. */
+static u16 recoveringFrames; /**< Ventana de invulnerabilidad tras daño. */
+static u16 previousInput; /**< Entrada anterior para filtrar transiciones. */
 
 static void initBackground(void);
 static void initSanta(void);

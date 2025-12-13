@@ -5,7 +5,7 @@
 
 #include "game_core.h"
 
-u32 globalTileIndex = TILE_USER_INDEX;
+u32 globalTileIndex = TILE_USER_INDEX; /**< Índice global base de tiles libres. */
 
 /** @brief Lee entrada del mando 1. */
 u16 gameCore_readInput(void) {
@@ -18,9 +18,9 @@ u16 gameCore_readInput(void) {
  * @param seconds Duración total en segundos antes de marcar derrota.
  */
 void gameCore_initTimer(GameTimer *timer, u16 seconds) {
-    timer->elapsed = 0;
-    timer->max_frames = seconds * 60;
-    timer->state = 0;
+    timer->elapsed = 0;              /**< El tiempo arranca en cero frames. */
+    timer->max_frames = seconds * 60; /**< Frames máximos antes de derrota. */
+    timer->state = 0;                /**< Estado inicial: corriendo. */
 }
 
 /**

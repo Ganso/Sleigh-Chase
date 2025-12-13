@@ -1,6 +1,23 @@
 /**
  * @file main.c
  * @brief Orquestador principal que encadena las cuatro fases del juego.
+ *
+ * Bloque de recursos por fase:
+ * - Fase 1 (Recogida): usa tiles y sprites definidos en @ref resources_bg.h y
+ *   @ref resources_sprites.h, con paletas extraídas de esos mismos ficheros.
+ *   La paleta principal proviene de los fondos de nieve de `resources_bg.h` y
+ *   se aplica a los tiles del escenario; los sprites de Santa y los elfos usan
+ *   las paletas de `resources_sprites.h`.
+ * - Fase 2 (Entrega): consume fondos y sprites de tejados definidos en
+ *   `resources_bg.h` y `resources_sprites.h`. La paleta de tejados se declara
+ *   junto a los gráficos de fondo y se comparte con los objetos interactivos.
+ * - Fase 3 (Campanadas): reutiliza assets musicales de `resources_music.h` y
+ *   sprites de campanas de `resources_sprites.h`; la paleta asociada a las
+ *   campanas se obtiene del mismo fichero de sprites.
+ * - Fase 4 (Celebración): emplea el tema musical de fin de partida definido en
+ *   `resources_music.h` y sprites festivos de `resources_sprites.h`, con la
+ *   paleta celebrativa declarada junto a dichos sprites.
+ * - Pantalla final: solamente usa texto plano de VDP, sin recursos externos.
  */
 
 #include <genesis.h>
@@ -24,7 +41,7 @@ enum {
 };
 
 /* Variables globales */
-static u8 currentPhase = PHASE_PICKUP;
+static u8 currentPhase = PHASE_PICKUP; /**< Fase actual del bucle principal. */
 
 /**
  * @brief Punto de entrada principal del cartucho.
@@ -33,12 +50,12 @@ static u8 currentPhase = PHASE_PICKUP;
  */
 int main() {
     /* Inicialización */
-    VDP_init();
-    SPR_init();
-    JOY_init();
-    Z80_init();
-    Z80_loadDriver(Z80_DRIVER_XGM2, 1);
-    audio_init();
+    VDP_init();                     /**< Prepara el chip de vídeo para dibujar. */
+    SPR_init();                     /**< Inicializa el manejador de sprites. */
+    JOY_init();                     /**< Habilita lectura de mandos. */
+    Z80_init();                     /**< Pone en marcha el coprocesador de sonido. */
+    Z80_loadDriver(Z80_DRIVER_XGM2, 1); /**< Carga el driver de audio XGM2. */
+    audio_init();                   /**< Ajusta volúmenes y modo de bucle. */
 
     /* Loop principal */
     while (1) {

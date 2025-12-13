@@ -3,9 +3,13 @@
 
 /** @file hud.c
  *  @brief Implementación de un HUD provisional basado en texto.
+ *
+ * Recursos utilizados:
+ * - No consume gráficos externos: toda la información se pinta con texto VDP
+ *   sobre la paleta por defecto, por lo que no reserva tiles ni paletas.
  */
 
-static char buffer[40];
+static char buffer[40]; /**< Buffer temporal para formatear líneas de HUD. */
 
 void hud_init(void) {
     VDP_clearTextArea(0, 0, 40, 3);

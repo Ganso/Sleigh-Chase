@@ -1,6 +1,16 @@
 /**
  * @file minigame_bells.c
  * @brief Fase 3: Campanadas (implementación completa y corregida).
+ *
+ * Recursos y paletas:
+ * - `resources_bg.h`: mapa de fondo nevado y paleta asociada cargada en
+ *   `mapBackground` para el plano B.
+ * - `resources_sprites.h`: sprites de campanas, bombas, cañón y letras. Cada
+ *   sprite incluye su propia paleta; las letras usan la misma paleta al pasar
+ *   de color a blanco y negro para indicar progreso.
+ * - `resources_sfx.h`: efectos de impacto y campana; no afectan a paletas.
+ * - `audio_manager.h`/`resources_music.h`: música de la fase reutilizada en
+ *   bucle mientras `gameTimer` no expira.
  */
 
 #include <genesis.h>
@@ -77,47 +87,47 @@ typedef struct {
     u8 isBlinking;
 } Letter;
 
-static Bell bells[NUM_BELLS];
-static FixedBell fixedBells[NUM_FIXED_BELLS];
-static Bomb bombs[NUM_BOMBS];
-static Bullet bullets[NUM_BULLETS];
-static Letter letters[NUM_LETTERS];
-static Sprite* felizSprites[NUM_TARGET_LETTERS];
+static Bell bells[NUM_BELLS]; /**< Campanas móviles visibles en pantalla. */
+static FixedBell fixedBells[NUM_FIXED_BELLS]; /**< Marcador inferior de progreso. */
+static Bomb bombs[NUM_BOMBS]; /**< Bombas que penalizan al jugador. */
+static Bullet bullets[NUM_BULLETS]; /**< Proyectiles activos en vuelo. */
+static Letter letters[NUM_LETTERS]; /**< Letras descendentes objetivo. */
+static Sprite* felizSprites[NUM_TARGET_LETTERS]; /**< Letras de la palabra FELIZ2025. */
 
-static Sprite* playerCannon;
-static s16 cannonX;
-static s8 cannonVelocity;
-static u8 cannonFiring;
-static u8 currentPhase;
-static u8 currentLetterIndex;
-static u8 victoryTriggered;
-static s8 buttonBCooldown;
+static Sprite* playerCannon; /**< Sprite del cañón controlable. */
+static s16 cannonX; /**< Posición horizontal del cañón. */
+static s8 cannonVelocity; /**< Velocidad actual aplicada al cañón. */
+static u8 cannonFiring; /**< Estado de disparo en curso. */
+static u8 currentPhase; /**< Subfase interna (campanas/letras/fin). */
+static u8 currentLetterIndex; /**< Índice de letra que debe recogerse ahora. */
+static u8 victoryTriggered; /**< Evita repetir la secuencia de victoria. */
+static s8 buttonBCooldown; /**< Retraso entre disparos con botón B. */
 
-static u16 bellsCompleted;
-static u16 activeBullets;
-static u16 frameCounter;
-static s8 bulletCooldown;
+static u16 bellsCompleted; /**< Campanas encendidas correctamente. */
+static u16 activeBullets; /**< Proyectiles actualmente en pantalla. */
+static u16 frameCounter; /**< Contador general para timings. */
+static s8 bulletCooldown; /**< Ventana de recarga del cañón. */
 
-static GameTimer gameTimer;
-static Map *mapBackground;
-static SnowEffect snowEffect;
-static const GameInertia cannonInertia = { CANNON_ACCEL, CANNON_FRICTION, 1, CANNON_MAX_VEL };
+static GameTimer gameTimer; /**< Temporizador para derrota por tiempo. */
+static Map *mapBackground; /**< Mapa de fondo asignado al plano B. */
+static SnowEffect snowEffect; /**< Partículas de nieve reutilizadas. */
+static const GameInertia cannonInertia = { CANNON_ACCEL, CANNON_FRICTION, 1, CANNON_MAX_VEL }; /**< Configuración de inercia del cañón. */
 static const SpriteDefinition* const letterSpritesColor[NUM_LETTERS] = {
     &sprite_letra_f, &sprite_letra_e, &sprite_letra_l, &sprite_letra_i,
     &sprite_letra_z, &sprite_letra_2, &sprite_letra_0, &sprite_letra_5
-};
+}; /**< Versiones a color de las letras descendentes. */
 static const SpriteDefinition* const letterSpritesBW[NUM_LETTERS] = {
     &sprite_letra_bn_f, &sprite_letra_bn_e, &sprite_letra_bn_l, &sprite_letra_bn_i,
     &sprite_letra_bn_z, &sprite_letra_bn_2, &sprite_letra_bn_0, &sprite_letra_bn_5
-};
+}; /**< Versiones en blanco y negro para indicar letras ya conseguidas. */
 static const SpriteDefinition* const felizSpritesColor[NUM_TARGET_LETTERS] = {
     &sprite_letra_f, &sprite_letra_e, &sprite_letra_l, &sprite_letra_i,
     &sprite_letra_z, &sprite_letra_2, &sprite_letra_0, &sprite_letra_2, &sprite_letra_5
-};
+}; /**< Muestra de referencia de la palabra final coloreada. */
 static const SpriteDefinition* const felizSpritesBW[NUM_TARGET_LETTERS] = {
     &sprite_letra_bn_f, &sprite_letra_bn_e, &sprite_letra_bn_l, &sprite_letra_bn_i,
     &sprite_letra_bn_z, &sprite_letra_bn_2, &sprite_letra_bn_0, &sprite_letra_bn_2, &sprite_letra_bn_5
-};
+}; /**< Variante monocroma del mensaje final. */
 
 static void detectarColisionesBala(Bullet* bala);
 static void initLetter(Letter* letter, u8 index);

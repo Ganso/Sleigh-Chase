@@ -1,6 +1,12 @@
 /**
  * @file minigame_celebration.c
  * @brief Fase 4: Celebración - placeholder con temporizador fijo.
+ *
+ * Recursos actuales:
+ * - No se cargan fondos ni paletas específicas; la fase limpia ambos planos y
+ *   reutiliza la configuración de VDP por defecto. Los sprites de confeti y
+ *   personajes están pendientes de asignar desde `resources_sprites.h` cuando
+ *   se implementen, por lo que este módulo actúa como esqueleto documentado.
  */
 
 #include "minigame_celebration.h"
@@ -24,9 +30,9 @@ typedef struct {
     u8 frameAnim;
 } PersonajeFiesta;
 
-static Confeti confetis[NUM_CONFETI];
-static PersonajeFiesta personajes[NUM_PERSONAJES];
-static u16 frameCounter;
+static Confeti confetis[NUM_CONFETI]; /**< Pool de partículas de confeti. */
+static PersonajeFiesta personajes[NUM_PERSONAJES]; /**< Personajes decorativos. */
+static u16 frameCounter; /**< Cronómetro de duración de la celebración. */
 
 /** @brief Prepara sprites y limpia el escenario para la celebración. */
 void minigameCelebration_init(void) {
@@ -37,7 +43,7 @@ void minigameCelebration_init(void) {
 
     memset(confetis, 0, sizeof(confetis));
     memset(personajes, 0, sizeof(personajes));
-    frameCounter = 0;
+    frameCounter = 0; /**< Se reinicia el cronómetro al iniciar la fase. */
 
     /* HUD desactivado temporalmente */
 }
