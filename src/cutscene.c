@@ -23,13 +23,13 @@ static void waitSkipRelease(void);
 
 void cutscene_phase1_intro(void) {
     static const char* const lines[CUTSCENE_MAX_LINES] = {
-        "Los elfos rojos malvados",
+        "Los esbirros del Grinch",
         "robaron los 10 regalos",
         "que faltan por repartir",
         "    ",
         "Mis fieles ayudantes",
-        "los elfos verdes me",
-        "ayudaran a recuperarlos"
+        "los elfos me ayudaran",
+        "a recuperarlos"
     };
     cutscene_play(lines, 7);
 }

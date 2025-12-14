@@ -64,8 +64,8 @@ int main() {
             case PHASE_INTRO:
                 /* Mostrar intro o pasar a Fase 1 */
                 KLog("Mostrando intro...");
-                //audio_play_intro();
-                //geesebumps_logo();
+                audio_play_intro();
+                geesebumps_logo();
                 gameCore_fadeToBlack();
                 currentPhase = PHASE_PICKUP;
                 break;

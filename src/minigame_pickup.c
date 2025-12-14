@@ -35,7 +35,7 @@ static void traceFunc(const char *funcName);
 #define NUM_ELVES  4             /* Elfos que aparecen en oleadas. */
 #define NUM_ENEMIES 3            /* Enemigos concurrentes. */
 #define GIFTS_FOR_SPECIAL 3      /* Regalos necesarios para cargar especial. */
-#define TARGET_GIFTS 1           /* Objetivo de regalos para cambiar de fase. */
+#define TARGET_GIFTS 10          /* Objetivo de regalos para cambiar de fase. */
 #define SCROLL_SPEED 1           /* Velocidad base de scroll vertical. */
 #define FORBIDDEN_PERCENT 10     /* Margen lateral no jugable (porcentaje). */
 #define TRACK_LOOP_PX 512        /* Altura del bucle de pista. */
