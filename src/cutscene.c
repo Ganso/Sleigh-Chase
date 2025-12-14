@@ -16,8 +16,10 @@
 #define CUTSCENE_LETTER_DELAY_FRAMES 4 /* Pausa entre letras para efecto tecleo. */
 
 static void cutscene_play(const char* const* lines, u8 lineCount);
-static void drawTextProgressive(const char* text, u16 x, u16 y);
-static void waitFrames(u16 frames);
+static u8 drawTextProgressive(const char* text, u16 x, u16 y);
+static u8 waitFramesOrSkip(u16 frames);
+static u8 isSkipButtonPressed(void);
+static void waitSkipRelease(void);
 
 void cutscene_phase1_intro(void) {
     static const char* const lines[CUTSCENE_MAX_LINES] = {
@@ -88,7 +90,10 @@ static void cutscene_play(const char* const* lines, u8 lineCount) {
     globalTileIndex += image_fondo_cutscene.tileset->numTile;
 
     for (u8 i = 0; i < lineCount; i++) {
-        drawTextProgressive(lines[i], CUTSCENE_TEXT_START_X, CUTSCENE_TEXT_START_Y + i);
+        u8 skipped = drawTextProgressive(lines[i], CUTSCENE_TEXT_START_X, CUTSCENE_TEXT_START_Y + i);
+        if (skipped) {
+            waitSkipRelease();
+        }
     }
 
     const char* prompt = "> PULSA UN BOTON <";
@@ -114,22 +119,47 @@ static void cutscene_play(const char* const* lines, u8 lineCount) {
     }
 }
 
-static void drawTextProgressive(const char* text, u16 x, u16 y) {
-    if (text == NULL) return;
+static u8 drawTextProgressive(const char* text, u16 x, u16 y) {
+    if (text == NULL) return FALSE;
     char buffer[CUTSCENE_MAX_LINE_LENGTH + 1];
     u8 len = 0;
 
     while (text[len] != '\0' && len < CUTSCENE_MAX_LINE_LENGTH) {
+        if (isSkipButtonPressed()) {
+            VDP_drawText(text, x, y);
+            return TRUE;
+        }
+
         buffer[len] = text[len];
         buffer[len + 1] = '\0';
         VDP_drawText(buffer, x, y);
-        waitFrames(CUTSCENE_LETTER_DELAY_FRAMES);
+        if (waitFramesOrSkip(CUTSCENE_LETTER_DELAY_FRAMES)) {
+            VDP_drawText(text, x, y);
+            return TRUE;
+        }
         len++;
     }
+
+    return FALSE;
 }
 
-static void waitFrames(u16 frames) {
+static u8 waitFramesOrSkip(u16 frames) {
     for (u16 i = 0; i < frames; i++) {
+        SYS_doVBlankProcess();
+        if (isSkipButtonPressed()) {
+            return TRUE;
+        }
+    }
+    return FALSE;
+}
+
+static u8 isSkipButtonPressed(void) {
+    const u16 input = JOY_readJoypad(JOY_1);
+    return (input & (BUTTON_START | BUTTON_A | BUTTON_B | BUTTON_C)) ? TRUE : FALSE;
+}
+
+static void waitSkipRelease(void) {
+    while (isSkipButtonPressed()) {
         SYS_doVBlankProcess();
     }
 }

@@ -22,26 +22,26 @@
 #include "resources_sprites.h"
 #include "snow_effect.h"
 
-/* Sprite adicional para chimeneas bloqueadas (32x32). */
-extern const SpriteDefinition sprite_chimenea_prohibida;
-
 #define DELIVERY_TARGET 10              /* Regalos totales a entregar en la fase. */
 #define MAX_VISIBLE_CHIMNEYS 4          /* Máximo de chimeneas simultáneas en pantalla. */
 #define NUM_CHIMNEYS MAX_VISIBLE_CHIMNEYS /* Pool de chimeneas reutilizado. */
-#define NUM_ENEMIES 3                   /* Enemigos concurrentes en el tejado. */
+#define NUM_ENEMIES 2                   /* Enemigos concurrentes en el tejado. */
 #define NUM_GIFT_DROPS 3                /* Regalos simultáneos en caída. */
 #define WORLD_WIDTH SCREEN_WIDTH        /* Ancho jugable fijado a la pantalla. */
 #define WORLD_HEIGHT 512                /* Altura total del bucle vertical. */
 #define SCROLL_LOOP_PX WORLD_HEIGHT     /* Tamaño del loop de scroll en píxeles. */
-#define SCROLL_SPEED_PER_FRAME FIX16(1.5) /* Velocidad de avance vertical. */
+#define SCROLL_SPEED_PER_FRAME FIX16(2) /* Velocidad de avance vertical. */
 #define CHIMNEY_SIZE 32                 /* Tamaño (ancho/alto) de cada chimenea. */
 #define CHIMNEY_MARGIN_X 4              /* Margen lateral respecto al borde. */
 #define CHIMNEY_X_LEFT CHIMNEY_MARGIN_X /* Posición X para chimeneas de la izquierda. */
 #define CHIMNEY_X_RIGHT (SCREEN_WIDTH - CHIMNEY_SIZE - CHIMNEY_MARGIN_X) /* X derecha. */
 #define CHIMNEY_PROHIBITED_PERCENT 60   /* Probabilidad % de chimenea prohibida. */
-#define HOUSE_HEIGHT 96                 /* Altura de cada casa en el fondo. */
-#define CHIMNEY_ROW_OFFSET 32           /* Offset vertical para centrar en las casas. */
-#define ENEMY_SIZE 32
+#define HOUSE_HEIGHT 128                /* Altura de cada casa en el fondo. */
+#define CHIMNEY_ROW_OFFSET 64           /* Offset vertical para centrar en las casas. */
+#define ENEMY_WIDTH 48
+#define ENEMY_HEIGHT 48
+#define ENEMY_HORIZONTAL_SPEED 1
+#define ENEMY_VERTICAL_SPEED 1
 #define DROP_COOLDOWN_FRAMES 18
 #define CHIMNEY_RESET_FRAMES 90
 #define RECOVERY_FRAMES 90
@@ -136,6 +136,7 @@ static void applyBackgroundScroll(void);
 static void updateChimneys(s16 scrollStep);
 static void updateEnemies(s16 scrollStep);
 static void updateGiftDrops(s16 scrollStep);
+static void respawnEnemyFromTop(Enemy* enemy, u8 offsetIndex);
 static void resetChimneySpawnCursor(void);
 static s16 takeNextChimneySpawnY(void);
 static s16 pickChimneyX(void);
@@ -262,8 +263,8 @@ static void initBackground(void) {
     if (sprite_santa_car.palette) {
         PAL_setPalette(PAL_PLAYER, sprite_santa_car.palette->data, CPU);
     }
-    if (sprite_duende_malo.palette) {
-        PAL_setPalette(PAL_EFFECT, sprite_duende_malo.palette->data, CPU);
+    if (sprite_duende_malo_volador.palette) {
+        PAL_setPalette(PAL_EFFECT, sprite_duende_malo_volador.palette->data, CPU);
     }
 
     VDP_setBackgroundColor(0);
@@ -328,15 +329,18 @@ static void initEnemies(void) {
     memset(enemies, 0, sizeof(enemies));
     for (u8 i = 0; i < NUM_ENEMIES; i++) {
         enemies[i].active = TRUE;
-        enemies[i].x = 40 + (i * 120);
-        enemies[i].y = 60 + (i * 20);
-        enemies[i].vx = (i % 2 == 0) ? 1 : -1;
-        enemies[i].vy = 0;
-        enemies[i].sprite = SPR_addSpriteSafe(&sprite_duende_malo, enemies[i].x, enemies[i].y,
+        enemies[i].vx = 0;
+        enemies[i].vy = ENEMY_VERTICAL_SPEED;
+        enemies[i].sprite = SPR_addSpriteSafe(&sprite_duende_malo_volador, 0, 0,
             TILE_ATTR(PAL_EFFECT, FALSE, FALSE, FALSE));
         if (enemies[i].sprite) {
             SPR_setDepth(enemies[i].sprite, DEPTH_EFFECTS);
+            SPR_setAutoAnimation(enemies[i].sprite, TRUE);
+        } else {
+            enemies[i].active = FALSE;
+            continue;
         }
+        respawnEnemyFromTop(&enemies[i], i);
     }
 }
 
@@ -488,31 +492,55 @@ static void updateChimneys(s16 scrollStep) {
     }
 }
 
+static void respawnEnemyFromTop(Enemy* enemy, u8 offsetIndex) {
+    if (enemy == NULL) return;
+
+    enemy->x = random() % (WORLD_WIDTH - ENEMY_WIDTH);
+    enemy->y = -(ENEMY_HEIGHT + (offsetIndex * 40));
+    enemy->vx = 0;
+    enemy->vy = ENEMY_VERTICAL_SPEED;
+
+    if (enemy->sprite) {
+        SPR_setPosition(enemy->sprite, enemy->x, enemy->y);
+        SPR_setVisibility(enemy->sprite, HIDDEN);
+    }
+}
+
 static void updateEnemies(s16 scrollStep) {
     for (u8 i = 0; i < NUM_ENEMIES; i++) {
         Enemy* enemy = &enemies[i];
         if (!enemy->active || enemy->sprite == NULL) continue;
 
+        s16 santaCenter = santa.x + (SANTA_WIDTH / 2);
+        s16 enemyCenter = enemy->x + (ENEMY_WIDTH / 2);
+
+        if (enemyCenter < santaCenter) {
+            enemy->vx = ENEMY_HORIZONTAL_SPEED;
+        } else if (enemyCenter > santaCenter) {
+            enemy->vx = -ENEMY_HORIZONTAL_SPEED;
+        } else {
+            enemy->vx = 0;
+        }
+
         enemy->x += enemy->vx;
         if (enemy->x < 0) {
             enemy->x = 0;
-            enemy->vx = 1;
-        } else if (enemy->x > (WORLD_WIDTH - ENEMY_SIZE)) {
-            enemy->x = WORLD_WIDTH - ENEMY_SIZE;
-            enemy->vx = -1;
+        } else if (enemy->x > (WORLD_WIDTH - ENEMY_WIDTH)) {
+            enemy->x = WORLD_WIDTH - ENEMY_WIDTH;
         }
 
-        enemy->y += (frameCounter % 60 == 0) ? 1 : 0;
+        enemy->y += enemy->vy;
         if (scrollStep) {
             enemy->y += scrollStep;
         }
         if (enemy->y > SCREEN_HEIGHT) {
-            enemy->y -= SCROLL_LOOP_PX;
+            respawnEnemyFromTop(enemy, i);
         }
 
-        s16 screenX = enemy->x;
-        SPR_setPosition(enemy->sprite, screenX, enemy->y);
-        SPR_setVisibility(enemy->sprite, (screenX > -ENEMY_SIZE && screenX < SCREEN_WIDTH) ? VISIBLE : HIDDEN);
+        const u8 visible = (enemy->y + ENEMY_HEIGHT > 0) && (enemy->y < SCREEN_HEIGHT);
+        SPR_setPosition(enemy->sprite, enemy->x, enemy->y);
+        SPR_setVisibility(enemy->sprite, visible ? VISIBLE : HIDDEN);
+        SPR_setHFlip(enemy->sprite, (santaCenter < enemyCenter));
     }
 }
 
@@ -597,6 +625,9 @@ static void handleGiftDrop(void) {
 }
 
 static void checkEnemyCollision(void) {
+    /* Colisiones desactivadas temporalmente. */
+    return;
+
     s16 santaHitX = santa.x + ((SANTA_WIDTH - SANTA_HITBOX_WIDTH) / 2);
     s16 santaHitY = santa.y + (SANTA_HEIGHT - SANTA_HITBOX_HEIGHT);
 
@@ -605,7 +636,7 @@ static void checkEnemyCollision(void) {
         if (!enemy->active) continue;
 
         if (gameCore_checkCollision(santaHitX, santaHitY, SANTA_HITBOX_WIDTH, SANTA_HITBOX_HEIGHT,
-                enemy->x, enemy->y, ENEMY_SIZE, ENEMY_SIZE)) {
+                enemy->x, enemy->y, ENEMY_WIDTH, ENEMY_HEIGHT)) {
             startRecovery();
             break;
         }

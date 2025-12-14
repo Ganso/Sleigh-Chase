@@ -35,6 +35,7 @@ extern const SpriteDefinition sprite_icono_regalo;
 extern const SpriteDefinition sprite_chimenea;
 extern const SpriteDefinition sprite_chimenea_prohibida;
 extern const SpriteDefinition sprite_canon_tejado;
+extern const SpriteDefinition sprite_duende_malo_volador;
 extern const SpriteDefinition sprite_nube;
 extern const SpriteDefinition sprite_regalo_entrega;
 extern const SpriteDefinition sprite_confeti;

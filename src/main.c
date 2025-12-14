@@ -42,7 +42,7 @@ enum {
 };
 
 /* Variables globales */
-static u8 currentPhase = PHASE_PICKUP; /**< Fase actual del bucle principal. */
+static u8 currentPhase = PHASE_DELIVERY; /**< Fase actual del bucle principal. */
 
 /**
  * @brief Punto de entrada principal del cartucho.

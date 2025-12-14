@@ -38,6 +38,7 @@ SPRITE sprite_chimenea "sprites/Chimenea.png" 4 4 BEST 1
 SPRITE sprite_chimenea_prohibida "sprites/ChimeneaProhibida.png" 4 4 BEST 1
 
 SPRITE sprite_canon_tejado "sprites/CanonTejado.png" 8 12 BEST 1
+SPRITE sprite_duende_malo_volador "sprites/DuendeMaloVolador.png" 6 6 BEST 2
 # sprite_nube : Placeholder (Nube decorativa paralaje tejados suave)
 SPRITE sprite_nube "sprites/Nube.png" 8 4 BEST
 # sprite_regalo_entrega : Placeholder (Regalo pequeño entrega tejados volador)
