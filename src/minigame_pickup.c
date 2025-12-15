@@ -64,7 +64,7 @@ static void traceFunc(const char *funcName);
 #define GIFT_ARC_HEIGHT 50       /* Altura máxima de la parábola del regalo. */
 #define GIFT_COUNTER_ROW_SIZE 5  /* Regalos por fila en HUD. */
 #define GIFT_COUNTER_SPRITE_WIDTH 128 /* Ancho del sprite contador. */
-#define GIFT_COUNTER_ROW_OFFSET_Y 20 /* Separación vertical entre filas de contador. */
+#define GIFT_COUNTER_ROW_OFFSET_Y 10 /* Separación vertical entre filas de contador. */
 #define GIFT_COUNTER_SECOND_ROW_OFFSET_X 10 /* Desfase X de la segunda fila HUD. */
 #define GIFT_COUNTER_MAX 10      /* Límite de regalos mostrados. */
 #define MUSIC_START_DELAY_FRAMES 40 /* Frames de retraso antes de arrancar música. */
@@ -649,7 +649,7 @@ static void updateElfMark(u8 index, s16 santaHitX, s16 santaHitY, s16 santaHitW,
     updateElfGift(index, progress);
 
     if (elfGiftActive[index]  && progress >= FIX16(0.9)) { // Empieza a checkear desde el 90% de caída
-        if (gameCore_checkCollision(santa.x, santa.y - 10, SANTA_WIDTH, SANTA_HEIGHT + 16, // Al recoger regalos, todo el sprite cuenta como hitbox para que sea más fácil. Se añaden px arriba y abajo por si el regalo cae desde arriba o desde abajo
+        if (gameCore_checkCollision(santaHitX, santaHitY, santaHitW, santaHitH,
                 elfGiftPosX[index], elfGiftPosY[index], GIFT_SIZE, GIFT_SIZE)) {
             kprintf("[DEBUG GIFT] collect landed idx=%d giftPos=(%d,%d) santaHit=(%d,%d,%d,%d)", index,
                 elfGiftPosX[index], elfGiftPosY[index], santaHitX, santaHitY, santaHitW, santaHitH);
@@ -714,11 +714,11 @@ static void collectGift(void) {
     }
     giftsCharge++;
 
-        if (giftsCollected == 4 && activeEnemyCount == 1) {
+        if (giftsCollected == 3 && activeEnemyCount == 1) { // A los 3 regalos, spawnea el segundo enemigo
         activeEnemyCount = 2;
         spawnEnemy(&enemies[1]);
         kprintf("[DEBUG ENEMY] activeEnemyCount aumentó a 2");
-    } else if (giftsCollected == 7 && activeEnemyCount == 2) {
+    } else if (giftsCollected == 6 && activeEnemyCount == 2) { // A los 6 regalos, spawnea el tercer enemigo
         activeEnemyCount = 3;
         spawnEnemy(&enemies[2]);
         kprintf("[DEBUG ENEMY] activeEnemyCount aumentó a 3");
