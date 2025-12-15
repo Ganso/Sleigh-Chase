@@ -21,6 +21,7 @@
 #include "resources_sfx.h"
 #include "resources_sprites.h"
 #include "snow_effect.h"
+#include "gift_counter.h"
 
 #define DELIVERY_TARGET 10              /* Regalos totales a entregar en la fase. */
 #define MAX_VISIBLE_CHIMNEYS 4          /* Máximo de chimeneas simultáneas en pantalla. */
@@ -115,6 +116,8 @@ static GameTimer gameTimer; /**< Temporizador de la fase para derrota. */
 
 static Sprite* giftCounterTop; /**< Contador gráfico fila superior. */
 static Sprite* giftCounterBottom; /**< Contador gráfico fila inferior. */
+static GiftCounterHUD giftCounterHUD; /**< Configuración del contador de regalos. */
+static GiftCounterBlink giftCounterBlink; /**< Parpadeo compartido para el HUD. */
 
 static s16 nextChimneySpawnY; /**< Cursor vertical para nuevas chimeneas. */
 static u16 frameCounter; /**< Contador global de frames. */
@@ -375,6 +378,10 @@ static void initGiftCounterSprites(void) {
         SPR_setAutoAnimation(giftCounterBottom, FALSE);
         SPR_setDepth(giftCounterBottom, DEPTH_HUD);
     }
+
+    giftCounter_initHUD(&giftCounterHUD, giftCounterTop, giftCounterBottom,
+        baseX, baseY, -16, 12, DEPTH_HUD + 1, DEPTH_HUD, 5, DELIVERY_TARGET);
+    giftCounter_stopBlink(&giftCounterBlink);
 }
 
 static s16 advanceVerticalScroll(void) {
@@ -565,29 +572,9 @@ static void updateGiftDrops(s16 scrollStep) {
 }
 
 static void updateGiftCounter(void) {
-    const s16 baseX = SCREEN_WIDTH - 140;
-    const s16 baseY = SCREEN_HEIGHT - 40;
-
-    u16 capped = giftsRemaining;
-    if (capped > DELIVERY_TARGET) capped = DELIVERY_TARGET;
-
-    u16 topFrame = (capped > 5) ? 5 : capped;
-    u16 bottomFrame = (capped > 5) ? (capped - 5) : 0;
-
-    if (giftCounterTop) {
-        SPR_setAnim(giftCounterTop, 0);
-        SPR_setFrame(giftCounterTop, topFrame);
-        SPR_setPosition(giftCounterTop, baseX, baseY - 16);
-        SPR_setDepth(giftCounterTop, DEPTH_HUD + 1);
-        SPR_setVisibility(giftCounterTop, VISIBLE);
-    }
-    if (giftCounterBottom) {
-        SPR_setAnim(giftCounterBottom, 0);
-        SPR_setFrame(giftCounterBottom, bottomFrame);
-        SPR_setPosition(giftCounterBottom, baseX + 12, baseY);
-        SPR_setDepth(giftCounterBottom, DEPTH_HUD);
-        SPR_setVisibility(giftCounterBottom, VISIBLE);
-    }
+    const u16 displayValue = giftCounter_getDisplayValue(&giftCounterBlink,
+        giftsRemaining, frameCounter);
+    giftCounter_render(&giftCounterHUD, displayValue);
 }
 
 static void spawnGiftDrop(void) {
