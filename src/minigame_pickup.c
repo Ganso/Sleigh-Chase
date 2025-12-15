@@ -27,6 +27,7 @@
 #include "resources_sprites.h"
 #include "resources_sfx.h"
 #include "snow_effect.h"
+#include "gift_counter.h"
 
 static void traceFunc(const char *funcName);
 #define TRACE_FUNC() traceFunc(__func__)
@@ -83,6 +84,7 @@ static void traceFunc(const char *funcName);
 #define DEPTH_ACTORS_START (DEPTH_SANTA + 2) /* Profundidad inicial de actores. */
 #define TREE_COLLISION_BLINK_FRAMES 120 /* Duración del parpadeo tras choque. */
 #define TREE_COLLISION_BLINK_INTERVAL_FRAMES 6 /* Intervalo de parpadeo. */
+#define GIFT_COUNTER_BLINK_INTERVAL_FRAMES 3 /* Intervalo de parpadeo del HUD. */
 
 /** @brief Actor básico con sprite y coordenadas. */
 typedef struct {
@@ -131,6 +133,8 @@ static u16 maxGiftsCollected; /**< Máximo histórico para estadísticas. */
 static u16 giftsCharge; /**< Carga para activar disparo especial. */
 static Sprite* giftCounterSpriteFirstRow; /**< Contador HUD fila superior. */
 static Sprite* giftCounterSpriteSecondRow; /**< Contador HUD fila inferior. */
+static GiftCounterHUD giftCounterHUD; /**< Configuración del contador de HUD. */
+static GiftCounterBlink giftCounterBlink; /**< Parpadeo durante pérdidas de regalos. */
 static u16 frameCounter; /**< Contador general de frames. */
 static u8 phaseChangeRequested; /**< Marca cuando se debe pasar de fase. */
 static u8 musicStarted; /**< Indica si la música ya se lanzó. */
@@ -678,40 +682,9 @@ static void requestPhaseChange(void) {
 /** @brief Refleja en el HUD el contador de regalos y carga especial. */
 static void updateGiftCounter(void) {
     TRACE_FUNC();
-    if ((giftCounterSpriteFirstRow == NULL) && (giftCounterSpriteSecondRow == NULL)) return;
-
-    const s16 baseX = SCREEN_WIDTH - HUD_MARGIN_PX - GIFT_COUNTER_SPRITE_WIDTH - 8;
-    const s16 baseY = SCREEN_HEIGHT - GIFT_SIZE - HUD_MARGIN_PX;
-
-    u16 cappedGifts = giftsCollected;
-    if (cappedGifts > GIFT_COUNTER_MAX) cappedGifts = GIFT_COUNTER_MAX;
-
-    u16 firstRowFrame = cappedGifts;
-    if (firstRowFrame > GIFT_COUNTER_ROW_SIZE) firstRowFrame = GIFT_COUNTER_ROW_SIZE;
-
-    u16 secondRowFrame = 0;
-    if (cappedGifts > GIFT_COUNTER_ROW_SIZE) {
-        secondRowFrame = cappedGifts - GIFT_COUNTER_ROW_SIZE;
-        if (secondRowFrame > GIFT_COUNTER_ROW_SIZE) secondRowFrame = GIFT_COUNTER_ROW_SIZE;
-    }
-
-    if (giftCounterSpriteFirstRow) {
-        SPR_setAnim(giftCounterSpriteFirstRow, 0);
-        SPR_setFrame(giftCounterSpriteFirstRow, firstRowFrame);
-        SPR_setVisibility(giftCounterSpriteFirstRow, VISIBLE);
-        SPR_setPosition(giftCounterSpriteFirstRow, baseX, baseY - GIFT_COUNTER_ROW_OFFSET_Y);
-        SPR_setDepth(giftCounterSpriteFirstRow, DEPTH_HUD + 1);
-    }
-
-    if (giftCounterSpriteSecondRow) {
-        SPR_setAnim(giftCounterSpriteSecondRow, 0);
-        SPR_setFrame(giftCounterSpriteSecondRow, secondRowFrame);
-        SPR_setVisibility(giftCounterSpriteSecondRow, VISIBLE);
-        SPR_setPosition(giftCounterSpriteSecondRow, baseX + GIFT_COUNTER_SECOND_ROW_OFFSET_X, baseY);
-        SPR_setDepth(giftCounterSpriteSecondRow, DEPTH_HUD);
-    }
-
-    kprintf("[DEBUG HUD] counter top=%u bottom=%u gifts=%u", firstRowFrame, secondRowFrame, giftsCollected);
+    const u16 displayValue = giftCounter_getDisplayValue(&giftCounterBlink,
+        giftsCollected, frameCounter);
+    giftCounter_render(&giftCounterHUD, displayValue);
 }
 
 /** @brief Log de depuracion para el estado del scroll vertical. */
@@ -814,7 +787,10 @@ static void beginTreeCollision(SimpleActor *tree) {
     clearElvesOnTreeCollision();
 
     if (giftsCollected > 0) {
+        const u16 previousGifts = giftsCollected;
         giftsCollected--;
+        giftCounter_startBlink(&giftCounterBlink, previousGifts, giftsCollected,
+            GIFT_COUNTER_BLINK_INTERVAL_FRAMES);
         updateGiftCounter();
     }
 
@@ -874,6 +850,8 @@ static void updateTreeCollisionRecovery(void) {
     }
 
     resumeSantaAnimation();
+    giftCounter_stopBlink(&giftCounterBlink);
+    updateGiftCounter();
     recoveringFromTree = FALSE;
     return;
 }
@@ -908,6 +886,8 @@ static void selectEnemyEscapeTarget(SimpleActor *enemy, s16 *targetX, s16 *targe
 /** @brief Restaura estado tras finalizar la secuencia de robo. */
 static void endEnemyStealSequence(void) {
     TRACE_FUNC();
+    giftCounter_stopBlink(&giftCounterBlink);
+    updateGiftCounter();
     enemyStealActive = FALSE;
     spawnEnemy(&enemies[enemyStealIndex]);
 }
@@ -1136,7 +1116,6 @@ void minigamePickup_init(void) {
         SPR_setFrame(giftCounterSpriteFirstRow, 0);
         SPR_setDepth(giftCounterSpriteFirstRow, DEPTH_HUD + 1);
         SPR_setAutoAnimation(giftCounterSpriteFirstRow, FALSE);
-        SPR_setPosition(giftCounterSpriteFirstRow, giftBaseX, giftBaseY);
     }
 
     giftCounterSpriteSecondRow = SPR_addSpriteSafe(&sprite_icono_regalo,
@@ -1147,8 +1126,13 @@ void minigamePickup_init(void) {
         SPR_setFrame(giftCounterSpriteSecondRow, 0);
         SPR_setDepth(giftCounterSpriteSecondRow, DEPTH_HUD);
         SPR_setAutoAnimation(giftCounterSpriteSecondRow, FALSE);
-        SPR_setPosition(giftCounterSpriteSecondRow, giftBaseX + GIFT_COUNTER_SECOND_ROW_OFFSET_X, giftBaseY);
     }
+
+    giftCounter_initHUD(&giftCounterHUD, giftCounterSpriteFirstRow,
+        giftCounterSpriteSecondRow, giftBaseX, giftBaseY,
+        -GIFT_COUNTER_ROW_OFFSET_Y, GIFT_COUNTER_SECOND_ROW_OFFSET_X,
+        DEPTH_HUD + 1, DEPTH_HUD, GIFT_COUNTER_ROW_SIZE, GIFT_COUNTER_MAX);
+    giftCounter_stopBlink(&giftCounterBlink);
 
     updateGiftCounter();
 
@@ -1190,6 +1174,7 @@ void minigamePickup_init(void) {
 void minigamePickup_update(void) {
     TRACE_FUNC();
     startMusicAfterHoHoHo();
+    updateGiftCounter();
     updateTreeCollisionRecovery();
     if (recoveringFromTree) {
         frameCounter++;
@@ -1211,19 +1196,6 @@ void minigamePickup_update(void) {
 
     if (input & BUTTON_UP) inputDirY = -1;
     else if (input & BUTTON_DOWN) inputDirY = 1;
-
-    const s16 giftBaseX = SCREEN_WIDTH - HUD_MARGIN_PX - GIFT_COUNTER_SPRITE_WIDTH - 8;
-    const s16 giftBaseY = SCREEN_HEIGHT - GIFT_SIZE - HUD_MARGIN_PX;
-    if (giftCounterSpriteFirstRow) {
-        SPR_setPosition(giftCounterSpriteFirstRow, giftBaseX, giftBaseY - GIFT_COUNTER_ROW_OFFSET_Y);
-        SPR_setDepth(giftCounterSpriteFirstRow, DEPTH_HUD + 1);
-        SPR_setVisibility(giftCounterSpriteFirstRow, VISIBLE);
-    }
-    if (giftCounterSpriteSecondRow) {
-        SPR_setPosition(giftCounterSpriteSecondRow, giftBaseX + GIFT_COUNTER_SECOND_ROW_OFFSET_X, giftBaseY);
-        SPR_setDepth(giftCounterSpriteSecondRow, DEPTH_HUD);
-        SPR_setVisibility(giftCounterSpriteSecondRow, VISIBLE);
-    }
 
     if (santa.specialReady && (input & BUTTON_B)) {
         santa.specialReady = FALSE;
@@ -1327,7 +1299,10 @@ void minigamePickup_update(void) {
                 enemies[i].y + (ENEMY_SIZE - ENEMY_HITBOX_HEIGHT),
                 ENEMY_SIZE, ENEMY_HITBOX_HEIGHT)) {
             if (giftsCollected > 0) {
+                const u16 previousGifts = giftsCollected;
                 giftsCollected--;
+                giftCounter_startBlink(&giftCounterBlink, previousGifts, giftsCollected,
+                    GIFT_COUNTER_BLINK_INTERVAL_FRAMES);
                 updateGiftCounter();
                 beginEnemyStealSequence(i);
                 updateEnemyStealSequence();
