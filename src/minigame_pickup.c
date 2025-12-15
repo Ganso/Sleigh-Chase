@@ -78,9 +78,9 @@ static void traceFunc(const char *funcName);
 #define SCROLL_SPEED_MIN FIX16(0.5) /* Velocidad mínima del scroll. */
 #define SCROLL_SPEED_MAX FIX16(1.5) /* Velocidad máxima del scroll. */
 #define HUD_MARGIN_PX 3             /* Margen de HUD en píxeles. */
-#define DEPTH_SANTA SPR_MIN_DEPTH   /* Profundidad base de Santa. */
-#define DEPTH_HUD (SPR_MIN_DEPTH + 50)      /* HUD muy delante para no quedar tapado */
-#define DEPTH_ACTORS_START (SPR_MIN_DEPTH + 2) /* Profundidad inicial de actores. */
+#define DEPTH_HUD SPR_MIN_DEPTH     /* HUD siempre por delante del resto. */
+#define DEPTH_SANTA (SPR_MIN_DEPTH + 24)   /* Santa delante de actores pero tras el HUD. */
+#define DEPTH_ACTORS_START (DEPTH_SANTA + 2) /* Profundidad inicial de actores. */
 #define TREE_COLLISION_BLINK_FRAMES 120 /* Duración del parpadeo tras choque. */
 #define TREE_COLLISION_BLINK_INTERVAL_FRAMES 6 /* Intervalo de parpadeo. */
 
