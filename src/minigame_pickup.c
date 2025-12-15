@@ -32,10 +32,11 @@
 static void traceFunc(const char *funcName);
 #define TRACE_FUNC() traceFunc(__func__)
 
-#define NUM_TREES 1              /* Árboles simultáneos en pista. */
+#define NUM_TREES 2              /* Árboles simultáneos en pista (máximo). */
 #define NUM_ELVES  4             /* Elfos que aparecen en oleadas. */
 #define NUM_ENEMIES 3            /* Enemigos concurrentes. */
 #define GIFTS_FOR_SPECIAL 3      /* Regalos necesarios para cargar especial. */
+#define GIFTS_FOR_SECOND_TREE 7  /* Regalos necesarios para activar el segundo árbol. */
 #define TARGET_GIFTS 10          /* Objetivo de regalos para cambiar de fase. */
 #define SCROLL_SPEED 1           /* Velocidad base de scroll vertical. */
 #define FORBIDDEN_PERCENT 10     /* Margen lateral no jugable (porcentaje). */
@@ -73,6 +74,7 @@ static void traceFunc(const char *funcName);
 #define SANTA_WIDTH 80              /* Ancho del sprite de Santa. */
 #define SANTA_HEIGHT 128            /* Alto del sprite de Santa. */
 #define SANTA_HITBOX_PADDING 30   /* píxeles que no colisionan a cada lado */
+#define SANTA_COLECT_EXTRA_MARGIN 10 /* Margen extra para recoger regalos */
 #define SANTA_HITBOX_WIDTH (SANTA_WIDTH - 2 * SANTA_HITBOX_PADDING) /* Ancho hitbox. */
 #define SANTA_VERTICAL_SPEED 2      /* Velocidad vertical base de Santa. */
 #define TRACK_HEIGHT_PX 512         /* Altura total del trazado. */
@@ -160,6 +162,7 @@ static u8 enemyStealIndex; /**< Índice del enemigo que roba. */
 static s16 enemyEscapeTargetX; /**< Destino X del enemigo al huir. */
 static s16 enemyEscapeTargetY; /**< Destino Y del enemigo al huir. */
 static u8 activeEnemyCount;  /**< Número actual de enemigos activos (empieza en 1). */
+static u8 secondTreeSpawned; /**< TRUE cuando el segundo árbol ya está activo. */
 
 /**
  * @brief Traza cambios de función para depuración ligera.
@@ -187,6 +190,7 @@ static void endEnemyStealSequence(void);
 static void startMusicAfterHoHoHo(void);
 static void clearEnemiesOnTreeCollision(void);
 static void clearElvesOnTreeCollision(void);
+static void clearOtherTreesOnCollision(const SimpleActor *treeToKeep);
 static void pauseSantaAnimation(void);
 static void resumeSantaAnimation(void);
 
@@ -307,6 +311,14 @@ static void showElfMark(u8 index) {
 /** @brief Posiciona un árbol aleatorio en el escenario. */
 static void spawnTree(SimpleActor *tree) {
     TRACE_FUNC();
+    /* No permitir spawn del segundo árbol hasta que esté desbloqueado. */
+    if ((tree == &trees[1]) && !secondTreeSpawned) {
+        tree->active = FALSE;
+        if (tree->sprite) {
+            SPR_setVisibility(tree->sprite, HIDDEN);
+        }
+        return;
+    }
     s16 minX = leftLimit;
     s16 maxX = rightLimit - TREE_SIZE;
     if (!validateHorizontalRange(minX, maxX, "TREE")) {
@@ -325,6 +337,7 @@ static void spawnTree(SimpleActor *tree) {
     }
     tree->active = TRUE;
     SPR_setPosition(tree->sprite, tree->x, tree->y);
+    SPR_setVisibility(tree->sprite, VISIBLE);
 }
 
 /**
@@ -474,7 +487,18 @@ static void showElfGift(u8 index, s16 startX, s16 startY) {
     if (elfGiftSprites[index]) {
         SPR_setVisibility(elfGiftSprites[index], VISIBLE);
         SPR_setPosition(elfGiftSprites[index], startX, startY);
-        XGM2_playPCM(snd_regalo_disparado, sizeof(snd_regalo_disparado), SOUND_PCM_CH_AUTO);
+        // Reproduce aleatoriamente snd_regalo_disparado1, 2 o 3
+        switch (random() % 3) {
+            case 0:
+                XGM2_playPCM(snd_regalo_disparado1, sizeof(snd_regalo_disparado1), SOUND_PCM_CH_AUTO);
+                break;
+            case 1:
+                XGM2_playPCM(snd_regalo_disparado2, sizeof(snd_regalo_disparado2), SOUND_PCM_CH_AUTO);
+                break;
+            case 2:
+                XGM2_playPCM(snd_regalo_disparado3, sizeof(snd_regalo_disparado3), SOUND_PCM_CH_AUTO);
+                break;
+        }
     } else {
         elfGiftActive[index] = FALSE;
     }
@@ -649,7 +673,7 @@ static void updateElfMark(u8 index, s16 santaHitX, s16 santaHitY, s16 santaHitW,
     updateElfGift(index, progress);
 
     if (elfGiftActive[index]  && progress >= FIX16(0.9)) { // Empieza a checkear desde el 90% de caída
-        if (gameCore_checkCollision(santaHitX, santaHitY, santaHitW, santaHitH,
+        if (gameCore_checkCollision(santaHitX-SANTA_COLECT_EXTRA_MARGIN, santaHitY-SANTA_COLECT_EXTRA_MARGIN, santaHitW+SANTA_COLECT_EXTRA_MARGIN*2, santaHitH+SANTA_COLECT_EXTRA_MARGIN*2, // Hitbox de Santa con margen extra
                 elfGiftPosX[index], elfGiftPosY[index], GIFT_SIZE, GIFT_SIZE)) {
             kprintf("[DEBUG GIFT] collect landed idx=%d giftPos=(%d,%d) santaHit=(%d,%d,%d,%d)", index,
                 elfGiftPosX[index], elfGiftPosY[index], santaHitX, santaHitY, santaHitW, santaHitH);
@@ -714,7 +738,7 @@ static void collectGift(void) {
     }
     giftsCharge++;
 
-        if (giftsCollected == 3 && activeEnemyCount == 1) { // A los 3 regalos, spawnea el segundo enemigo
+    if (giftsCollected == 3 && activeEnemyCount == 1) { // A los 3 regalos, spawnea el segundo enemigo
         activeEnemyCount = 2;
         spawnEnemy(&enemies[1]);
         kprintf("[DEBUG ENEMY] activeEnemyCount aumentó a 2");
@@ -722,6 +746,13 @@ static void collectGift(void) {
         activeEnemyCount = 3;
         spawnEnemy(&enemies[2]);
         kprintf("[DEBUG ENEMY] activeEnemyCount aumentó a 3");
+    }
+    if (!secondTreeSpawned && (giftsCollected >= GIFTS_FOR_SECOND_TREE)) {
+        secondTreeSpawned = TRUE;
+        spawnTree(&trees[1]);
+        if (trees[1].active) {
+            kprintf("[DEBUG TREE] Segundo árbol activado (regalos=%u)", giftsCollected);
+        }
     }
 
     kprintf("[DEBUG GIFT] collectGift giftsCollected=%u giftsCharge=%u", giftsCollected, giftsCharge);
@@ -785,6 +816,7 @@ static void beginTreeCollision(SimpleActor *tree) {
 
     clearEnemiesOnTreeCollision();
     clearElvesOnTreeCollision();
+    clearOtherTreesOnCollision(tree);
 
     if (giftsCollected > 0) {
         const u16 previousGifts = giftsCollected;
@@ -808,6 +840,13 @@ static void endTreeCollisionRecovery(void) {
         spawnTree(collidedTree);
     }
     collidedTree = NULL;
+
+    /* Reactivar cualquier árbol que quedara oculto tras la colisión. */
+    for (u8 i = 0; i < NUM_TREES; i++) {
+        if (!trees[i].active) {
+            spawnTree(&trees[i]);
+        }
+    }
 
     santa.x = santaStartX;
     santa.y = santaStartY;
@@ -1056,6 +1095,7 @@ void minigamePickup_init(void) {
     musicStartDelayFrames = MUSIC_START_DELAY_FRAMES;
     santaAnimationPaused = FALSE;
     scrollSpeedPerFrame = SCROLL_SPEED_MAX;
+    secondTreeSpawned = FALSE;
 
     leftLimit = (SCREEN_WIDTH * FORBIDDEN_PERCENT) / 100;
     rightLimit = SCREEN_WIDTH - leftLimit;
@@ -1138,8 +1178,11 @@ void minigamePickup_init(void) {
 
     for (u8 i = 0; i < NUM_TREES; i++) {
         trees[i].sprite = NULL;
-        spawnTree(&trees[i]);
+        trees[i].active = FALSE;
+        trees[i].x = 0;
+        trees[i].y = 0;
     }
+    spawnTree(&trees[0]);
     for (u8 i = 0; i < NUM_ELVES; i++) {
         elves[i].sprite = NULL;
         elfMarkSprites[i] = NULL;
@@ -1374,6 +1417,17 @@ static void clearElvesOnTreeCollision(void) {
         hideElfGift(i, TRUE);
         if (elves[i].sprite) {
             SPR_setVisibility(elves[i].sprite, HIDDEN);
+        }
+    }
+}
+
+/** @brief Oculta cualquier árbol distinto al que ha colisionado. */
+static void clearOtherTreesOnCollision(const SimpleActor *treeToKeep) {
+    for (u8 i = 0; i < NUM_TREES; i++) {
+        if (&trees[i] == treeToKeep) continue;
+        trees[i].active = FALSE;
+        if (trees[i].sprite) {
+            SPR_setVisibility(trees[i].sprite, HIDDEN);
         }
     }
 }

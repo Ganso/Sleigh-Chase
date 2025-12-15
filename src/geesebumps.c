@@ -117,8 +117,8 @@ void geesebumps_logo(void)
     SPR_reset();
     VDP_clearPlane(BG_A, true);
     PAL_setPalette(PAL0, geesebumps_pal_black.data, DMA);
-    PAL_setPalette(PAL1, geesebumps_pal_white.data, DMA);
-    PAL_setPalette(PAL2, geesebumps_pal_white.data, DMA);
-    PAL_setPalette(PAL3, geesebumps_pal_white.data, DMA);
+    PAL_setPalette(PAL1, geesebumps_pal_black.data, DMA);
+    PAL_setPalette(PAL2, geesebumps_pal_black.data, DMA);
+    PAL_setPalette(PAL3, geesebumps_pal_black.data, DMA);
     indice_tiles-=geesebumps_logo_bg.tileset->numTile;   
 }

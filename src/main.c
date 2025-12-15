@@ -42,7 +42,7 @@ enum {
 };
 
 /* Variables globales */
-static u8 currentPhase = PHASE_PICKUP; /**< Fase actual del bucle principal. */
+static u8 currentPhase = PHASE_INTRO; /**< Fase actual del bucle principal. */
 
 /**
  * @brief Punto de entrada principal del cartucho.
@@ -66,7 +66,7 @@ int main() {
                 KLog("Mostrando intro...");
                 audio_play_intro();
                 geesebumps_logo();
-                gameCore_fadeToBlack();
+                //gameCore_fadeToBlack();
                 currentPhase = PHASE_PICKUP;
                 break;
 

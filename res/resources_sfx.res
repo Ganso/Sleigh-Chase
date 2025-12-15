@@ -4,7 +4,9 @@ WAV snd_canon "sfx/snd_canon.wav" XGM2
 WAV snd_regalo_recogido "sfx/snd_regalo_recogido.wav" XGM2
 WAV snd_obstaculo_golpe "sfx/snd_obstaculo_golpe.wav" XGM2
 WAV snd_elfo_robando "sfx/snd_elfo_robando.wav" XGM2
-WAV snd_regalo_disparado "sfx/snd_regalo_disparado.wav" XGM2
+WAV snd_regalo_disparado1 "sfx/snd_regalo_disparado1.wav" XGM2
+WAV snd_regalo_disparado2 "sfx/snd_regalo_disparado2.wav" XGM2
+WAV snd_regalo_disparado3 "sfx/snd_regalo_disparado3.wav" XGM2
 WAV snd_elfo_choque "sfx/snd_elfo_choque.wav" XGM2
 WAV snd_santa_hohoho "sfx/snd_santa_hohoho.wav" XGM2
 WAV snd_regalo_desaparece "sfx/snd_regalo_desaparece.wav" XGM2
