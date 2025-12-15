@@ -15,7 +15,6 @@ extern const u8 snd_santa_hohoho[16128];
 extern const u8 snd_regalo_desaparece[10752];
 extern const u8 snd_disparo_red[3328];
 extern const u8 snd_entrega_exitosa[3328];
-extern const u8 snd_chimenea_activa[3328];
 extern const u8 snd_confeti_choque[3328];
 
 #endif // _RES_RESOURCES_SFX_H_

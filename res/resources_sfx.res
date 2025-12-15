@@ -14,7 +14,7 @@ WAV snd_disparo_red "sfx/snd_disparo_red.wav" XGM2
 # snd_entrega_exitosa : Placeholder (Regalo entregado en chimenea exitoso)
 WAV snd_entrega_exitosa "sfx/snd_entrega_exitosa.wav" XGM2
 # snd_chimenea_activa : Placeholder (Chimenea encendida tras regalo victoria)
-WAV snd_chimenea_activa "sfx/snd_chimenea_activa.wav" XGM2
+#WAV snd_chimenea_activa "sfx/snd_chimenea_activa.wav" XGM2
 # snd_confeti_choque : Placeholder (Choque confeti celebracion final alegre)
 WAV snd_confeti_choque "sfx/snd_confeti_choque.wav" XGM2
 

@@ -7,7 +7,7 @@
  *  @brief Rutinas de conveniencia para reproducir música y efectos comunes.
  *
  * Recursos usados:
- * - `resources_music.h`: define `musica_fondo` para las fases 1-4 y
+ * - `resources_music.h`: define `musica_MerryGentelmen` para las fases 1-4 y
  *   `music_geesebumps` para la intro. Ambas pistas incluyen su propia tabla de
  *   instrumento FM/PSG y no requieren paletas de color.
  * - `res_geesebumps.h`: incluye el tema de presentación reproducido desde
@@ -25,7 +25,6 @@ void audio_init(void) {
  * @param track Puntero al buffer VGM a reproducir.
  */
 static void audio_play_loop(const u8* track) {
-    XGM2_setLoopNumber(-1); /**< Fuerza el bucle hasta cambio de fase. */
     XGM2_setFMVolume(70);   /**< Baja FM para dejar espacio a efectos SFX. */
     XGM2_setPSGVolume(100); /**< Nivel estándar de PSG para ambientes. */
     XGM2_play(track);
@@ -38,19 +37,19 @@ void audio_play_intro(void) {
 }
 
 void audio_play_phase1(void) {
-    audio_play_loop(musica_fondo);
+    audio_play_loop(musica_Rudolph);
 }
 
 void audio_play_phase2(void) {
-    audio_play_loop(musica_fondo);
+    audio_play_loop(musica_MerryGentelmen);
 }
 
 void audio_play_phase3(void) {
-    audio_play_loop(musica_fondo);
+    audio_play_loop(musica_MerryGentelmen);
 }
 
 void audio_play_phase4(void) {
-    audio_play_loop(musica_fondo);
+    audio_play_loop(musica_MerryGentelmen);
 }
 
 void audio_stop_music(void) {

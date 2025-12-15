@@ -42,7 +42,7 @@ enum {
 };
 
 /* Variables globales */
-static u8 currentPhase = PHASE_DELIVERY; /**< Fase actual del bucle principal. */
+static u8 currentPhase = PHASE_PICKUP; /**< Fase actual del bucle principal. */
 
 /**
  * @brief Punto de entrada principal del cartucho.
@@ -55,7 +55,7 @@ int main() {
     SPR_init();                     /**< Inicializa el manejador de sprites. */
     JOY_init();                     /**< Habilita lectura de mandos. */
     Z80_init();                     /**< Pone en marcha el coprocesador de sonido. */
-    Z80_loadDriver(Z80_DRIVER_XGM2, 1); /**< Carga el driver de audio XGM2. */
+    XGM2_loadDriver(true);          /**< Carga el driver de audio XGM2. */
     audio_init();                   /**< Ajusta volúmenes y modo de bucle. */
 
     /* Loop principal */
