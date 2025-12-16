@@ -39,8 +39,8 @@
 #define CHIMNEY_PROHIBITED_PERCENT 30   /* Probabilidad % de chimenea prohibida. */
 #define HOUSE_HEIGHT 128                /* Altura de cada casa en el fondo. */
 #define CHIMNEY_ROW_OFFSET 64           /* Offset vertical para centrar en las casas. */
-#define ENEMY_WIDTH 48
-#define ENEMY_HEIGHT 48
+#define ENEMY_WIDTH 32
+#define ENEMY_HEIGHT 32
 #define ENEMY_SPEED 3
 #define ENEMY_DIR_CHANGE_MIN_FRAMES (2 * 60)
 #define ENEMY_DIR_CHANGE_MAX_FRAMES (3 * 60)
@@ -106,7 +106,6 @@ typedef struct {
     u8 active;
     u8 stealAnimTimer;
     u16 directionTimer;
-    u8 hasSpawned;
 } Enemy;
 
 typedef struct {
@@ -369,6 +368,7 @@ static void initBackground(void) {
     SYS_doVBlankProcess();
 
     snowEffect_init(&snowEffect, &globalTileIndex, 2, -2);
+
 }
 
 static void initSanta(void) {
@@ -434,7 +434,6 @@ static void initEnemies(void) {
         enemies[i].vy = 0;
         enemies[i].stealAnimTimer = 0;
         enemies[i].directionTimer = rollEnemyDirectionTimer();
-        enemies[i].hasSpawned = FALSE;
         enemies[i].sprite = SPR_addSpriteSafe(&sprite_duende_malo_volador, 0, 0,
             TILE_ATTR(PAL_EFFECT, FALSE, FALSE, FALSE));
         if (enemies[i].sprite) {
@@ -511,6 +510,7 @@ static void initGiftCounterSprites(void) {
         SPR_setDepth(giftCounterTop, DEPTH_HUD + 1);
         SPR_setFrame(giftCounterTop, 0);
         SPR_setVisibility(giftCounterTop, VISIBLE);
+        kprintf("[HUD] giftCounterTop pos=(%d,%d)", baseX, baseY - GIFT_COUNTER_ROW_OFFSET_Y);
     }
 
     giftCounterBottom = SPR_addSpriteSafe(&sprite_icono_regalo, baseX + GIFT_COUNTER_SECOND_ROW_OFFSET_X, baseY,
@@ -520,6 +520,7 @@ static void initGiftCounterSprites(void) {
         SPR_setDepth(giftCounterBottom, DEPTH_HUD);
         SPR_setFrame(giftCounterBottom, 0);
         SPR_setVisibility(giftCounterBottom, VISIBLE);
+        kprintf("[HUD] giftCounterBottom pos=(%d,%d)", baseX + GIFT_COUNTER_SECOND_ROW_OFFSET_X, baseY);
     }
 
     giftCounter_initHUD(&giftCounterHUD, giftCounterTop, giftCounterBottom,
@@ -664,11 +665,6 @@ static void respawnEnemyFromTop(Enemy* enemy, u8 offsetIndex) {
     enemy->vy = ENEMY_SPEED;
     enemy->stealAnimTimer = 0;
     enemy->directionTimer = rollEnemyDirectionTimer();
-    if (enemy->hasSpawned) {
-        XGM2_playPCM(snd_elfo_volador_aparece, sizeof(snd_elfo_volador_aparece), SOUND_PCM_CH_AUTO);
-    } else {
-        enemy->hasSpawned = TRUE;
-    }
 
     if (enemy->sprite) {
         SPR_setPosition(enemy->sprite, enemy->x, enemy->y);
@@ -682,6 +678,27 @@ static void respawnEnemyFromTop(Enemy* enemy, u8 offsetIndex) {
 }
 
 static void updateEnemies(s16 scrollStep) {
+    s16 targetX = 0;
+    s16 targetY = 0;
+    const u8 hasGiftTarget = getActiveGiftTargetPos(&targetX, &targetY);
+    s8 nearestIndex = -1;
+    if (hasGiftTarget) {
+        u32 bestDist = 0xFFFFFFFF;
+        for (u8 i = 0; i < MAX_ENEMIES; i++) {
+            Enemy* enemy = &enemies[i];
+            if (!enemy->active || enemy->sprite == NULL) continue;
+            const s16 enemyCenterX = enemy->x + (ENEMY_WIDTH / 2);
+            const s16 enemyCenterY = enemy->y + (ENEMY_HEIGHT / 2);
+            const s32 dx = (s32)enemyCenterX - (s32)targetX;
+            const s32 dy = (s32)enemyCenterY - (s32)targetY;
+            const u32 dist = (u32)(dx * dx + dy * dy);
+            if (dist < bestDist) {
+                bestDist = dist;
+                nearestIndex = (s8)i;
+            }
+        }
+    }
+
     for (u8 i = 0; i < MAX_ENEMIES; i++) {
         Enemy* enemy = &enemies[i];
         if (!enemy->active || enemy->sprite == NULL) continue;
@@ -697,10 +714,8 @@ static void updateEnemies(s16 scrollStep) {
             }
         }
 
-        s16 targetX = 0;
-        s16 targetY = 0;
-        const u8 hasGiftTarget = getActiveGiftTargetPos(&targetX, &targetY);
-        if (hasGiftTarget) {
+        const u8 chaseGift = hasGiftTarget && ((s8)i == nearestIndex);
+        if (chaseGift) {
             const s16 enemyCenterX = enemy->x + (ENEMY_WIDTH / 2);
             const s16 enemyCenterY = enemy->y + (ENEMY_HEIGHT / 2);
             if (enemyCenterX < targetX) {
@@ -718,7 +733,6 @@ static void updateEnemies(s16 scrollStep) {
             } else {
                 enemy->vy = 0;
             }
-            enemy->directionTimer = rollEnemyDirectionTimer();
         } else {
             if (enemy->directionTimer > 0) {
                 enemy->directionTimer--;

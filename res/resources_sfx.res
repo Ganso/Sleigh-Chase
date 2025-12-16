@@ -10,7 +10,6 @@ WAV snd_regalo_disparado3 "sfx/snd_regalo_disparado3.wav" XGM2
 WAV snd_elfo_choque "sfx/snd_elfo_choque.wav" XGM2
 WAV snd_santa_hohoho "sfx/snd_santa_hohoho.wav" XGM2
 WAV snd_regalo_desaparece "sfx/snd_regalo_desaparece.wav" XGM2
-WAV snd_elfo_volador_aparece "sfx/snd_elfo_volador_aparece.wav" XGM2
 WAV snd_elfo_volador_robando_1 "sfx/snd_elfo_volador_robando_1.wav" XGM2
 WAV snd_elfo_volador_robando_2 "sfx/snd_elfo_volador_robando_2.wav" XGM2
 WAV snd_regalo_quemado "sfx/snd_regalo_quemado.wav" XGM2
