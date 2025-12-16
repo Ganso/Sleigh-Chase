@@ -58,14 +58,13 @@
 #define GIFT_COUNTER_SECOND_ROW_OFFSET_X 10
 #define GIFT_COUNTER_ROW_SIZE 5
 
-#define MARKER_SIZE 32
-#define MARKER_SPEED 6
-#define MARKER_SCROLL_COMP 0 /* Factor de compensación del scroll al subir (0 = sin ajuste). */
-#define MARKER_MIN_Y 0
-#define MARKER_MAX_Y 160
 #define GIFT_SIZE 32
 #define TARGET_MARK_SIZE 16
 #define SANTA_THROW_SPAWN_FRAME 4
+#define GIFT_COUNTER_BLINK_INTERVAL_FRAMES 3 /* Intervalo de parpadeo del HUD. */
+#define SANTA_SPEED 3
+#define THROW_TARGET_RADIUS 50
+#define THROW_FALLBACK_OFFSET_Y 60
 
 #define SANTA_WIDTH 80
 #define SANTA_HEIGHT 128
@@ -122,15 +121,7 @@ typedef struct {
     u16 framesToTarget;
     u8 active;
     u8 pending;
-    u8 targetSide;
 } GiftDrop;
-
-typedef struct {
-    Sprite* sprite;
-    s16 x;
-    s16 y;
-    s8 direction;
-} LauncherMarker;
 
 typedef struct {
     Sprite* sprite;
@@ -139,15 +130,11 @@ typedef struct {
     s8 vx;
     s8 vy;
 } Santa;
-
-static const GameInertia santaInertia = { 1, 1, 2, 5 }; /**< Configura aceleración, fricción y velocidad máxima del trineo. */
 static Chimney chimneys[NUM_CHIMNEYS]; /**< Chimeneas activas en el tejado. */
 static Enemy enemies[MAX_ENEMIES]; /**< Enemigos que roban regalos. */
 static GiftDrop drops[NUM_GIFT_DROPS]; /**< Regalos en caída hacia chimeneas. */
-static LauncherMarker launcherMarkers[2]; /**< Marcadores laterales para apuntar lanzamientos. */
 static Santa santa; /**< Control del sprite principal. */
 static u8 santaThrowing; /**< TRUE mientras Santa ejecuta la animación de lanzamiento. */
-static u8 santaThrowTarget; /**< Lado objetivo del regalo (0 izquierda, 1 derecha). */
 static u8 santaThrowGiftSpawned; /**< TRUE cuando el regalo ya se generó en la animación. */
 static u8 santaReturnToIdle; /**< Solicitud de volver a la animación base. */
 
@@ -165,7 +152,7 @@ static GiftCounterBlink giftCounterBlink; /**< Parpadeo compartido para el HUD. 
 
 static s16 nextChimneySpawnY; /**< Cursor vertical para nuevas chimeneas. */
 static u16 frameCounter; /**< Contador global de frames. */
-static u8 giftsRemaining; /**< Regalos que faltan por entregar. */
+static u8 giftCounterValue; /**< Contador de regalos entregados/fallidos como en fase 1. */
 static u8 deliveriesCompleted; /**< Chimeneas servidas con éxito. */
 static u8 phaseCompleted; /**< Marca de finalización de fase. */
 static s8 dropCooldown; /**< Enfriamiento entre lanzamientos de regalo. */
@@ -177,14 +164,12 @@ static void initSanta(void);
 static void initChimneys(void);
 static void initEnemies(void);
 static void initGiftDrops(void);
-static void initLauncherMarkers(void);
 static void initGiftCounterSprites(void);
 static s16 advanceVerticalScroll(void);
 static void applyBackgroundScroll(void);
 static void updateChimneys(s16 scrollStep);
 static void updateEnemies(s16 scrollStep);
 static void updateGiftDrops(s16 scrollStep);
-static void updateLauncherMarkers(s16 scrollStep);
 static void updateSantaThrowState(void);
 static void respawnEnemyFromTop(Enemy* enemy, u8 offsetIndex);
 static void resetChimneySpawnCursor(void);
@@ -194,8 +179,8 @@ static u8 rollChimneyProhibited(void);
 static u16 rollChimneyToggleFrames(void);
 static u16 rollEnemyDirectionTimer(void);
 static void updateGiftCounter(void);
-static void spawnGiftDrop(u8 targetSide);
-static void startGiftThrow(u8 targetSide);
+static void spawnGiftDrop(void);
+static void startGiftThrow(void);
 static void resolveGiftDropAtTarget(const GiftDrop* drop);
 static Chimney* findChimneyAtPoint(s16 x, s16 y);
 static Chimney* findAnyChimneyAtPoint(s16 x, s16 y);
@@ -209,6 +194,9 @@ static u8 getTargetEnemyCount(void);
 static void deactivateGiftDrop(GiftDrop* drop);
 static u8 checkGiftEnemyCollision(GiftDrop* drop);
 static u8 getActiveGiftTargetPos(s16* targetX, s16* targetY);
+static Chimney* findNearestChimneyInRange(s16 centerX, s16 centerY, u16 radius, s32* outDistanceSq);
+static void onGiftSuccess(void);
+static void onGiftFailure(void);
 static void playElfAppearSound(void);
 static void playRandomElfStealSound(void);
 static void playGiftDeliveredSound(void);
@@ -226,7 +214,7 @@ void minigameDelivery_init(void) {
     kprintf("[SANTA] starting Santa init at pos=(%d,%d)", (WORLD_WIDTH - SANTA_WIDTH) / 2, SANTA_START_Y);
 
     frameCounter = 0;
-    giftsRemaining = DELIVERY_TARGET;
+    giftCounterValue = 0;
     deliveriesCompleted = 0;
     phaseCompleted = FALSE;
     dropCooldown = 0;
@@ -235,7 +223,6 @@ void minigameDelivery_init(void) {
     santaThrowing = FALSE;
     santaThrowGiftSpawned = FALSE;
     santaReturnToIdle = FALSE;
-    santaThrowTarget = 0;
     backgroundOffsetY = SCROLL_LOOP_PX;
     backgroundOffsetY %= SCROLL_LOOP_PX;
     scrollAccumulator = FIX16(0);
@@ -247,7 +234,6 @@ void minigameDelivery_init(void) {
     initChimneys();
     initEnemies();
     initGiftDrops();
-    initLauncherMarkers();
     initGiftCounterSprites();
     updateEnemyActivation();
     updateGiftCounter();
@@ -284,23 +270,23 @@ void minigameDelivery_update(void) {
         if (input & BUTTON_UP) dirY = -1;
         else if (input & BUTTON_DOWN) dirY = 1;
 
-        gameCore_applyInertiaMovement(&santa.x, &santa.y, &santa.vx, &santa.vy,
-            dirX, dirY,
-            0, WORLD_WIDTH - SANTA_WIDTH,
-            0, SCREEN_HEIGHT - SANTA_HEIGHT,
-            frameCounter, &santaInertia);
+        santa.vx = dirX * SANTA_SPEED;
+        santa.vy = dirY * SANTA_SPEED;
+        santa.x += santa.vx;
+        santa.y += santa.vy;
+        if (santa.x < 0) santa.x = 0;
+        if (santa.x > WORLD_WIDTH - SANTA_WIDTH) santa.x = WORLD_WIDTH - SANTA_WIDTH;
+        if (santa.y < 0) santa.y = 0;
+        if (santa.y > SCREEN_HEIGHT - SANTA_HEIGHT) santa.y = SCREEN_HEIGHT - SANTA_HEIGHT;
 
         if (dropCooldown > 0) {
             dropCooldown--;
         }
 
         const u8 pressedA = (input & BUTTON_A) && !(previousInput & BUTTON_A);
-        const u8 pressedB = (input & BUTTON_B) && !(previousInput & BUTTON_B);
 
         if (pressedA) {
-            startGiftThrow(0);
-        } else if (pressedB) {
-            startGiftThrow(1);
+            startGiftThrow();
         }
     }
 
@@ -308,7 +294,6 @@ void minigameDelivery_update(void) {
     applyBackgroundScroll();
     updateChimneys(scrollStep);
     updateEnemies(scrollStep);
-    updateLauncherMarkers(scrollStep);
     updateGiftDrops(scrollStep);
 
     SPR_setPosition(santa.sprite, santa.x, santa.y);
@@ -320,7 +305,7 @@ void minigameDelivery_update(void) {
     gameCore_updateTimer(&gameTimer);
     updateGiftCounter();
 
-    if (giftsRemaining == 0 || deliveriesCompleted >= DELIVERY_TARGET) {
+    if (deliveriesCompleted >= DELIVERY_TARGET) {
         phaseCompleted = TRUE;
     }
 
@@ -452,7 +437,6 @@ static void initGiftDrops(void) {
         drops[i].sprite = SPR_addSpriteSafe(&sprite_regalo, 0, 0,
             TILE_ATTR(PAL_EFFECT, FALSE, FALSE, FALSE));
         drops[i].active = FALSE;
-        drops[i].targetSide = 0;
         drops[i].targetX = 0;
         drops[i].targetY = 0;
         drops[i].fx = FIX16(0);
@@ -472,29 +456,6 @@ static void initGiftDrops(void) {
         if (drops[i].targetSprite) {
             SPR_setDepth(drops[i].targetSprite, DEPTH_MARKERS);
             SPR_setVisibility(drops[i].targetSprite, HIDDEN);
-        }
-    }
-}
-
-static void initLauncherMarkers(void) {
-    memset(launcherMarkers, 0, sizeof(launcherMarkers));
-
-    launcherMarkers[0].x = CHIMNEY_X_LEFT;
-    launcherMarkers[0].y = MARKER_MIN_Y;
-    launcherMarkers[0].direction = MARKER_SPEED;
-
-    launcherMarkers[1].x = CHIMNEY_X_RIGHT;
-    launcherMarkers[1].y = MARKER_MAX_Y;
-    launcherMarkers[1].direction = -MARKER_SPEED;
-
-    for (u8 i = 0; i < 2; i++) {
-        LauncherMarker* marker = &launcherMarkers[i];
-        marker->sprite = SPR_addSpriteSafe(&sprite_marca_lanzador, marker->x, marker->y,
-            TILE_ATTR(PAL_PLAYER, FALSE, FALSE, FALSE));
-        if (marker->sprite) {
-            SPR_setDepth(marker->sprite, DEPTH_MARKERS);
-            SPR_setAutoAnimation(marker->sprite, FALSE);
-            SPR_setVisibility(marker->sprite, VISIBLE);
         }
     }
 }
@@ -779,16 +740,12 @@ static void updateEnemies(s16 scrollStep) {
 }
 
 static u8 getTargetEnemyCount(void) {
-    if (giftsRemaining <= 4) {
-        return 4;
-    }
-    if (giftsRemaining <= 6) {
-        return 3;
-    }
-    if (giftsRemaining <= 8) {
-        return 2;
-    }
-    return 1;
+    u8 count = 1;
+    if (giftCounterValue >= 2) count++;
+    if (giftCounterValue >= 4) count++;
+    if (giftCounterValue >= 6) count++;
+    if (count > MAX_ENEMIES) count = MAX_ENEMIES;
+    return count;
 }
 
 static void updateEnemyActivation(void) {
@@ -809,34 +766,6 @@ static void updateEnemyActivation(void) {
             if (enemy->sprite) {
                 SPR_setVisibility(enemy->sprite, HIDDEN);
             }
-        }
-    }
-}
-
-static void updateLauncherMarkers(s16 scrollStep) {
-    for (u8 i = 0; i < 2; i++) {
-        LauncherMarker* marker = &launcherMarkers[i];
-        s16 delta = marker->direction;
-        if (delta < 0 && scrollStep > 0 && MARKER_SCROLL_COMP > 0) {
-            delta -= (scrollStep * MARKER_SCROLL_COMP); /* Ajustable para igualar tiempos subida/bajada. */
-        }
-
-        marker->y += delta;
-
-        if (marker->y <= MARKER_MIN_Y) {
-            marker->y = MARKER_MIN_Y;
-            marker->direction = MARKER_SPEED;
-            kprintf("[MARKER %d] bounce TOP y=%d scroll=%d time=%d", i, marker->y, scrollStep, gameTimer.elapsed);
-        } else if (marker->y >= MARKER_MAX_Y) {
-            marker->y = MARKER_MAX_Y;
-            marker->direction = -MARKER_SPEED;
-            kprintf("[MARKER %d] bounce BOTTOM y=%d scroll=%d time=%d", i, marker->y, scrollStep, gameTimer.elapsed);
-        }
-
-        if (marker->sprite) {
-            SPR_setPosition(marker->sprite, marker->x, marker->y);
-            SPR_setDepth(marker->sprite, DEPTH_MARKERS);
-            SPR_setVisibility(marker->sprite, VISIBLE);
         }
     }
 }
@@ -870,6 +799,7 @@ static u8 checkGiftEnemyCollision(GiftDrop* drop) {
                 SPR_setAutoAnimation(enemy->sprite, TRUE);
             }
             deactivateGiftDrop(drop);
+            onGiftFailure();
             return TRUE;
         }
     }
@@ -944,7 +874,7 @@ static s16 abs16(s16 value) {
 
 static void updateGiftCounter(void) {
     const u16 displayValue = giftCounter_getDisplayValue(&giftCounterBlink,
-        giftsRemaining, frameCounter);
+        giftCounterValue, frameCounter);
     giftCounter_render(&giftCounterHUD, displayValue);
 }
 
@@ -974,6 +904,35 @@ static u8 getActiveGiftTargetPos(s16* targetX, s16* targetY) {
     }
 
     return FALSE;
+}
+
+static void onGiftSuccess(void) {
+    const u8 previousValue = giftCounterValue;
+    if (giftCounterValue < DELIVERY_TARGET) {
+        giftCounterValue++;
+    }
+    if (deliveriesCompleted < DELIVERY_TARGET) {
+        deliveriesCompleted++;
+    }
+    if (previousValue != giftCounterValue) {
+        giftCounter_startBlink(&giftCounterBlink, previousValue, giftCounterValue,
+            GIFT_COUNTER_BLINK_INTERVAL_FRAMES);
+    }
+    updateEnemyActivation();
+    updateGiftCounter();
+}
+
+static void onGiftFailure(void) {
+    const u8 previousValue = giftCounterValue;
+    if (giftCounterValue > 0) {
+        giftCounterValue--;
+    }
+    if (previousValue != giftCounterValue) {
+        giftCounter_startBlink(&giftCounterBlink, previousValue, giftCounterValue,
+            GIFT_COUNTER_BLINK_INTERVAL_FRAMES);
+    }
+    updateEnemyActivation();
+    updateGiftCounter();
 }
 
 static void playElfAppearSound(void) {
@@ -1031,6 +990,7 @@ static void resolveGiftDropAtTarget(const GiftDrop* drop) {
         if (blocked && blocked->prohibited) {
             kprintf("[THROW] gift burned at prohibited chimney x=%d y=%d", blocked->x, blocked->y);
             XGM2_playPCM(snd_regalo_quemado, sizeof(snd_regalo_quemado), SOUND_PCM_CH_AUTO);
+            onGiftFailure();
         } else {
             kprintf("[THROW] gift landed no chimney x=%d y=%d", drop->targetX, drop->targetY);
             playGiftLostSound();
@@ -1043,30 +1003,24 @@ static void resolveGiftDropAtTarget(const GiftDrop* drop) {
     chimney->cooldown = CHIMNEY_RESET_FRAMES;
     chimney->blink = 0;
 
-    if (deliveriesCompleted < DELIVERY_TARGET) {
-        deliveriesCompleted++;
-    }
-    if (giftsRemaining > 0) {
-        giftsRemaining--;
-    }
-    updateEnemyActivation();
+    onGiftSuccess();
     kprintf("[THROW] gift delivered at chimney x=%d y=%d deliveries=%u giftsLeft=%u",
-        chimney->x, chimney->y, deliveriesCompleted, giftsRemaining);
+        chimney->x, chimney->y, deliveriesCompleted, giftCounterValue);
 }
 
-static void spawnGiftDrop(u8 targetSide) {
+static void spawnGiftDrop(void) {
     GiftDrop* drop = NULL;
     u8 dropIndex = 0;
     for (u8 i = 0; i < NUM_GIFT_DROPS; i++) {
         GiftDrop* candidate = &drops[i];
-        if (candidate->pending && candidate->targetSide == targetSide) {
+        if (candidate->pending) {
             drop = candidate;
             dropIndex = i;
             break;
         }
     }
     if (drop == NULL) {
-        kprintf("[THROW][WARN] no pending target for side=%u", targetSide);
+        kprintf("[THROW][WARN] no pending target for spawn");
         return;
     }
 
@@ -1106,13 +1060,38 @@ static void spawnGiftDrop(u8 targetSide) {
     SPR_setPosition(drop->sprite, drop->x, drop->y);
     SPR_setVisibility(drop->sprite, VISIBLE);
 
-    kprintf("[THROW] spawn gift idx=%u targetSide=%u pos=(%d,%d) target=(%d,%d) frames=%u vx=%ld vy=%ld",
-        dropIndex, targetSide, drop->x, drop->y, drop->targetX, drop->targetY,
+    kprintf("[THROW] spawn gift idx=%u pos=(%d,%d) target=(%d,%d) frames=%u vx=%ld vy=%ld",
+        dropIndex, drop->x, drop->y, drop->targetX, drop->targetY,
         travelFrames, (long)drop->vx, (long)drop->vy);
 }
 
-static void startGiftThrow(u8 targetSide) {
-    if (giftsRemaining == 0) return;
+static Chimney* findNearestChimneyInRange(s16 centerX, s16 centerY, u16 radius, s32* outDistanceSq) {
+    const s32 radiusSq = (s32)radius * (s32)radius;
+    Chimney* nearest = NULL;
+    s32 bestDist = radiusSq + 1;
+
+    for (u8 i = 0; i < NUM_CHIMNEYS; i++) {
+        Chimney* chimney = &chimneys[i];
+        const s16 chimneyCenterX = chimney->x + (CHIMNEY_SIZE / 2);
+        const s16 chimneyCenterY = chimney->y + (CHIMNEY_SIZE / 2);
+        const s32 dx = (s32)chimneyCenterX - (s32)centerX;
+        const s32 dy = (s32)chimneyCenterY - (s32)centerY;
+        const s32 distSq = (dx * dx) + (dy * dy);
+
+        if (distSq <= radiusSq && distSq < bestDist) {
+            bestDist = distSq;
+            nearest = chimney;
+        }
+    }
+
+    if (outDistanceSq) {
+        *outDistanceSq = bestDist;
+    }
+
+    return nearest;
+}
+
+static void startGiftThrow(void) {
     if (dropCooldown > 0) return;
     if (santaThrowing) return;
 
@@ -1128,18 +1107,30 @@ static void startGiftThrow(u8 targetSide) {
     GiftDrop* pendingDrop = &drops[pendingIndex];
     pendingDrop->pending = TRUE;
     pendingDrop->active = FALSE;
-    pendingDrop->targetSide = targetSide;
     pendingDrop->framesToTarget = 0;
     pendingDrop->vx = FIX16(0);
     pendingDrop->vy = FIX16(0);
     pendingDrop->fx = FIX16(0);
     pendingDrop->fy = FIX16(0);
 
-    const LauncherMarker* marker = &launcherMarkers[(targetSide != 0) ? 1 : 0];
-    const s16 markerCenterX = marker->x + (MARKER_SIZE / 2);
-    const s16 markerCenterY = marker->y + (MARKER_SIZE / 2);
-    pendingDrop->targetX = markerCenterX - (GIFT_SIZE / 2);
-    pendingDrop->targetY = markerCenterY - (GIFT_SIZE / 2);
+    const s16 santaCenterX = santa.x + (SANTA_WIDTH / 2);
+    const s16 santaCenterY = santa.y + (SANTA_HEIGHT / 2);
+    s32 distanceSq = 0;
+    Chimney* nearest = findNearestChimneyInRange(santaCenterX, santaCenterY,
+        THROW_TARGET_RADIUS, &distanceSq);
+
+    s16 targetCenterX = santaCenterX;
+    s16 targetCenterY = santaCenterY - THROW_FALLBACK_OFFSET_Y;
+    if (nearest != NULL) {
+        targetCenterX = nearest->x + (CHIMNEY_SIZE / 2);
+        targetCenterY = nearest->y + (CHIMNEY_SIZE / 2);
+        kprintf("[THROW] nearest chimney distSq=%ld pos=(%d,%d)", (long)distanceSq, nearest->x, nearest->y);
+    } else {
+        kprintf("[THROW] no chimney nearby, fallback target");
+    }
+
+    pendingDrop->targetX = targetCenterX - (GIFT_SIZE / 2);
+    pendingDrop->targetY = targetCenterY - (GIFT_SIZE / 2);
     const s16 markOffset = (GIFT_SIZE - TARGET_MARK_SIZE) / 2;
     const s16 targetMarkX = pendingDrop->targetX + markOffset;
     const s16 targetMarkY = pendingDrop->targetY + markOffset;
@@ -1153,14 +1144,13 @@ static void startGiftThrow(u8 targetSide) {
         SPR_setPosition(pendingDrop->targetSprite, targetMarkX, targetMarkY);
         SPR_setVisibility(pendingDrop->targetSprite, VISIBLE);
     }
-    kprintf("[THROW] lock target idx=%d side=%u target=(%d,%d)", pendingIndex, targetSide, pendingDrop->targetX, pendingDrop->targetY);
+    kprintf("[THROW] lock target idx=%d target=(%d,%d)", pendingIndex, pendingDrop->targetX, pendingDrop->targetY);
 
     santaThrowing = TRUE;
-    santaThrowTarget = targetSide;
     santaThrowGiftSpawned = FALSE;
     santaReturnToIdle = FALSE;
     dropCooldown = DROP_COOLDOWN_FRAMES;
-    kprintf("[THROW] start side=%u giftsRemaining=%u cooldown=%d", santaThrowTarget, giftsRemaining, dropCooldown);
+    kprintf("[THROW] start cooldown=%d", dropCooldown);
 
     if (santa.sprite) {
         SPR_setAnim(santa.sprite, 1);
@@ -1194,8 +1184,8 @@ static void onSantaFrameChange(Sprite* sprite) {
     if (santaThrowing) {
         if (!santaThrowGiftSpawned && sprite->frameInd >= SANTA_THROW_SPAWN_FRAME) {
             santaThrowGiftSpawned = TRUE;
-            spawnGiftDrop(santaThrowTarget);
-            kprintf("[THROW] Santa frame=%d spawn gift side=%u", sprite->frameInd, santaThrowTarget);
+            spawnGiftDrop();
+            kprintf("[THROW] Santa frame=%d spawn gift", sprite->frameInd);
         }
 
         Animation* anim = sprite->animation;
@@ -1231,7 +1221,6 @@ static void startRecovery(void) {
     santaThrowing = FALSE;
     santaThrowGiftSpawned = FALSE;
     santaReturnToIdle = FALSE;
-    santaThrowTarget = 0;
     santa.x = (WORLD_WIDTH - SANTA_WIDTH) / 2;
     santa.y = SANTA_START_Y;
     santa.vx = 0;

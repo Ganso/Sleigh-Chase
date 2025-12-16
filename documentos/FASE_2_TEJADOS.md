@@ -1,198 +1,180 @@
-# 🏠 FASE 2 - ENTREGA (TEJADOS) - ESPECIFICACIÓN ULTRAPRECISA
+# ðŸ  FASE 2 - ENTREGA (TEJADOS) - ESPECIFICACIÃ“N ULTRAPRECISA
 
-> Nota: Se han a�adido cutscenes previas a cada fase con fondo `FondoSanta.png` y texto progresivo.
-**Especificación Técnica Detallada para Implementación**
+> Nota: Se han añadido cutscenes previas a cada fase con fondo `FondoSanta.png` y texto progresivo.
+**EspecificaciÃ³n TÃ©cnica Detallada para ImplementaciÃ³n**
 
 ---
 
-## 📋 TABLA DE CONTENIDOS
+## ðŸ“‹ TABLA DE CONTENIDOS
 
-1. [Descripción General y Narrativa](#descripción-general)
-2. [Mecánicas de Juego Detalladas](#mecánicas)
+1. [DescripciÃ³n General y Narrativa](#descripciÃ³n-general)
+2. [MecÃ¡nicas de Juego Detalladas](#mecÃ¡nicas)
 3. [Especificaciones de Sprites](#sprites)
 4. [Especificaciones de Fondos](#fondos)
 5. [Especificaciones de Audio](#audio)
-6. [Lógica de Colisiones](#colisiones)
-7. [Máquina de Estados Interna](#estado-interno)
+6. [LÃ³gica de Colisiones](#colisiones)
+7. [MÃ¡quina de Estados Interna](#estado-interno)
 8. [Estructura de Datos C](#estructura-datos)
 9. [Presupuesto de Memoria](#memoria)
-10. [Checklist de Implementación](#checklist)
+10. [Checklist de ImplementaciÃ³n](#checklist)
 
 ---
 
-## <a name="descripción-general"></a>
+## <a name="descripciÃ³n-general"></a>
 
-## 1. DESCRIPCIÓN GENERAL Y NARRATIVA
+### Estado de implementacion (baseline en codigo)
 
-### Contexto Narrativo
-```
-ACTO 1: Recogida en Polo Norte (COMPLETADA)
-   ↓
-ACTO 2: ENTREGA EN TEJADOS (ESTA FASE)
-   ↓
-ACTO 3: Campanadas en Iglesia (IMPLEMENTADA)
-   ↓
-ACTO 4: Celebración en Fiesta
+- Fondo `image_fondo_tejados` cargado en `BG_B` con bucle vertical y overlay de nieve reutilizando `snow_effect`.
+- Santa se mueve libremente por toda la pantalla sin inercia, con velocidad fija, y solo se usa el boton A.
+- El lanzamiento apunta automaticamente a la chimenea mas cercana en un radio de 50 px alrededor de Santa (encendida o apagada); si no hay objetivo, la marca se fija 60 px por encima del jugador.
+- Se mantiene la marca visual `X` en el punto de impacto y la trayectoria de enemigos: patrullan y, al haber un regalo en vuelo o marcado, se dirigen hacia el.
+- El contador de regalos arranca en 0: sube al encestar en una chimenea apagada y baja si el regalo es robado por un elfo volador o se quema en una chimenea encendida, con parpadeo en cada cambio.
+- El despliegue de enemigos escala con el contador: aparecen nuevos al alcanzar 2, 4 y 6 puntos.
 
-NARRATIVA FASE 2:
-─────────────────────────────────────────────────────────────
-Has recolectado exitosamente 20 regalos en el Polo Norte.
-Ahora debes entregarlos en las casas de la ciudad nocturna,
-lanzando los regalos por las chimeneas desde los tejados.
+Izquierda / Derecha / Arriba / Abajo:
+- Accion: mover a Santa sin inercia
+- Velocidad: +/- 3 pixeles/frame
+- Limite: respeta los bordes de la pantalla (320x224)
+- Friccion: no aplica (movimiento instantaneo)
 
-La noche es fría, el viento sopla, y tienes tiempo limitado
-para entregar 10 de tus 20 regalos en chimeneas objetivo.
+Boton A:
+- Accion: lanzar regalo
+- Objetivo: chimenea mas cercana en radio 50 px (encendida o apagada)
+- Alternativa: si no hay chimenea en rango, dispara a una marca 60 px encima de Santa
+- Cooldown: 18 frames (se mantiene el valor actual)
+- SFX: snd_regalo_disparado (segun recursos disponibles)
 
-¡Sé rápido y preciso!
-─────────────────────────────────────────────────────────────
-```
+Boton B:
+- Deshabilitado en Fase 2
+- Accion: Pausa
+- Implementacion: Futura (opcional)
 
-### Estado de implementación (baseline en código)
+- Accion: Ninguna
 
-- Fondo `image_fondo_tejados` cargado en `BG_B` con cámara sobre un ancho de 512 px y overlay de nieve reutilizando `snow_effect`.
-- Santa se mueve libremente por toda la pantalla con inercia compartida y puede soltar regalos con **A** al situarse sobre una chimenea.
-- Ocho chimeneas de 48×48 px colocadas en coordenadas fijas (mitad izquierda/derecha) que entran en cooldown tras recibir un regalo.
-- Contador de regalos inicializado a **10** unidades; cada entrega resta uno hasta completar la fase.
-- Enemigos placeholder basados en el sprite de duende: al colisionar con Santa se pausa la acción y se reinicia la posición tras un breve parpadeo.
+--------------------------------------------
+CONTADOR DE REGALOS:
+- Valor inicial: 0 (mismo comportamiento que Fase 1)
+- +1 por entrega en chimenea apagada (parpadeo HUD)
+- -1 si un elfo volador captura el regalo o se quema en chimenea encendida
+- Limite superior: 10 (objetivo de fase)
+- Escalado de enemigos: nuevos spawns al llegar a 2, 4 y 6
 
-### Especificaciones de Fase
+--------------------------------------------
+FISICA DE MOVIMIENTO:
 
-| Aspecto | Valor | Detalles |
-|---------|-------|----------|
-| **Nombre** | Entrega | Tejados nocturnos |
-| **Ubicación** | Ciudad (tejados) | Noche, vista lateral |
-| **Duración** | 60-90 seg | Variable según dificultad |
-| **Objetivo** | 10 entregas | De 20 regalos totales |
-| **Dificultad** | Media | Más desafiante que Fase 1 |
-| **Mechanic** | Precision | Timing + Trayectoria |
-| **Chimeneas** | 15 totales | 5-7 activas simultáneamente |
-| **Pantalla** | 320×224 | Estándar Mega Drive |
-| **Scroll** | Ninguno | Fondo estático |
-| **Parallax** | Sí | Nubes lento |
+Santa:
+- Sin aceleracion ni friccion: velocidad fija de 3 pixeles/frame
+- Movimiento libre en los dos ejes dentro de la pantalla
+- Sprite size: 80x128 pixeles
+- Movimiento lineal interpolado al objetivo marcado
+- Velocidad calculada para alcanzar el destino en funcion de la distancia
+- Se mantiene la marca `X` para anticipar el punto de impacto
+- Vida: finaliza al llegar a la marca o ser interceptado por un enemigo
 
----
+â”œâ”€ Velocidad: +6 pÃ­xeles/frame (aceleraciÃ³n suave)
+â”œâ”€ LÃ­mite: x â‰¤ 256 pÃ­xeles (margen de borde)
+â””â”€ Friction: 0.85 (desaceleraciÃ³n cuando sueltas)
 
-## <a name="mecánicas"></a>
+BotÃ³n A:
+â”œâ”€ AcciÃ³n: DISPARAR regalo
+â”œâ”€ Cooldown: 25 frames (416 ms a 60 FPS)
+â”œâ”€ Velocidad regalo: vY = -4 pÃ­xeles/frame (inicial)
+â”œâ”€ Ãngulo: 90Â° (recto hacia arriba)
+â”œâ”€ MÃ¡x simultÃ¡neos: 6 regalos en vuelo
+â””â”€ SFX: snd_regalo_disparado (prioridad alta)
 
-## 2. MECÁNICAS DE JUEGO DETALLADAS
-
-### 2.1 Sistema de Control
-
-```
-ENTRADA DE JUGADOR:
-
-Izquierda (LEFT):
-├─ Acción: Mover cañón a la izquierda
-├─ Velocidad: -6 píxeles/frame (aceleración suave)
-├─ Límite: x ≥ 32 píxeles (margen de borde)
-└─ Friction: 0.85 (desaceleración cuando sueltas)
-
-Derecha (RIGHT):
-├─ Acción: Mover cañón a la derecha
-├─ Velocidad: +6 píxeles/frame (aceleración suave)
-├─ Límite: x ≤ 256 píxeles (margen de borde)
-└─ Friction: 0.85 (desaceleración cuando sueltas)
-
-Botón A:
-├─ Acción: DISPARAR regalo
-├─ Cooldown: 25 frames (416 ms a 60 FPS)
-├─ Velocidad regalo: vY = -4 píxeles/frame (inicial)
-├─ Ángulo: 90° (recto hacia arriba)
-├─ Máx simultáneos: 6 regalos en vuelo
-└─ SFX: snd_regalo_disparado (prioridad alta)
-
-Botón B:
-├─ Acción: Contacto directo (opcional, no usar)
-└─ Estado: Deshabilitado en Fase 2
+BotÃ³n B:
+â”œâ”€ AcciÃ³n: Contacto directo (opcional, no usar)
+â””â”€ Estado: Deshabilitado en Fase 2
 
 START:
-├─ Acción: Pausa
-└─ Implementación: Futura (opcional)
+â”œâ”€ AcciÃ³n: Pausa
+â””â”€ ImplementaciÃ³n: Futura (opcional)
 
 SELECT:
-└─ Acción: Ninguna
+â””â”€ AcciÃ³n: Ninguna
 
-────────────────────────────────────────────
-FÍSICA DE MOVIMIENTO:
+â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+FÃSICA DE MOVIMIENTO:
 
-Cañón Tejado:
-├─ Posición: x = 160 (centro por defecto)
-├─ Altura: y = 180 (fijo, no se mueve verticalmente)
-├─ Velocidad máx: vX = ±6 píxeles/frame
-├─ Aceleración: 1 píxel/frame² cuando presionas
-├─ Fricción: multiplica por 0.85 cuando sueltas
-└─ Sprite size: 64×96 píxeles
+CaÃ±Ã³n Tejado:
+â”œâ”€ PosiciÃ³n: x = 160 (centro por defecto)
+â”œâ”€ Altura: y = 180 (fijo, no se mueve verticalmente)
+â”œâ”€ Velocidad mÃ¡x: vX = Â±6 pÃ­xeles/frame
+â”œâ”€ AceleraciÃ³n: 1 pÃ­xel/frameÂ² cuando presionas
+â”œâ”€ FricciÃ³n: multiplica por 0.85 cuando sueltas
+â””â”€ Sprite size: 64Ã—96 pÃ­xeles
 
 Regalos Lanzados:
-├─ Velocidad inicial: vX = 0, vY = -4 píxeles/frame
-├─ Gravedad: aY = +0.3 píxeles/frame² (hacia abajo)
-├─ Viento: afecta vX con variación -0.5 a +0.5 píxeles/frame
-├─ Velocidad máx caída: vY = +6 píxeles/frame
-├─ Rotación: Gira lentamente (animación visual)
-├─ Sprite size: 24×24 píxeles
-└─ Vida: Desaparece si sale de pantalla
+â”œâ”€ Velocidad inicial: vX = 0, vY = -4 pÃ­xeles/frame
+â”œâ”€ Gravedad: aY = +0.3 pÃ­xeles/frameÂ² (hacia abajo)
+â”œâ”€ Viento: afecta vX con variaciÃ³n -0.5 a +0.5 pÃ­xeles/frame
+â”œâ”€ Velocidad mÃ¡x caÃ­da: vY = +6 pÃ­xeles/frame
+â”œâ”€ RotaciÃ³n: Gira lentamente (animaciÃ³n visual)
+â”œâ”€ Sprite size: 24Ã—24 pÃ­xeles
+â””â”€ Vida: Desaparece si sale de pantalla
 
-────────────────────────────────────────────
-DETECCIÓN DE ENTREGA:
+â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+DETECCIÃ“N DE ENTREGA:
 
 Condiciones para +1 ENTREGA:
-├─ Regalo.y ≥ Chimenea.y (regalo alcanza altura de chimenea)
-├─ |Regalo.x - Chimenea.x| ≤ 20 píxeles (dentro de ancho)
-├─ Regalo.vY ≥ 0 (regalo cayendo, no subiendo)
-└─ Chimenea.activa == true
+â”œâ”€ Regalo.y â‰¥ Chimenea.y (regalo alcanza altura de chimenea)
+â”œâ”€ |Regalo.x - Chimenea.x| â‰¤ 20 pÃ­xeles (dentro de ancho)
+â”œâ”€ Regalo.vY â‰¥ 0 (regalo cayendo, no subiendo)
+â””â”€ Chimenea.activa == true
 
 Efectos inmediatos:
-├─ SFX: snd_entrega_exitosa (prioridad alta)
-├─ VFX: Parpadeo de chimenea (30 frames)
-├─ HUD: Incrementar contador "Entregas: X/10"
-├─ Regalo: Desaparecer de pantalla
-└─ Chimenea: Marcar como iluminada/completada
+â”œâ”€ SFX: snd_entrega_exitosa (prioridad alta)
+â”œâ”€ VFX: Parpadeo de chimenea (30 frames)
+â”œâ”€ HUD: Incrementar contador "Entregas: X/10"
+â”œâ”€ Regalo: Desaparecer de pantalla
+â””â”€ Chimenea: Marcar como iluminada/completada
 ```
 
 ### 2.2 Sistema de Chimeneas
 
 ```
-CHIMENEAS - DISTRIBUCIÓN Y COMPORTAMIENTO:
+CHIMENEAS - DISTRIBUCIÃ“N Y COMPORTAMIENTO:
 
 Total de chimeneas: 15 distribuidas por pantalla
-Simultáneas activas: 5-7 (varía por tiempo y dificultad)
+SimultÃ¡neas activas: 5-7 (varÃ­a por tiempo y dificultad)
 
 POSICIONES FIJAS (x,y):
-┌─ Chimenea  │ Pos X │ Pos Y │ Fase Activación │ Estado Inicial │
-├─────────────┼───────┼───────┼─────────────────┼────────────────┤
-│ Chimenea 0  │ 30    │ 100   │ 0-30s           │ Activa         │
-│ Chimenea 1  │ 70    │ 110   │ 0-30s           │ Activa         │
-│ Chimenea 2  │ 110   │ 95    │ 0-30s           │ Activa         │
-│ Chimenea 3  │ 150   │ 105   │ 0-30s           │ Activa         │
-│ Chimenea 4  │ 190   │ 90    │ 0-30s           │ Activa         │
-│ Chimenea 5  │ 230   │ 100   │ 20-50s          │ Inactiva 20s   │
-│ Chimenea 6  │ 270   │ 95    │ 20-50s          │ Inactiva 20s   │
-│ Chimenea 7  │ 310   │ 105   │ 20-50s          │ Inactiva 20s   │
-│ Chimenea 8  │ 45    │ 75    │ 40-70s          │ Inactiva 40s   │
-│ Chimenea 9  │ 95    │ 70    │ 40-70s          │ Inactiva 40s   │
-│ Chimenea 10 │ 155   │ 80    │ 40-70s          │ Inactiva 40s   │
-│ Chimenea 11 │ 215   │ 65    │ 40-70s          │ Inactiva 40s   │
-│ Chimenea 12 │ 275   │ 75    │ 40-70s          │ Inactiva 40s   │
-│ Chimenea 13 │ 320   │ 70    │ Nunca (Extra)   │ Siempre activa │
-│ Chimenea 14 │ 160   │ 85    │ Siempre         │ Siempre activa │
-└─────────────┴───────┴───────┴─────────────────┴────────────────┘
+â”Œâ”€ Chimenea  â”‚ Pos X â”‚ Pos Y â”‚ Fase ActivaciÃ³n â”‚ Estado Inicial â”‚
+â”œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¼â”€â”€â”€â”€â”€â”€â”€â”¼â”€â”€â”€â”€â”€â”€â”€â”¼â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¼â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¤
+â”‚ Chimenea 0  â”‚ 30    â”‚ 100   â”‚ 0-30s           â”‚ Activa         â”‚
+â”‚ Chimenea 1  â”‚ 70    â”‚ 110   â”‚ 0-30s           â”‚ Activa         â”‚
+â”‚ Chimenea 2  â”‚ 110   â”‚ 95    â”‚ 0-30s           â”‚ Activa         â”‚
+â”‚ Chimenea 3  â”‚ 150   â”‚ 105   â”‚ 0-30s           â”‚ Activa         â”‚
+â”‚ Chimenea 4  â”‚ 190   â”‚ 90    â”‚ 0-30s           â”‚ Activa         â”‚
+â”‚ Chimenea 5  â”‚ 230   â”‚ 100   â”‚ 20-50s          â”‚ Inactiva 20s   â”‚
+â”‚ Chimenea 6  â”‚ 270   â”‚ 95    â”‚ 20-50s          â”‚ Inactiva 20s   â”‚
+â”‚ Chimenea 7  â”‚ 310   â”‚ 105   â”‚ 20-50s          â”‚ Inactiva 20s   â”‚
+â”‚ Chimenea 8  â”‚ 45    â”‚ 75    â”‚ 40-70s          â”‚ Inactiva 40s   â”‚
+â”‚ Chimenea 9  â”‚ 95    â”‚ 70    â”‚ 40-70s          â”‚ Inactiva 40s   â”‚
+â”‚ Chimenea 10 â”‚ 155   â”‚ 80    â”‚ 40-70s          â”‚ Inactiva 40s   â”‚
+â”‚ Chimenea 11 â”‚ 215   â”‚ 65    â”‚ 40-70s          â”‚ Inactiva 40s   â”‚
+â”‚ Chimenea 12 â”‚ 275   â”‚ 75    â”‚ 40-70s          â”‚ Inactiva 40s   â”‚
+â”‚ Chimenea 13 â”‚ 320   â”‚ 70    â”‚ Nunca (Extra)   â”‚ Siempre activa â”‚
+â”‚ Chimenea 14 â”‚ 160   â”‚ 85    â”‚ Siempre         â”‚ Siempre activa â”‚
+â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”´â”€â”€â”€â”€â”€â”€â”€â”´â”€â”€â”€â”€â”€â”€â”€â”´â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”´â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
 
-TAMAÑO DE HITBOX:
-├─ Ancho efectivo: 20 píxeles (centro chimenea ±10)
-├─ Alto efectivo: 40 píxeles (cuello chimenea)
-└─ Visual: 20×40 píxeles en pantalla
+TAMAÃ‘O DE HITBOX:
+â”œâ”€ Ancho efectivo: 20 pÃ­xeles (centro chimenea Â±10)
+â”œâ”€ Alto efectivo: 40 pÃ­xeles (cuello chimenea)
+â””â”€ Visual: 20Ã—40 pÃ­xeles en pantalla
 
 ESTADOS DE CHIMENEA:
-├─ 0: INACTIVA (no cuenta)
-├─ 1: ACTIVA (objetivo actual, gris oscuro)
-├─ 2: COMPLETADA (iluminada, brilla)
-└─ 3: PARPADEANDO (animación tras completar)
+â”œâ”€ 0: INACTIVA (no cuenta)
+â”œâ”€ 1: ACTIVA (objetivo actual, gris oscuro)
+â”œâ”€ 2: COMPLETADA (iluminada, brilla)
+â””â”€ 3: PARPADEANDO (animaciÃ³n tras completar)
 
 ANIMACIONES:
-├─ Inactiva: Sprite estático gris
-├─ Activa: Sprite normal rojo/ladrillo
-├─ Completada: Parpadea 30 frames, emite luz
-└─ Sprite: 2 frames (apagada, encendida)
+â”œâ”€ Inactiva: Sprite estÃ¡tico gris
+â”œâ”€ Activa: Sprite normal rojo/ladrillo
+â”œâ”€ Completada: Parpadea 30 frames, emite luz
+â””â”€ Sprite: 2 frames (apagada, encendida)
 ```
 
 ### 2.3 Dificultad Progresiva
@@ -200,48 +182,48 @@ ANIMACIONES:
 ```
 TIMELINE DE DIFICULTAD (90 segundos total):
 
-BLOQUE 1: 0-30 SEGUNDOS (FÁCIL - TUTORIAL)
-├─ Chimeneas activas: 5 (todas en fila)
-├─ Generación regalos: 2 cada 5 segundos
-├─ Viento: -0.2 a +0.2 píxeles/frame (suave)
-├─ Velocidad caída: Normal
-├─ Objetivo acumulado: 3 entregas
-└─ SFX: Música suave, SFX claros
+BLOQUE 1: 0-30 SEGUNDOS (FÃCIL - TUTORIAL)
+â”œâ”€ Chimeneas activas: 5 (todas en fila)
+â”œâ”€ GeneraciÃ³n regalos: 2 cada 5 segundos
+â”œâ”€ Viento: -0.2 a +0.2 pÃ­xeles/frame (suave)
+â”œâ”€ Velocidad caÃ­da: Normal
+â”œâ”€ Objetivo acumulado: 3 entregas
+â””â”€ SFX: MÃºsica suave, SFX claros
 
 BLOQUE 2: 30-60 SEGUNDOS (MEDIA - RETOS)
-├─ Chimeneas activas: 7 (distribuidas)
-├─ Chimeneas fase 1: Apagadas/remodeladas
-├─ Generación regalos: 3 cada 4 segundos
-├─ Viento: -0.5 a +0.5 píxeles/frame (moderado)
-├─ Velocidad caída: Aumenta 5%
-├─ Objetivo acumulado: 6-7 entregas
-└─ SFX: Música acelera, más SFX activos
+â”œâ”€ Chimeneas activas: 7 (distribuidas)
+â”œâ”€ Chimeneas fase 1: Apagadas/remodeladas
+â”œâ”€ GeneraciÃ³n regalos: 3 cada 4 segundos
+â”œâ”€ Viento: -0.5 a +0.5 pÃ­xeles/frame (moderado)
+â”œâ”€ Velocidad caÃ­da: Aumenta 5%
+â”œâ”€ Objetivo acumulado: 6-7 entregas
+â””â”€ SFX: MÃºsica acelera, mÃ¡s SFX activos
 
-BLOQUE 3: 60-90 SEGUNDOS (DIFÍCIL - SPRINT FINAL)
-├─ Chimeneas activas: 10+ (máximo caos)
-├─ Chimeneas previas: Alternadamente se encienden
-├─ Generación regalos: 4 cada 3 segundos
-├─ Viento: -1.0 a +1.0 píxeles/frame (fuerte)
-├─ Velocidad caída: Aumenta 10% más
-├─ Objetivo acumulado: 10 entregas (VICTORIA)
-└─ SFX: Música frenetica, caos
+BLOQUE 3: 60-90 SEGUNDOS (DIFÃCIL - SPRINT FINAL)
+â”œâ”€ Chimeneas activas: 10+ (mÃ¡ximo caos)
+â”œâ”€ Chimeneas previas: Alternadamente se encienden
+â”œâ”€ GeneraciÃ³n regalos: 4 cada 3 segundos
+â”œâ”€ Viento: -1.0 a +1.0 pÃ­xeles/frame (fuerte)
+â”œâ”€ Velocidad caÃ­da: Aumenta 10% mÃ¡s
+â”œâ”€ Objetivo acumulado: 10 entregas (VICTORIA)
+â””â”€ SFX: MÃºsica frenetica, caos
 
-VARIABLES DINÁMICAS:
+VARIABLES DINÃMICAS:
 
 Contador de Tiempo:
-├─ frameCounter incrementa cada frame
-├─ tiempo_segundos = frameCounter / 60
-├─ Chequear cada 1800 frames (30 segundos)
+â”œâ”€ frameCounter incrementa cada frame
+â”œâ”€ tiempo_segundos = frameCounter / 60
+â”œâ”€ Chequear cada 1800 frames (30 segundos)
 
 Velocidad viento:
-├─ wind_factor = (sin(frameCounter * 0.02) * 0.5) + offset_bloque
-├─ Rango aumenta por bloque
-└─ Aplicar a vX regalo: regalo.vX += wind_factor
+â”œâ”€ wind_factor = (sin(frameCounter * 0.02) * 0.5) + offset_bloque
+â”œâ”€ Rango aumenta por bloque
+â””â”€ Aplicar a vX regalo: regalo.vX += wind_factor
 
 Dificultad multiplicador:
-├─ difficulty_mult = 1.0 + (tiempo_segundos / 100)
-├─ Afecta velocidad caída
-└─ Max 1.9x en segundo 90
+â”œâ”€ difficulty_mult = 1.0 + (tiempo_segundos / 100)
+â”œâ”€ Afecta velocidad caÃ­da
+â””â”€ Max 1.9x en segundo 90
 ```
 
 ### 2.4 Sistema de Score y Progreso
@@ -249,42 +231,42 @@ Dificultad multiplicador:
 ```
 HUD - INTERFAZ DE USUARIO:
 
-Posición: Esquina superior derecha (inicio x=250, y=10)
-Tamaño: 60×60 píxeles
+PosiciÃ³n: Esquina superior derecha (inicio x=250, y=10)
+TamaÃ±o: 60Ã—60 pÃ­xeles
 Contenido:
-├─ Título: "Entregas:"
-├─ Número: X/10 (contador principal)
-├─ Barra: Visual bar 40×8 píxeles
-└─ Color: Verde al 100%, rojo al 0%
+â”œâ”€ TÃ­tulo: "Entregas:"
+â”œâ”€ NÃºmero: X/10 (contador principal)
+â”œâ”€ Barra: Visual bar 40Ã—8 pÃ­xeles
+â””â”€ Color: Verde al 100%, rojo al 0%
 
 CONTADOR VISUAL:
 
-    ┌────────────────────────────┐
-    │ ENTREGAS: 7/10             │
-    │ ▓▓▓▓▓▓▓░░░                 │
-    └────────────────────────────┘
+    â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+    â”‚ ENTREGAS: 7/10             â”‚
+    â”‚ â–“â–“â–“â–“â–“â–“â–“â–‘â–‘â–‘                 â”‚
+    â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
 
 Cambios por estado:
-├─ +1 Entrega exitosa: Incremento número + SFX
-├─ 10/10: Flash de victoria, música cambia
-├─ Visual: Barra se llena progresivamente
-└─ Color transición: Verde (0-5), Amarillo (5-8), Rojo vivo (8-10)
+â”œâ”€ +1 Entrega exitosa: Incremento nÃºmero + SFX
+â”œâ”€ 10/10: Flash de victoria, mÃºsica cambia
+â”œâ”€ Visual: Barra se llena progresivamente
+â””â”€ Color transiciÃ³n: Verde (0-5), Amarillo (5-8), Rojo vivo (8-10)
 
 CONDICIONES DE VICTORIA:
 
 Victoria inmediata:
-├─ entregasCompletadas >= 10
-├─ Reproducir snd_victoria
-├─ Fade a negro 60 frames
-├─ Mostrar "¡VICTORIA!" 120 frames
-├─ Transición automática a Fase 3
-└─ markedForCompletion = true
+â”œâ”€ entregasCompletadas >= 10
+â”œâ”€ Reproducir snd_victoria
+â”œâ”€ Fade a negro 60 frames
+â”œâ”€ Mostrar "Â¡VICTORIA!" 120 frames
+â”œâ”€ TransiciÃ³n automÃ¡tica a Fase 3
+â””â”€ markedForCompletion = true
 
 Si NO hay victoria en 90 segundos:
-├─ Timeout: NO ocurre (sin límite de tiempo real)
-├─ Pero la dificultad máxima se alcanza
-├─ Jugador debe completar manualmente
-└─ Sin penalización por tiempo
+â”œâ”€ Timeout: NO ocurre (sin lÃ­mite de tiempo real)
+â”œâ”€ Pero la dificultad mÃ¡xima se alcanza
+â”œâ”€ Jugador debe completar manualmente
+â””â”€ Sin penalizaciÃ³n por tiempo
 ```
 
 ---
@@ -297,187 +279,187 @@ Si NO hay victoria en 90 segundos:
 
 ```
 NAME:        sprite_regalo_entrega
-SIZE:        24×24 píxeles
-FRAMES:      1 (estático)
+SIZE:        24Ã—24 pÃ­xeles
+FRAMES:      1 (estÃ¡tico)
 PALETTE:     PAL_PLAYER (1)
-SOURCE FILE: Regalos_Pequeño.png
+SOURCE FILE: Regalos_PequeÃ±o.png
 
-DESCRIPCIÓN:
-├─ Regalo pequeño envuelto
-├─ Colores: Rojo brillante (#FF0000), cinta dorada (#FFD700)
-├─ Forma: Cúbica con lazo encima
-└─ Transparencia: Magenta (#FF00FF) = fondo
+DESCRIPCIÃ“N:
+â”œâ”€ Regalo pequeÃ±o envuelto
+â”œâ”€ Colores: Rojo brillante (#FF0000), cinta dorada (#FFD700)
+â”œâ”€ Forma: CÃºbica con lazo encima
+â””â”€ Transparencia: Magenta (#FF00FF) = fondo
 
-ANIMACIÓN:
-├─ No tiene (1 frame único)
-├─ Rotación lenta en juego (software, no sprite)
-└─ Rotación: 6° por frame
+ANIMACIÃ“N:
+â”œâ”€ No tiene (1 frame Ãºnico)
+â”œâ”€ RotaciÃ³n lenta en juego (software, no sprite)
+â””â”€ RotaciÃ³n: 6Â° por frame
 
 RENDERIZADO:
-├─ Depth: DEPTH_ACTORS
-├─ Priority: 2
-├─ Visibility: Visible
-└─ Blending: Opaco
+â”œâ”€ Depth: DEPTH_ACTORS
+â”œâ”€ Priority: 2
+â”œâ”€ Visibility: Visible
+â””â”€ Blending: Opaco
 
-USO EN CÓDIGO:
-├─ Crear: sprite = SPR_addSprite(&sprite_regalo_entrega, x, y, TILE_ATTR(...)
-├─ Mover: SPR_setPosition(sprite, x, y)
-├─ Destruir: SPR_releaseSprite(sprite)
-└─ Cantidad: Máximo 6 simultáneos
+USO EN CÃ“DIGO:
+â”œâ”€ Crear: sprite = SPR_addSprite(&sprite_regalo_entrega, x, y, TILE_ATTR(...)
+â”œâ”€ Mover: SPR_setPosition(sprite, x, y)
+â”œâ”€ Destruir: SPR_releaseSprite(sprite)
+â””â”€ Cantidad: MÃ¡ximo 6 simultÃ¡neos
 ```
 
 ### 3.2 sprite_chimenea
 
 ```
 NAME:        sprite_chimenea
-SIZE:        20×80 píxeles (frame 0), 20×80 (frame 1)
+SIZE:        20Ã—80 pÃ­xeles (frame 0), 20Ã—80 (frame 1)
 FRAMES:      2 (apagada, encendida)
 PALETTE:     PAL_PLAYER (1)
-SOURCE FILE: Chimenea.png (20×160 total)
+SOURCE FILE: Chimenea.png (20Ã—160 total)
 
-DESCRIPCIÓN VISUAL:
+DESCRIPCIÃ“N VISUAL:
 
 Frame 0 (APAGADA):
-├─ Ladrillo gris oscuro (#404040)
-├─ Líneas mortar blanco (#CCCCCC)
-└─ Aspecto: Frío, oscuro
+â”œâ”€ Ladrillo gris oscuro (#404040)
+â”œâ”€ LÃ­neas mortar blanco (#CCCCCC)
+â””â”€ Aspecto: FrÃ­o, oscuro
 
 Frame 1 (ENCENDIDA):
-├─ Ladrillo rojo oscuro (#990000)
-├─ Humo naranja (#FF6600) saliendo
-├─ Brillo internal (#FFAA00)
-└─ Aspecto: Cálido, activo
+â”œâ”€ Ladrillo rojo oscuro (#990000)
+â”œâ”€ Humo naranja (#FF6600) saliendo
+â”œâ”€ Brillo internal (#FFAA00)
+â””â”€ Aspecto: CÃ¡lido, activo
 
-ANIMACIÓN:
-├─ Frame 0 por defecto (inactiva/completada)
-├─ Frame 1 cuando recibe regalo exitoso
-├─ Parpadea Frame 0↔1 cada 15 frames tras victoria
-└─ Vuelve a Frame 1 si recibe otro
+ANIMACIÃ“N:
+â”œâ”€ Frame 0 por defecto (inactiva/completada)
+â”œâ”€ Frame 1 cuando recibe regalo exitoso
+â”œâ”€ Parpadea Frame 0â†”1 cada 15 frames tras victoria
+â””â”€ Vuelve a Frame 1 si recibe otro
 
 RENDERIZADO:
-├─ Depth: DEPTH_BACKGROUND
-├─ Priority: 1
-├─ Visibility: Visible
-└─ No scroll
+â”œâ”€ Depth: DEPTH_BACKGROUND
+â”œâ”€ Priority: 1
+â”œâ”€ Visibility: Visible
+â””â”€ No scroll
 
-USO EN CÓDIGO:
-├─ Crear: chimenea.sprite = SPR_addSprite(&sprite_chimenea, chimenea.x, chimenea.y, ...)
-├─ Estado: sprite_frame = chimenea.active ? 1 : 0
-├─ Animar: SPR_setAnimAndFrame(chimenea.sprite, 0, sprite_frame)
-└─ Cantidad: 15 máximo (generalmente 10-12 visibles)
+USO EN CÃ“DIGO:
+â”œâ”€ Crear: chimenea.sprite = SPR_addSprite(&sprite_chimenea, chimenea.x, chimenea.y, ...)
+â”œâ”€ Estado: sprite_frame = chimenea.active ? 1 : 0
+â”œâ”€ Animar: SPR_setAnimAndFrame(chimenea.sprite, 0, sprite_frame)
+â””â”€ Cantidad: 15 mÃ¡ximo (generalmente 10-12 visibles)
 
 HITBOX:
-├─ Ancho real: 20 píxeles
-├─ Alto real: 80 píxeles
-├─ Punto de referencia: Esquina superior izquierda
-└─ Offset center: +10 píxeles horizontalmente
+â”œâ”€ Ancho real: 20 pÃ­xeles
+â”œâ”€ Alto real: 80 pÃ­xeles
+â”œâ”€ Punto de referencia: Esquina superior izquierda
+â””â”€ Offset center: +10 pÃ­xeles horizontalmente
 ```
 
 ### 3.3 sprite_canon_tejado
 
 ```
 NAME:        sprite_canon_tejado
-SIZE:        64×96 píxeles (frame 0 reposo, frame 1 disparando)
+SIZE:        64Ã—96 pÃ­xeles (frame 0 reposo, frame 1 disparando)
 FRAMES:      2 (reposo, disparo)
 PALETTE:     PAL_PLAYER (1)
-SOURCE FILE: CanonTejado.png (128×96 total)
+SOURCE FILE: CanonTejado.png (128Ã—96 total)
 
-DESCRIPCIÓN VISUAL:
+DESCRIPCIÃ“N VISUAL:
 
 Frame 0 (REPOSO):
-├─ Cañón de madera plegado
-├─ Trineo rojo con detalles
-├─ Posición: Horizontal/diagonal
-└─ Colores: Madera (#8B4513), Rojo (#FF0000), Metal gris (#808080)
+â”œâ”€ CaÃ±Ã³n de madera plegado
+â”œâ”€ Trineo rojo con detalles
+â”œâ”€ PosiciÃ³n: Horizontal/diagonal
+â””â”€ Colores: Madera (#8B4513), Rojo (#FF0000), Metal gris (#808080)
 
 Frame 1 (DISPARANDO):
-├─ Cañón en retroceso
-├─ Chispa/destello naranja
-├─ Posición: Ligeramente hacia atrás
-└─ Animación rápida: 5 frames
+â”œâ”€ CaÃ±Ã³n en retroceso
+â”œâ”€ Chispa/destello naranja
+â”œâ”€ PosiciÃ³n: Ligeramente hacia atrÃ¡s
+â””â”€ AnimaciÃ³n rÃ¡pida: 5 frames
 
-ANIMACIÓN:
-├─ Por defecto: Frame 0
-├─ Al presionar A: SPR_setAnimAndFrame(cannon, 0, 1)
-├─ Duración: 5 frames
-├─ Vuelve a Frame 0 automáticamente
-└─ Cooldown: 25 frames antes de poder disparar de nuevo
+ANIMACIÃ“N:
+â”œâ”€ Por defecto: Frame 0
+â”œâ”€ Al presionar A: SPR_setAnimAndFrame(cannon, 0, 1)
+â”œâ”€ DuraciÃ³n: 5 frames
+â”œâ”€ Vuelve a Frame 0 automÃ¡ticamente
+â””â”€ Cooldown: 25 frames antes de poder disparar de nuevo
 
 RENDERIZADO:
-├─ Depth: DEPTH_ACTORS
-├─ Priority: 3 (sobre fondos)
-├─ Visibility: Siempre visible
-└─ Blending: Opaco
+â”œâ”€ Depth: DEPTH_ACTORS
+â”œâ”€ Priority: 3 (sobre fondos)
+â”œâ”€ Visibility: Siempre visible
+â””â”€ Blending: Opaco
 
-USO EN CÓDIGO:
-├─ Crear: cannonTejado = SPR_addSprite(&sprite_canon_tejado, 160, 180, ...)
-├─ Mover: SPR_setPosition(cannonTejado, newX, 180)
-├─ Disparar: SPR_setAnimAndFrame(cannonTejado, 0, 1); frameDisparoActual = 0;
-├─ Update: if(frameDisparoActual++ >= 5) { SPR_setAnimAndFrame(cannonTejado, 0, 0); }
-└─ Cantidad: 1 único
+USO EN CÃ“DIGO:
+â”œâ”€ Crear: cannonTejado = SPR_addSprite(&sprite_canon_tejado, 160, 180, ...)
+â”œâ”€ Mover: SPR_setPosition(cannonTejado, newX, 180)
+â”œâ”€ Disparar: SPR_setAnimAndFrame(cannonTejado, 0, 1); frameDisparoActual = 0;
+â”œâ”€ Update: if(frameDisparoActual++ >= 5) { SPR_setAnimAndFrame(cannonTejado, 0, 0); }
+â””â”€ Cantidad: 1 Ãºnico
 ```
 
 ### 3.4 sprite_nube
 
 ```
 NAME:        sprite_nube
-SIZE:        64×32 píxeles
-FRAMES:      1 (estático)
+SIZE:        64Ã—32 pÃ­xeles
+FRAMES:      1 (estÃ¡tico)
 PALETTE:     PAL_COMMON (0)
 SOURCE FILE: Nube.png
 
-DESCRIPCIÓN:
-├─ Nube blanca algodonosa
-├─ Colores: Blanco (#FFFFFF), Gris suave (#DDDDDD)
-├─ Forma: Cúmulo esponjoso
-└─ Transparencia: Magenta (#FF00FF)
+DESCRIPCIÃ“N:
+â”œâ”€ Nube blanca algodonosa
+â”œâ”€ Colores: Blanco (#FFFFFF), Gris suave (#DDDDDD)
+â”œâ”€ Forma: CÃºmulo esponjoso
+â””â”€ Transparencia: Magenta (#FF00FF)
 
-ANIMACIÓN:
-├─ No tiene (1 frame único)
-├─ Movimiento: Paralaje lento (software)
-└─ Velocidad parallax: -0.5 píxeles/frame
+ANIMACIÃ“N:
+â”œâ”€ No tiene (1 frame Ãºnico)
+â”œâ”€ Movimiento: Paralaje lento (software)
+â””â”€ Velocidad parallax: -0.5 pÃ­xeles/frame
 
 RENDERIZADO:
-├─ Depth: DEPTH_BACKGROUND
-├─ Priority: 0 (detrás de todo)
-├─ Visibility: Visible
-└─ Parallax BG offset: sí
+â”œâ”€ Depth: DEPTH_BACKGROUND
+â”œâ”€ Priority: 0 (detrÃ¡s de todo)
+â”œâ”€ Visibility: Visible
+â””â”€ Parallax BG offset: sÃ­
 
-USO EN CÓDIGO:
-├─ Renderizar: En fondo paralaje (no sprite individual)
-├─ Técnica: Tilemap con scroll lento
-└─ Cantidad: 10+ nubes en patrón
+USO EN CÃ“DIGO:
+â”œâ”€ Renderizar: En fondo paralaje (no sprite individual)
+â”œâ”€ TÃ©cnica: Tilemap con scroll lento
+â””â”€ Cantidad: 10+ nubes en patrÃ³n
 
 POSICIONAMIENTO:
-├─ x inicial: 0 a 640 (ancho pantalla extendido)
-├─ y: Fijo (100 píxeles aprox)
-└─ Reinicio: Cuando x < -64
+â”œâ”€ x inicial: 0 a 640 (ancho pantalla extendido)
+â”œâ”€ y: Fijo (100 pÃ­xeles aprox)
+â””â”€ Reinicio: Cuando x < -64
 ```
 
 ### 3.5 sprite_regalo_volador (interno, no sprite visual)
 
 ```
-DESCRIPCIÓN:
-├─ Regalo en vuelo (logically managed, not visual sprite)
-├─ Usa sprite_regalo_entrega para renderizar
-├─ Estructura de datos separada para física
-└─ Máximo 6 simultáneos
+DESCRIPCIÃ“N:
+â”œâ”€ Regalo en vuelo (logically managed, not visual sprite)
+â”œâ”€ Usa sprite_regalo_entrega para renderizar
+â”œâ”€ Estructura de datos separada para fÃ­sica
+â””â”€ MÃ¡ximo 6 simultÃ¡neos
 
 PROPIEDADES:
-├─ x, y: Posición actual
-├─ vx, vy: Velocidad
-├─ rotation: Rotación en grados (0-360)
-├─ active: Booleano
-├─ createdFrames: Tiempo de vida
+â”œâ”€ x, y: PosiciÃ³n actual
+â”œâ”€ vx, vy: Velocidad
+â”œâ”€ rotation: RotaciÃ³n en grados (0-360)
+â”œâ”€ active: Booleano
+â”œâ”€ createdFrames: Tiempo de vida
 
 UPDATE CADA FRAME:
-├─ rotation += 6
-├─ if(rotation >= 360) rotation = 0
-├─ vx += wind_factor
-├─ vy += gravity (0.3 píxeles/frame²)
-├─ x += vx
-├─ y += vy
-├─ Límites pantalla: Si y > 240 → inactive
+â”œâ”€ rotation += 6
+â”œâ”€ if(rotation >= 360) rotation = 0
+â”œâ”€ vx += wind_factor
+â”œâ”€ vy += gravity (0.3 pÃ­xeles/frameÂ²)
+â”œâ”€ x += vx
+â”œâ”€ y += vy
+â”œâ”€ LÃ­mites pantalla: Si y > 240 â†’ inactive
 ```
 
 ---
@@ -491,45 +473,45 @@ UPDATE CADA FRAME:
 ```
 NAME:          image_fondo_tejados
 TYPE:          TileSet + MapDefinition
-SIZE:          320×224 píxeles de pantalla
-TILESET SIZE:  512×512 píxeles (mínimo)
-COMPRESSION:   BEST (máxima compresión)
+SIZE:          320Ã—224 pÃ­xeles de pantalla
+TILESET SIZE:  512Ã—512 pÃ­xeles (mÃ­nimo)
+COMPRESSION:   BEST (mÃ¡xima compresiÃ³n)
 PALETTE:       PAL_COMMON (0)
-SOURCE FILES:  FondoTejados.png (512×256), FondoTejados.tileset, FondoTejados.map
+SOURCE FILES:  FondoTejados.png (512Ã—256), FondoTejados.tileset, FondoTejados.map
 
 CONTENIDO VISUAL:
-├─ Tejados variados (rojo, marrón, gris)
-├─ Chimeneas destacadas en diferentes posiciones
-├─ Luces de casa parpadeantes (oranges, amarillos)
-├─ Luna llena en esquina superior
-├─ Estrellas dispersas
-├─ Línea del horizonte con árboles distantes
-└─ Atmósfera nocturna (colores azules oscuros)
+â”œâ”€ Tejados variados (rojo, marrÃ³n, gris)
+â”œâ”€ Chimeneas destacadas en diferentes posiciones
+â”œâ”€ Luces de casa parpadeantes (oranges, amarillos)
+â”œâ”€ Luna llena en esquina superior
+â”œâ”€ Estrellas dispersas
+â”œâ”€ LÃ­nea del horizonte con Ã¡rboles distantes
+â””â”€ AtmÃ³sfera nocturna (colores azules oscuros)
 
 PALETA RECOMENDADA:
-┌─ Índice │ Color            │ Uso                │
-├─────────┼──────────────────┼────────────────────┤
-│ 0       │ Negro (#000000)  │ Fondo/Transparente │
-│ 1-4     │ Azules oscuros   │ Cielo nocturno     │
-│ 5-8     │ Grises           │ Tejados neutrales  │
-│ 9-12    │ Rojos/Marrones   │ Tejados principales│
-│ 13-15   │ Amarillos/Blancos│ Luces casa         │
-└─────────┴──────────────────┴────────────────────┘
+â”Œâ”€ Ãndice â”‚ Color            â”‚ Uso                â”‚
+â”œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”¼â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¼â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¤
+â”‚ 0       â”‚ Negro (#000000)  â”‚ Fondo/Transparente â”‚
+â”‚ 1-4     â”‚ Azules oscuros   â”‚ Cielo nocturno     â”‚
+â”‚ 5-8     â”‚ Grises           â”‚ Tejados neutrales  â”‚
+â”‚ 9-12    â”‚ Rojos/Marrones   â”‚ Tejados principalesâ”‚
+â”‚ 13-15   â”‚ Amarillos/Blancosâ”‚ Luces casa         â”‚
+â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”´â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”´â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
 
 TILESET ORGANIZATION:
-├─ Tile 0: Negro (transparente)
-├─ Tiles 1-16: Variaciones cielo/atmósfera
-├─ Tiles 17-48: Tejados comunes
-├─ Tiles 49-64: Chimeneas/detalles
-├─ Tiles 65-80: Luces/efectos
-└─ Tiles 81+: Decoración adicional
+â”œâ”€ Tile 0: Negro (transparente)
+â”œâ”€ Tiles 1-16: Variaciones cielo/atmÃ³sfera
+â”œâ”€ Tiles 17-48: Tejados comunes
+â”œâ”€ Tiles 49-64: Chimeneas/detalles
+â”œâ”€ Tiles 65-80: Luces/efectos
+â””â”€ Tiles 81+: DecoraciÃ³n adicional
 
 RENDERING:
-├─ Parallax: NO
-├─ Scroll: NO
-├─ Priority: 0 (detrás)
-├─ Map size: 40×28 tiles (320÷8 × 224÷8)
-└─ Mapa data: ~2.2KB sin comprimir
+â”œâ”€ Parallax: NO
+â”œâ”€ Scroll: NO
+â”œâ”€ Priority: 0 (detrÃ¡s)
+â”œâ”€ Map size: 40Ã—28 tiles (320Ã·8 Ã— 224Ã·8)
+â””â”€ Mapa data: ~2.2KB sin comprimir
 ```
 
 ### 4.2 image_nubes_paralaje (Capa BG_A overlay)
@@ -537,32 +519,32 @@ RENDERING:
 ```
 NAME:          image_nubes_paralaje
 TYPE:          TileSet + MapDefinition (parallax)
-SIZE:          320×224 píxeles de pantalla
-TILESET SIZE:  256×256 píxeles
+SIZE:          320Ã—224 pÃ­xeles de pantalla
+TILESET SIZE:  256Ã—256 pÃ­xeles
 COMPRESSION:   BEST
 PALETTE:       PAL_COMMON (0) - compartida con fondo
 SOURCE FILES:  Nubes.png, Nubes.tileset, Nubes.map
 
 CONTENIDO VISUAL:
-├─ Nubes blancas
-├─ Niebla sutil
-├─ Efectos atmosféricos
-└─ Semi-transparencia (usando paleta suave)
+â”œâ”€ Nubes blancas
+â”œâ”€ Niebla sutil
+â”œâ”€ Efectos atmosfÃ©ricos
+â””â”€ Semi-transparencia (usando paleta suave)
 
 PARALLAX IMPLEMENTATION:
-├─ Velocidad: -0.5 píxeles/frame (muy lento)
-├─ Dirección: Horizontal (derecha a izquierda)
-├─ Distancia parallax: Lejana (nubes de fondo)
-├─ Loop: Automático (cuando completa rotación)
-├─ Offset inicial: 0
-└─ Update: offset = (offset + 0.5) % 512
+â”œâ”€ Velocidad: -0.5 pÃ­xeles/frame (muy lento)
+â”œâ”€ DirecciÃ³n: Horizontal (derecha a izquierda)
+â”œâ”€ Distancia parallax: Lejana (nubes de fondo)
+â”œâ”€ Loop: AutomÃ¡tico (cuando completa rotaciÃ³n)
+â”œâ”€ Offset inicial: 0
+â””â”€ Update: offset = (offset + 0.5) % 512
 
 RENDERING:
-├─ Layer: BG_A (sobre BG_B)
-├─ Parallax: Sí
-├─ Priority: Medio
-├─ Blending: Opaco
-└─ Update: BG_setHorizontalScroll(BG_A, (u16)offset)
+â”œâ”€ Layer: BG_A (sobre BG_B)
+â”œâ”€ Parallax: SÃ­
+â”œâ”€ Priority: Medio
+â”œâ”€ Blending: Opaco
+â””â”€ Update: BG_setHorizontalScroll(BG_A, (u16)offset)
 ```
 
 ---
@@ -571,24 +553,24 @@ RENDERING:
 
 ## 5. ESPECIFICACIONES DE AUDIO
 
-### 5.1 Música - reutilización temporal
+### 5.1 MÃºsica - reutilizaciÃ³n temporal
 
 ```
 TRACK:          musica_fondo (campanas Fase 3)
 FORMATO:        XGM2 (VGM - Video Game Music)
-DURACIÓN:       40-60 segundos en loop infinito
+DURACIÃ“N:       40-60 segundos en loop infinito
 VOLUMEN:        FM=70/127, PSG=100/127
 
 NOTA:           La fase de tejados reutiliza provisionalmente la misma
                 pista que la fase de campanadas para acelerar pruebas y
-                evitar placeholders WAV. Se mantiene la reproducción en
+                evitar placeholders WAV. Se mantiene la reproducciÃ³n en
                 loop continuo.
 
-REPRODUCCIÓN EN CÓDIGO:
-├─ Iniciar: XGM2_play(musica_fondo)
-├─ Con loop: Automático (flag en VGM)
-├─ Parar: XGM2_stop()
-└─ Fade: XGM2_fadeOut(tiempo_frames)
+REPRODUCCIÃ“N EN CÃ“DIGO:
+â”œâ”€ Iniciar: XGM2_play(musica_fondo)
+â”œâ”€ Con loop: AutomÃ¡tico (flag en VGM)
+â”œâ”€ Parar: XGM2_stop()
+â””â”€ Fade: XGM2_fadeOut(tiempo_frames)
 ```
 
 ### 5.2 SFX - snd_regalo_disparado
@@ -602,23 +584,23 @@ DURATION:       ~0.15 segundos (120 samples)
 FILE SIZE:      ~1.2 KB
 FILE:           snd_regalo_disparado.wav
 
-DESCRIPCIÓN SONORA:
-├─ Tipo: Sonido de lanzamiento suave
-├─ Pitch: Bajo (100-200 Hz)
-├─ Envolvente: Ataque rápido, decay medio
-└─ Carácter: "Whomp" o "Thud" amortiguado
+DESCRIPCIÃ“N SONORA:
+â”œâ”€ Tipo: Sonido de lanzamiento suave
+â”œâ”€ Pitch: Bajo (100-200 Hz)
+â”œâ”€ Envolvente: Ataque rÃ¡pido, decay medio
+â””â”€ CarÃ¡cter: "Whomp" o "Thud" amortiguado
 
-REPRODUCCIÓN EN CÓDIGO:
-├─ Trigger: Al presionar A (cada 25 frames mínimo)
-├─ Función: XGM2_playPCM(snd_regalo_disparado, sndregaloDisparado_size, SOUND_PCM_CH_AUTO)
-├─ Prioridad: Alta (importante para feedback)
-├─ Volumen: 100%
-└─ Cantidad simultánea: Máximo 1 (otros descartados)
+REPRODUCCIÃ“N EN CÃ“DIGO:
+â”œâ”€ Trigger: Al presionar A (cada 25 frames mÃ­nimo)
+â”œâ”€ FunciÃ³n: XGM2_playPCM(snd_regalo_disparado, sndregaloDisparado_size, SOUND_PCM_CH_AUTO)
+â”œâ”€ Prioridad: Alta (importante para feedback)
+â”œâ”€ Volumen: 100%
+â””â”€ Cantidad simultÃ¡nea: MÃ¡ximo 1 (otros descartados)
 
 LIMITACIONES:
-├─ XGM2 permite 1 PCM simultáneo
-├─ Si intenta reproducir otro: Se reemplaza el anterior
-└─ Solución: Controlar con frameLastSFX
+â”œâ”€ XGM2 permite 1 PCM simultÃ¡neo
+â”œâ”€ Si intenta reproducir otro: Se reemplaza el anterior
+â””â”€ SoluciÃ³n: Controlar con frameLastSFX
 ```
 
 ### 5.3 SFX - snd_entrega_exitosa
@@ -632,28 +614,28 @@ DURATION:       ~0.3 segundos
 FILE SIZE:      ~2.4 KB
 FILE:           snd_entrega_exitosa.wav
 
-DESCRIPCIÓN SONORA:
-├─ Tipo: Fanfarra de éxito corta
-├─ Pitch: Dos notas ascendentes (Do-Mi)
-├─ Envolvente: Ataque suave, sustain medio, decay rápido
-└─ Carácter: "Ding-dong" campana feliz
+DESCRIPCIÃ“N SONORA:
+â”œâ”€ Tipo: Fanfarra de Ã©xito corta
+â”œâ”€ Pitch: Dos notas ascendentes (Do-Mi)
+â”œâ”€ Envolvente: Ataque suave, sustain medio, decay rÃ¡pido
+â””â”€ CarÃ¡cter: "Ding-dong" campana feliz
 
-MELODÍA RECOMENDADA:
-├─ Nota 1: Do (262 Hz) - 150 ms
-├─ Nota 2: Mi (330 Hz) - 150 ms
-└─ Total: 300 ms
+MELODÃA RECOMENDADA:
+â”œâ”€ Nota 1: Do (262 Hz) - 150 ms
+â”œâ”€ Nota 2: Mi (330 Hz) - 150 ms
+â””â”€ Total: 300 ms
 
-REPRODUCCIÓN EN CÓDIGO:
-├─ Trigger: Cuando regalo toca chimenea activa
-├─ Función: XGM2_playPCM(snd_entrega_exitosa, sndentregaExitosa_size, SOUND_PCM_CH_AUTO)
-├─ Prioridad: Muy alta (más importante que disparo)
-├─ Volumen: 120% (boost)
-└─ Cantidad: 1 simultáneo
+REPRODUCCIÃ“N EN CÃ“DIGO:
+â”œâ”€ Trigger: Cuando regalo toca chimenea activa
+â”œâ”€ FunciÃ³n: XGM2_playPCM(snd_entrega_exitosa, sndentregaExitosa_size, SOUND_PCM_CH_AUTO)
+â”œâ”€ Prioridad: Muy alta (mÃ¡s importante que disparo)
+â”œâ”€ Volumen: 120% (boost)
+â””â”€ Cantidad: 1 simultÃ¡neo
 
-FRECUENCIA REPRODUCCIÓN:
-├─ Máximo: 1 por frame (si múltiples entregas = solo 1 SFX)
-├─ Acumulado durante fase: 10 máximo (victoria)
-└─ Duración total: 3 segundos si 10 consecutivas
+FRECUENCIA REPRODUCCIÃ“N:
+â”œâ”€ MÃ¡ximo: 1 por frame (si mÃºltiples entregas = solo 1 SFX)
+â”œâ”€ Acumulado durante fase: 10 mÃ¡ximo (victoria)
+â””â”€ DuraciÃ³n total: 3 segundos si 10 consecutivas
 ```
 
 ### 5.4 SFX - snd_chimenea_activa
@@ -667,67 +649,67 @@ DURATION:       ~0.2 segundos
 FILE SIZE:      ~1.6 KB
 FILE:           snd_chimenea_activa.wav
 
-DESCRIPCIÓN SONORA:
-├─ Tipo: Efecto de encendido/fuego
-├─ Pitch: Pop/crackle (ruido de fuego)
-├─ Envolvente: Ataque muy rápido, decay rápido
-└─ Carácter: "Pop" o "Whoosh" de fuego
+DESCRIPCIÃ“N SONORA:
+â”œâ”€ Tipo: Efecto de encendido/fuego
+â”œâ”€ Pitch: Pop/crackle (ruido de fuego)
+â”œâ”€ Envolvente: Ataque muy rÃ¡pido, decay rÃ¡pido
+â””â”€ CarÃ¡cter: "Pop" o "Whoosh" de fuego
 
-REPRODUCCIÓN EN CÓDIGO:
-├─ Trigger: Cuando se activa chimenea nueva
-├─ Frecuencia: Máximo 1 por 30 frames (no abrumar)
-├─ Función: XGM2_playPCM(snd_chimenea_activa, sndchimenea_size, SOUND_PCM_CH_AUTO)
-├─ Prioridad: Media (menos importante que entrega)
-├─ Volumen: 80%
-└─ Cantidad: 1 simultáneo (comparte canal con otros)
+REPRODUCCIÃ“N EN CÃ“DIGO:
+â”œâ”€ Trigger: Cuando se activa chimenea nueva
+â”œâ”€ Frecuencia: MÃ¡ximo 1 por 30 frames (no abrumar)
+â”œâ”€ FunciÃ³n: XGM2_playPCM(snd_chimenea_activa, sndchimenea_size, SOUND_PCM_CH_AUTO)
+â”œâ”€ Prioridad: Media (menos importante que entrega)
+â”œâ”€ Volumen: 80%
+â””â”€ Cantidad: 1 simultÃ¡neo (comparte canal con otros)
 
-IMPLEMENTACIÓN:
-├─ Solo reproducir si chimenea pasa a activa (state change)
-├─ No reproducir si ya estaba activa
-├─ Cooldown: 30 frames mínimo entre reproducciones
-└─ Máximo 7 SFX durante fase (máximo chimeneas activas)
+IMPLEMENTACIÃ“N:
+â”œâ”€ Solo reproducir si chimenea pasa a activa (state change)
+â”œâ”€ No reproducir si ya estaba activa
+â”œâ”€ Cooldown: 30 frames mÃ­nimo entre reproducciones
+â””â”€ MÃ¡ximo 7 SFX durante fase (mÃ¡ximo chimeneas activas)
 ```
 
 ---
 
 ## <a name="colisiones"></a>
 
-## 6. LÓGICA DE COLISIONES
+## 6. LÃ“GICA DE COLISIONES
 
 ### 6.1 Sistema AABB (Axis-Aligned Bounding Box)
 
 ```
-FUNCIÓN BASE:
-────────────────────────────────────────────────────────────
+FUNCIÃ“N BASE:
+â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 u8 gameCore_checkCollisionAABB(s16 x1, s16 y1, u16 w1, u16 h1,
                                s16 x2, s16 y2, u16 w2, u16 h2)
-────────────────────────────────────────────────────────────
+â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
-Condición: Colisión si:
-├─ x1 < x2+w2  AND  x1+w1 > x2  AND
-├─ y1 < y2+h2  AND  y1+h1 > y2
-└─ Resultado: 1 (colisión) o 0 (sin colisión)
+CondiciÃ³n: ColisiÃ³n si:
+â”œâ”€ x1 < x2+w2  AND  x1+w1 > x2  AND
+â”œâ”€ y1 < y2+h2  AND  y1+h1 > y2
+â””â”€ Resultado: 1 (colisiÃ³n) o 0 (sin colisiÃ³n)
 
-APLICACIÓN EN FASE 2:
+APLICACIÃ“N EN FASE 2:
 
-Colisión Regalo-Chimenea:
-├─ Box regalo: (regalo.x-12, regalo.y-12, 24, 24)
-├─ Box chimenea: (chimenea.x-10, chimenea.y, 20, 80)
-├─ Si colisión: +1 entrega
-└─ Velocidad Y debe ser >= 0 (cayendo, no subiendo)
+ColisiÃ³n Regalo-Chimenea:
+â”œâ”€ Box regalo: (regalo.x-12, regalo.y-12, 24, 24)
+â”œâ”€ Box chimenea: (chimenea.x-10, chimenea.y, 20, 80)
+â”œâ”€ Si colisiÃ³n: +1 entrega
+â””â”€ Velocidad Y debe ser >= 0 (cayendo, no subiendo)
 
-Colisión Regalo-Pantalla:
-├─ Box pantalla: (0, 0, 320, 224)
-├─ Si regalo.y > 240: marca como inactivo
-├─ Si regalo.x < 0 o > 320: marca como inactivo
-└─ Efecto: Regalo desaparece sin puntuación
+ColisiÃ³n Regalo-Pantalla:
+â”œâ”€ Box pantalla: (0, 0, 320, 224)
+â”œâ”€ Si regalo.y > 240: marca como inactivo
+â”œâ”€ Si regalo.x < 0 o > 320: marca como inactivo
+â””â”€ Efecto: Regalo desaparece sin puntuaciÃ³n
 ```
 
-### 6.2 Detección de Entrega Detallada
+### 6.2 DetecciÃ³n de Entrega Detallada
 
 ```
-PSEUDOCÓDIGO DETECCIÓN:
-────────────────────────────────────────────────────────────
+PSEUDOCÃ“DIGO DETECCIÃ“N:
+â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 for each regalo in regalos_activos:
     if regalo.active == false:
@@ -737,27 +719,27 @@ for each regalo in regalos_activos:
         if chimenea.active == false:
             continue
         
-        // Verificar posición Y (regalo alcanza altura)
+        // Verificar posiciÃ³n Y (regalo alcanza altura)
         if regalo.y < chimenea.y - 40:
-            continue  // Regalo aún arriba
+            continue  // Regalo aÃºn arriba
         
         // Verificar rango horizontal
         distancia_x = abs(regalo.x - chimenea.x)
         if distancia_x > 20:
             continue  // Fuera de rango horizontal
         
-        // Verificar dirección de movimiento (cayendo)
+        // Verificar direcciÃ³n de movimiento (cayendo)
         if regalo.vy < 0:
             continue  // Regalo subiendo, no cuenta
         
-        // COLISIÓN DETECTADA
+        // COLISIÃ“N DETECTADA
         entregar_regalo_en_chimenea(regalo, chimenea)
         break  // Exit chimenea loop
 
-────────────────────────────────────────────────────────────
+â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
-FUNCIÓN ENTREGA:
-────────────────────────────────────────────────────────────
+FUNCIÃ“N ENTREGA:
+â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 void entregar_regalo_en_chimenea(Regalo* regalo, Chimenea* chimenea) {
     // Incrementar contador
@@ -784,42 +766,42 @@ void entregar_regalo_en_chimenea(Regalo* regalo, Chimenea* chimenea) {
     }
 }
 
-────────────────────────────────────────────────────────────
+â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 ```
 
-### 6.3 Detección de Límites Pantalla
+### 6.3 DetecciÃ³n de LÃ­mites Pantalla
 
 ```
-LÍMITES CAÑÓN:
+LÃMITES CAÃ‘Ã“N:
 
 Movimiento horizontal:
-├─ Mínimo x: 32 píxeles (margen izquierdo)
-├─ Máximo x: 256 píxeles (320 - 64 ancho cañón)
-├─ Si x < 32: x = 32
-├─ Si x > 256: x = 256
-└─ Sprite y: siempre 180
+â”œâ”€ MÃ­nimo x: 32 pÃ­xeles (margen izquierdo)
+â”œâ”€ MÃ¡ximo x: 256 pÃ­xeles (320 - 64 ancho caÃ±Ã³n)
+â”œâ”€ Si x < 32: x = 32
+â”œâ”€ Si x > 256: x = 256
+â””â”€ Sprite y: siempre 180
 
-LÍMITES REGALO:
+LÃMITES REGALO:
 
 Fuera de pantalla:
-├─ Si regalo.y > 240: marcar inactivo
-├─ Si regalo.x < -50: marcar inactivo
-├─ Si regalo.x > 370: marcar inactivo
-└─ Efecto: Desaparece sin entrega (fallo silencioso)
+â”œâ”€ Si regalo.y > 240: marcar inactivo
+â”œâ”€ Si regalo.x < -50: marcar inactivo
+â”œâ”€ Si regalo.x > 370: marcar inactivo
+â””â”€ Efecto: Desaparece sin entrega (fallo silencioso)
 
-LÍMITES CHIMENEA:
+LÃMITES CHIMENEA:
 
 Siempre en pantalla:
-├─ x: 30 a 310 píxeles
-├─ y: 65 a 110 píxeles
-└─ No se mueven, posiciones fijas
+â”œâ”€ x: 30 a 310 pÃ­xeles
+â”œâ”€ y: 65 a 110 pÃ­xeles
+â””â”€ No se mueven, posiciones fijas
 ```
 
 ---
 
 ## <a name="estado-interno"></a>
 
-## 7. MÁQUINA DE ESTADOS INTERNA
+## 7. MÃQUINA DE ESTADOS INTERNA
 
 ### 7.1 Estados Globales de Fase
 
@@ -827,55 +809,55 @@ Siempre en pantalla:
 ESTADO: minigameDelivery_state
 
 STATE_INIT (0):
-├─ Acción: Inicializar todos los recursos
-├─ Duración: 1 frame
-├─ Siguiente: STATE_PLAYING
+â”œâ”€ AcciÃ³n: Inicializar todos los recursos
+â”œâ”€ DuraciÃ³n: 1 frame
+â”œâ”€ Siguiente: STATE_PLAYING
 
 STATE_PLAYING (1):
-├─ Acción: Juego activo, procesar input/colisiones
-├─ Duración: Variable (hasta victoria)
-├─ Siguiente: STATE_VICTORY o mantener
+â”œâ”€ AcciÃ³n: Juego activo, procesar input/colisiones
+â”œâ”€ DuraciÃ³n: Variable (hasta victoria)
+â”œâ”€ Siguiente: STATE_VICTORY o mantener
 
 STATE_VICTORY (2):
-├─ Acción: Animación de victoria
-├─ Duración: 120 frames (~2 segundos)
-├─ Siguiente: STATE_RETURNING
+â”œâ”€ AcciÃ³n: AnimaciÃ³n de victoria
+â”œâ”€ DuraciÃ³n: 120 frames (~2 segundos)
+â”œâ”€ Siguiente: STATE_RETURNING
 
 STATE_RETURNING (3):
-├─ Acción: Fade a negro, preparar siguiente fase
-├─ Duración: 60 frames (~1 segundo)
-├─ Siguiente: Retornar a main.c
+â”œâ”€ AcciÃ³n: Fade a negro, preparar siguiente fase
+â”œâ”€ DuraciÃ³n: 60 frames (~1 segundo)
+â”œâ”€ Siguiente: Retornar a main.c
 ```
 
-### 7.2 Timeline de Transición de Fases
+### 7.2 Timeline de TransiciÃ³n de Fases
 
 ```
-TRANSICIÓN FASE 1 → FASE 2:
+TRANSICIÃ“N FASE 1 â†’ FASE 2:
 
 Evento: Victory en Fase 1
-├─ Fade out música Polo (60 frames)
-├─ Fade to black (60 frames)
-├─ Cargar recursos Fase 2 (minigame_delivery_init)
-├─ Fade in Fase 2 (60 frames)
-├─ Reproducir música tejados (start XGM2_play)
-└─ Estado: PLAYING
+â”œâ”€ Fade out mÃºsica Polo (60 frames)
+â”œâ”€ Fade to black (60 frames)
+â”œâ”€ Cargar recursos Fase 2 (minigame_delivery_init)
+â”œâ”€ Fade in Fase 2 (60 frames)
+â”œâ”€ Reproducir mÃºsica tejados (start XGM2_play)
+â””â”€ Estado: PLAYING
 
-TRANSICIÓN FASE 2 → FASE 3:
+TRANSICIÃ“N FASE 2 â†’ FASE 3:
 
 Evento: Victory en Fase 2 (entregas >= 10)
-├─ Reproducir snd_victoria (2 segundos)
-├─ Mostrar "¡VICTORIA!" overlay (120 frames)
-├─ Fade out música tejados (60 frames)
-├─ Unload: Sprites/fondos Fase 2
-├─ Load: Sprites/fondos Fase 3
-├─ Fade in iglesia (60 frames)
-├─ Reproducir música iglesia
-└─ Continuar en minigameBells_init()
+â”œâ”€ Reproducir snd_victoria (2 segundos)
+â”œâ”€ Mostrar "Â¡VICTORIA!" overlay (120 frames)
+â”œâ”€ Fade out mÃºsica tejados (60 frames)
+â”œâ”€ Unload: Sprites/fondos Fase 2
+â”œâ”€ Load: Sprites/fondos Fase 3
+â”œâ”€ Fade in iglesia (60 frames)
+â”œâ”€ Reproducir mÃºsica iglesia
+â””â”€ Continuar en minigameBells_init()
 
-DURACIÓN TOTAL TRANSICIÓN: 
-├─ Máximo: 360 frames (~6 segundos)
-├─ Típico: 300 frames (~5 segundos)
-└─ Mínimo: 180 frames (~3 segundos)
+DURACIÃ“N TOTAL TRANSICIÃ“N: 
+â”œâ”€ MÃ¡ximo: 360 frames (~6 segundos)
+â”œâ”€ TÃ­pico: 300 frames (~5 segundos)
+â””â”€ MÃ­nimo: 180 frames (~3 segundos)
 ```
 
 ---
@@ -887,9 +869,9 @@ DURACIÓN TOTAL TRANSICIÓN:
 ### 8.1 Structs Principales
 
 ```c
-/* ════════════════════════════════════════════════════════════════
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
    FILE: minigame_delivery.h
-   ════════════════════════════════════════════════════════════════ */
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 
 #ifndef MINIGAME_DELIVERY_H
 #define MINIGAME_DELIVERY_H
@@ -897,9 +879,9 @@ DURACIÓN TOTAL TRANSICIÓN:
 #include <genesis.h>
 #include "gamecore.h"
 
-/* ────────────────────────────────────────────────────────────────
+/* â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
    ESTRUCTURAS DE DATOS
-   ──────────────────────────────────────────────────────────────── */
+   â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 
 typedef struct {
     Sprite* sprite;
@@ -922,7 +904,7 @@ typedef struct {
     Sprite* sprite;
     s16 x;              // y siempre = 180
     s8 velX;
-    u8 disparoFrame;    // contador para animación disparo
+    u8 disparoFrame;    // contador para animaciÃ³n disparo
 } Cannon_Tejado;
 
 typedef struct {
@@ -931,9 +913,9 @@ typedef struct {
     u8 bloque;          // 0=facil, 1=media, 2=dificil
 } FaseTimer;
 
-/* ────────────────────────────────────────────────────────────────
+/* â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
    CONSTANTES
-   ──────────────────────────────────────────────────────────────── */
+   â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 
 #define NUM_REGALOS_VOL         6
 #define NUM_CHIMENEAS          15
@@ -960,9 +942,9 @@ typedef struct {
 #define BLOQUE_1_FRAMES       1800     // 30 segundos
 #define BLOQUE_2_FRAMES       3600     // 60 segundos
 
-/* ────────────────────────────────────────────────────────────────
-   FUNCIONES PÚBLICAS
-   ──────────────────────────────────────────────────────────────── */
+/* â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+   FUNCIONES PÃšBLICAS
+   â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 
 void minigameDelivery_init(void);
 void minigameDelivery_update(void);
@@ -976,13 +958,13 @@ void minigameDelivery_cleanup(void);
 ### 8.2 Variables Globales (minigame_delivery.c)
 
 ```c
-/* ════════════════════════════════════════════════════════════════
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
    FILE: minigame_delivery.c - VARIABLES GLOBALES
-   ════════════════════════════════════════════════════════════════ */
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 
-/* ────────────────────────────────────────────────────────────────
-   RECURSOS GRÁFICOS
-   ──────────────────────────────────────────────────────────────── */
+/* â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+   RECURSOS GRÃFICOS
+   â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 
 static Map* mapFondoTejados;
 static Map* mapNubesParalaje;
@@ -992,9 +974,9 @@ static Sprite* spriteRegalosActivos[NUM_REGALOS_VOL];
 
 static u16 parallaxOffset;
 
-/* ────────────────────────────────────────────────────────────────
+/* â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
    DATOS DE JUEGO
-   ──────────────────────────────────────────────────────────────── */
+   â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 
 // Regalos en vuelo
 static Regalo_Volador regalosVoladores[NUM_REGALOS_VOL];
@@ -1004,7 +986,7 @@ static u8 numRegalosActivos;
 static Chimenea chimeneas[NUM_CHIMENEAS];
 static u8 numChimeneaActivas;
 
-// Cañón
+// CaÃ±Ã³n
 static Cannon_Tejado cannon;
 static u8 bulletCooldown;
 static s8 cannonAccelX;
@@ -1019,12 +1001,12 @@ static u8 minigameState;                // STATE_INIT, STATE_PLAYING, STATE_VICT
 static u16 lastInput;
 static u16 currentInput;
 
-// Animación victoria
+// AnimaciÃ³n victoria
 static u16 victoryAnimationFrames;
 
-/* ────────────────────────────────────────────────────────────────
-   DATOS DE FÍSICA
-   ──────────────────────────────────────────────────────────────── */
+/* â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+   DATOS DE FÃSICA
+   â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 
 static f32 windFactor;                  // Viento actual
 static u8 dificultadMult;               // Multiplicador dificultad
@@ -1041,18 +1023,18 @@ static u8 dificultadMult;               // Multiplicador dificultad
 ```
 DESGLOSE DE MEMORIA RAM:
 
-┌─ COMPONENTE                      │ BYTES  │ NOTAS                 │
-├───────────────────────────────────┼────────┼───────────────────────┤
-│ Array regalosVoladores[6]         │ 432    │ 72 bytes × 6          │
-│ Array chimeneas[15]               │ 645    │ 43 bytes × 15         │
-│ Estructura cannon                 │ 20     │ Cañón único           │
-│ Variables globales (varias)       │ 200    │ Contadores, flags     │
-│ Maps (fondos + paralaje)          │ 2048   │ Datos tilemap         │
-│ Paletas cargadas                  │ 128    │ 64 colores × 2 pal    │
-├───────────────────────────────────┼────────┼───────────────────────┤
-│ TOTAL FASE 2                      │ 3473   │ ~3.4 KB               │
-│ REMANENTE (64KB)                  │ 61063  │ ~60.6 KB (abundante)  │
-└───────────────────────────────────┴────────┴───────────────────────┘
+â”Œâ”€ COMPONENTE                      â”‚ BYTES  â”‚ NOTAS                 â”‚
+â”œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¼â”€â”€â”€â”€â”€â”€â”€â”€â”¼â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¤
+â”‚ Array regalosVoladores[6]         â”‚ 432    â”‚ 72 bytes Ã— 6          â”‚
+â”‚ Array chimeneas[15]               â”‚ 645    â”‚ 43 bytes Ã— 15         â”‚
+â”‚ Estructura cannon                 â”‚ 20     â”‚ CaÃ±Ã³n Ãºnico           â”‚
+â”‚ Variables globales (varias)       â”‚ 200    â”‚ Contadores, flags     â”‚
+â”‚ Maps (fondos + paralaje)          â”‚ 2048   â”‚ Datos tilemap         â”‚
+â”‚ Paletas cargadas                  â”‚ 128    â”‚ 64 colores Ã— 2 pal    â”‚
+â”œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¼â”€â”€â”€â”€â”€â”€â”€â”€â”¼â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¤
+â”‚ TOTAL FASE 2                      â”‚ 3473   â”‚ ~3.4 KB               â”‚
+â”‚ REMANENTE (64KB)                  â”‚ 61063  â”‚ ~60.6 KB (abundante)  â”‚
+â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”´â”€â”€â”€â”€â”€â”€â”€â”€â”´â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
 ```
 
 ### 9.2 VRAM de Fase 2
@@ -1060,17 +1042,17 @@ DESGLOSE DE MEMORIA RAM:
 ```
 DESGLOSE DE MEMORIA VRAM (64KB):
 
-┌─ COMPONENTE                      │ BYTES  │ NOTAS                 │
-├───────────────────────────────────┼────────┼───────────────────────┤
-│ Tileset fondos tejados            │ 8192   │ Tiles comprimidos      │
-│ Tileset nubes paralaje            │ 4096   │ Tiles overlay         │
-│ Sprites loaded                    │ 4096   │ Bajo demanda          │
-│ Paletas (PAL_COMMON)              │ 256    │ 16 colores × 4        │
-│ Map buffer (fondos renderizados)  │ 2048   │ Buffer dinámico SGDK  │
-├───────────────────────────────────┼────────┼───────────────────────┤
-│ TOTAL VRAM USADO                  │ 18688  │ ~18.2 KB              │
-│ REMANENTE (64KB)                  │ 45848  │ ~44.8 KB (bueno)      │
-└───────────────────────────────────┴────────┴───────────────────────┘
+â”Œâ”€ COMPONENTE                      â”‚ BYTES  â”‚ NOTAS                 â”‚
+â”œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¼â”€â”€â”€â”€â”€â”€â”€â”€â”¼â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¤
+â”‚ Tileset fondos tejados            â”‚ 8192   â”‚ Tiles comprimidos      â”‚
+â”‚ Tileset nubes paralaje            â”‚ 4096   â”‚ Tiles overlay         â”‚
+â”‚ Sprites loaded                    â”‚ 4096   â”‚ Bajo demanda          â”‚
+â”‚ Paletas (PAL_COMMON)              â”‚ 256    â”‚ 16 colores Ã— 4        â”‚
+â”‚ Map buffer (fondos renderizados)  â”‚ 2048   â”‚ Buffer dinÃ¡mico SGDK  â”‚
+â”œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¼â”€â”€â”€â”€â”€â”€â”€â”€â”¼â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¤
+â”‚ TOTAL VRAM USADO                  â”‚ 18688  â”‚ ~18.2 KB              â”‚
+â”‚ REMANENTE (64KB)                  â”‚ 45848  â”‚ ~44.8 KB (bueno)      â”‚
+â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”´â”€â”€â”€â”€â”€â”€â”€â”€â”´â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
 ```
 
 ### 9.3 Cartucho ROM
@@ -1078,38 +1060,38 @@ DESGLOSE DE MEMORIA VRAM (64KB):
 ```
 DESGLOSE ROM:
 
-┌─ RECURSO                        │ TAMAÑO │ NOTAS                 │
-├──────────────────────────────────┼────────┼───────────────────────┤
-│ Código C compilado               │ ~50KB  │ Todo el juego         │
-│ Fondos (2 TileSets comprimidos)  │ ~8 KB  │ LZ4H compression      │
-│ Sprites (combinados)             │ ~20KB  │ Indexed 16-color      │
-│ Música XGM2 (4 canciones)        │ ~16KB  │ VGZ comprimido        │
-│ SFX PCM (8 efectos)              │ ~160KB │ 8-bit 8kHz WAV        │
-│ Datos varios                     │ ~10KB  │ Strings, paletas      │
-├──────────────────────────────────┼────────┼───────────────────────┤
-│ TOTAL CARTUCHO                   │ ~264KB │ Dentro de límites      │
-│ Límite máximo Mega Drive         │ 32MB   │ Cartuchos modernos     │
-└──────────────────────────────────┴────────┴───────────────────────┘
+â”Œâ”€ RECURSO                        â”‚ TAMAÃ‘O â”‚ NOTAS                 â”‚
+â”œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¼â”€â”€â”€â”€â”€â”€â”€â”€â”¼â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¤
+â”‚ CÃ³digo C compilado               â”‚ ~50KB  â”‚ Todo el juego         â”‚
+â”‚ Fondos (2 TileSets comprimidos)  â”‚ ~8 KB  â”‚ LZ4H compression      â”‚
+â”‚ Sprites (combinados)             â”‚ ~20KB  â”‚ Indexed 16-color      â”‚
+â”‚ MÃºsica XGM2 (4 canciones)        â”‚ ~16KB  â”‚ VGZ comprimido        â”‚
+â”‚ SFX PCM (8 efectos)              â”‚ ~160KB â”‚ 8-bit 8kHz WAV        â”‚
+â”‚ Datos varios                     â”‚ ~10KB  â”‚ Strings, paletas      â”‚
+â”œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¼â”€â”€â”€â”€â”€â”€â”€â”€â”¼â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¤
+â”‚ TOTAL CARTUCHO                   â”‚ ~264KB â”‚ Dentro de lÃ­mites      â”‚
+â”‚ LÃ­mite mÃ¡ximo Mega Drive         â”‚ 32MB   â”‚ Cartuchos modernos     â”‚
+â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”´â”€â”€â”€â”€â”€â”€â”€â”€â”´â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
 ```
 
 ---
 
 ## <a name="checklist"></a>
 
-## 10. CHECKLIST DE IMPLEMENTACIÓN
+## 10. CHECKLIST DE IMPLEMENTACIÃ“N
 
 ### 10.1 Tareas Previas
 
-- [ ] Crear archivos vacíos:
+- [ ] Crear archivos vacÃ­os:
   - [ ] `inc/minigame_delivery.h`
   - [ ] `src/minigame_delivery.c`
 
-- [ ] Crear assets gráficos:
-  - [ ] `res/Sprites/GFX/Regalos_Pequeño.png` (24×24)
-  - [ ] `res/Sprites/GFX/Chimenea.png` (20×160)
-  - [ ] `res/Sprites/GFX/CanonTejado.png` (128×96)
-  - [ ] `res/Backgrounds/FondoTejados.png` (512×256)
-  - [ ] `res/Backgrounds/Nubes.png` (256×256)
+- [ ] Crear assets grÃ¡ficos:
+  - [ ] `res/Sprites/GFX/Regalos_PequeÃ±o.png` (24Ã—24)
+  - [ ] `res/Sprites/GFX/Chimenea.png` (20Ã—160)
+  - [ ] `res/Sprites/GFX/CanonTejado.png` (128Ã—96)
+  - [ ] `res/Backgrounds/FondoTejados.png` (512Ã—256)
+  - [ ] `res/Backgrounds/Nubes.png` (256Ã—256)
   - [ ] `res/Palettes/FondoTejados.pal`
 
 - [ ] Crear assets de audio:
@@ -1121,7 +1103,7 @@ DESGLOSE ROM:
 - [ ] Actualizar resources_sprites.res / resources_sfx.res / resources_bg.res:
   ```makefile
   # Agregrar sprites Fase 2
-  SPRITE sprite_regalo_entrega Regalos_Pequeño.png 3 3 BEST 1
+  SPRITE sprite_regalo_entrega Regalos_PequeÃ±o.png 3 3 BEST 1
   SPRITE sprite_chimenea Chimenea.png 1 2 BEST 1
   SPRITE sprite_canon_tejado CanonTejado.png 2 1 BEST 1
   SPRITE sprite_nube Nube.png 4 2 BEST 0
@@ -1139,28 +1121,28 @@ DESGLOSE ROM:
   WAV snd_chimenea_activa snd_chimenea_activa.wav XGM2
   ```
 
-### 10.2 Implementación del Código
+### 10.2 ImplementaciÃ³n del CÃ³digo
 
 - [ ] **minigame_delivery.h**: Definir structs y funciones
   - [ ] typedef Regalo_Volador
   - [ ] typedef Chimenea
   - [ ] typedef Cannon_Tejado
   - [ ] typedef FaseTimer
-  - [ ] Declarar funciones públicas
+  - [ ] Declarar funciones pÃºblicas
 
 - [ ] **minigame_delivery.c**: Implementar funciones core
   - [ ] `minigameDelivery_init()` - Inicializar todo
     - [ ] Cargar maps fondos
-    - [ ] Crear sprites cañón
+    - [ ] Crear sprites caÃ±Ã³n
     - [ ] Inicializar array chimeneas (15)
-    - [ ] Reproducir música
+    - [ ] Reproducir mÃºsica
   
-  - [ ] `minigameDelivery_update()` - Lógica de juego
+  - [ ] `minigameDelivery_update()` - LÃ³gica de juego
     - [ ] Leer entrada (LEFT/RIGHT/A)
-    - [ ] Actualizar posición cañón
+    - [ ] Actualizar posiciÃ³n caÃ±Ã³n
     - [ ] Procesar disparo (cooldown)
     - [ ] Crear regalo volador
-    - [ ] Actualizar regalos voladores (física)
+    - [ ] Actualizar regalos voladores (fÃ­sica)
     - [ ] Actualizar parallax
     - [ ] Activar/desactivar chimeneas (por tiempo)
     - [ ] Detectar colisiones regalo-chimenea
@@ -1179,38 +1161,38 @@ DESGLOSE ROM:
   - [ ] `inicializarChimeneas()` - Crear array con posiciones
   - [ ] `crearRegaloVolador()` - Pool de regalos
   - [ ] `liberarRegaloVolador()` - Reutilizar en pool
-  - [ ] `actualizarChimeneasPorTiempo()` - Activación dinámica
-  - [ ] `detectarEntrega()` - Colisión regalo-chimenea
+  - [ ] `actualizarChimeneasPorTiempo()` - ActivaciÃ³n dinÃ¡mica
+  - [ ] `detectarEntrega()` - ColisiÃ³n regalo-chimenea
   - [ ] `actualizarHUD()` - Mostrar contador
   - [ ] `onEntregaExitosa()` - Callback entrega
   - [ ] `actualizarParallax()` - Scroll nubes
-  - [ ] `aplicarViento()` - Física viento
+  - [ ] `aplicarViento()` - FÃ­sica viento
   - [ ] `getDificultadMultiplicador()` - Por bloque
 
 ### 10.3 Testing
 
-- [ ] Compilación
+- [ ] CompilaciÃ³n
   - [ ] `make clean`
   - [ ] `make rebuild`
-  - [ ] ✓ Sin errores de compilación
-  - [ ] ✓ Sin warnings críticos
+  - [ ] âœ“ Sin errores de compilaciÃ³n
+  - [ ] âœ“ Sin warnings crÃ­ticos
 
-- [ ] Funcionalidad básica
+- [ ] Funcionalidad bÃ¡sica
   - [ ] Fase 2 carga correctamente
   - [ ] Se ven fondos y sprites
-  - [ ] Cañón aparece en pantalla
-  - [ ] Se reproducen música/SFX
+  - [ ] CaÃ±Ã³n aparece en pantalla
+  - [ ] Se reproducen mÃºsica/SFX
 
 - [ ] Control
-  - [ ] LEFT mueve cañón izquierda
-  - [ ] RIGHT mueve cañón derecha
+  - [ ] LEFT mueve caÃ±Ã³n izquierda
+  - [ ] RIGHT mueve caÃ±Ã³n derecha
   - [ ] A dispara regalo (cada 25 frames)
   - [ ] Regalos aparecen en pantalla
 
-- [ ] Física
+- [ ] FÃ­sica
   - [ ] Regalos caen con gravedad
   - [ ] Viento afecta trayectoria
-  - [ ] Colisiones límites pantalla
+  - [ ] Colisiones lÃ­mites pantalla
 
 - [ ] Chimeneas
   - [ ] Se ven 15 chimeneas
@@ -1222,57 +1204,57 @@ DESGLOSE ROM:
   - [ ] Contador entregas incrementa
   - [ ] HUD actualiza correctamente
   - [ ] 10 entregas = Victoria
-  - [ ] Transición a Fase 3
+  - [ ] TransiciÃ³n a Fase 3
 
 - [ ] Rendimiento
   - [ ] 60 FPS constante
   - [ ] Sin lag al disparar
   - [ ] Sin glitches visuales
 
-### 10.4 Pulido y Optimización
+### 10.4 Pulido y OptimizaciÃ³n
 
 - [ ] Audio
-  - [ ] Música loop sin clic
+  - [ ] MÃºsica loop sin clic
   - [ ] SFX no solapan
   - [ ] Volumen balanceado
 
-- [ ] Visualización
+- [ ] VisualizaciÃ³n
   - [ ] Colores bien asignados
   - [ ] Sprites sin artefactos
   - [ ] Parallax suave
 
 - [ ] Transiciones
   - [ ] Fade in/out suave
-  - [ ] Cambio música sincronizado
-  - [ ] Paso a Fase 3 automático
+  - [ ] Cambio mÃºsica sincronizado
+  - [ ] Paso a Fase 3 automÃ¡tico
 
 ---
 
-## 📊 RESUMEN EJECUTIVO FASE 2
+## ðŸ“Š RESUMEN EJECUTIVO FASE 2
 
 ```
-ESPECIFICACIÓN COMPLETA: FASE 2 - ENTREGA (TEJADOS)
+ESPECIFICACIÃ“N COMPLETA: FASE 2 - ENTREGA (TEJADOS)
 
 Nombre:          Entrega
-Ubicación:       Tejados nocturnos, ciudad
-Duración:        60-90 segundos (sin límite real)
+UbicaciÃ³n:       Tejados nocturnos, ciudad
+DuraciÃ³n:        60-90 segundos (sin lÃ­mite real)
 Objetivo:        10 entregas de 20 regalos
 Dificultad:      Media
-Mecánica:        Precisión + Timing
+MecÃ¡nica:        PrecisiÃ³n + Timing
 
 COMPONENTES:
-├─ Sprites:      4 types (regalo, chimenea, cañón, nube)
-├─ Fondos:       2 layers (base + paralaje)
-├─ Música:       1 loop XGM2
-├─ SFX:           3 efectos PCM
-└─ Total:        ~3.4 KB RAM, ~18 KB VRAM, ~264 KB ROM
+â”œâ”€ Sprites:      4 types (regalo, chimenea, caÃ±Ã³n, nube)
+â”œâ”€ Fondos:       2 layers (base + paralaje)
+â”œâ”€ MÃºsica:       1 loop XGM2
+â”œâ”€ SFX:           3 efectos PCM
+â””â”€ Total:        ~3.4 KB RAM, ~18 KB VRAM, ~264 KB ROM
 
-ESTADO:          📋 LISTA PARA IMPLEMENTACIÓN
+ESTADO:          ðŸ“‹ LISTA PARA IMPLEMENTACIÃ“N
 ESTIMADO:        4-6 horas de desarrollo
 ```
 
 ---
 
-**Especificación Técnica - Fase 2: Entrega (Tejados)**
+**EspecificaciÃ³n TÃ©cnica - Fase 2: Entrega (Tejados)**
 **Documento Completo y Exhaustivo**
 **Diciembre 2025**
