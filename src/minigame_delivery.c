@@ -46,7 +46,15 @@
 #define DROP_COOLDOWN_FRAMES 18
 #define CHIMNEY_RESET_FRAMES 90
 #define RECOVERY_FRAMES 90
-#define GIFT_DROP_SPEED 3
+#define GIFT_FLY_SPEED 9
+
+#define MARKER_SIZE 32
+#define MARKER_SPEED 4
+#define MARKER_SCROLL_COMP 2 /* Factor de compensación del scroll al subir (0 = sin ajuste). */
+#define MARKER_MIN_Y 0
+#define MARKER_MAX_Y 160
+#define GIFT_SIZE 32
+#define SANTA_THROW_SPAWN_FRAME 4
 
 #define SANTA_WIDTH 80
 #define SANTA_HEIGHT 128
@@ -58,6 +66,7 @@
 #define DEPTH_SANTA (SPR_MIN_DEPTH + 24)
 #define DEPTH_EFFECTS (DEPTH_SANTA + 8)
 #define DEPTH_BACKGROUND (DEPTH_EFFECTS + 8)
+#define DEPTH_MARKERS (DEPTH_BACKGROUND - 2)
 
 enum {
     CHIMNEY_INACTIVE = 0,
@@ -89,9 +98,18 @@ typedef struct {
     Sprite* sprite;
     s16 x;
     s16 y;
-    s16 vy;
+    s16 targetX;
+    s16 targetY;
     u8 active;
+    u8 targetSide;
 } GiftDrop;
+
+typedef struct {
+    Sprite* sprite;
+    s16 x;
+    s16 y;
+    s8 direction;
+} LauncherMarker;
 
 typedef struct {
     Sprite* sprite;
@@ -105,7 +123,12 @@ static const GameInertia santaInertia = { 1, 1, 2, 5 }; /**< Configura aceleraci
 static Chimney chimneys[NUM_CHIMNEYS]; /**< Chimeneas activas en el tejado. */
 static Enemy enemies[NUM_ENEMIES]; /**< Enemigos que roban regalos. */
 static GiftDrop drops[NUM_GIFT_DROPS]; /**< Regalos en caída hacia chimeneas. */
+static LauncherMarker launcherMarkers[2]; /**< Marcadores laterales para apuntar lanzamientos. */
 static Santa santa; /**< Control del sprite principal. */
+static u8 santaThrowing; /**< TRUE mientras Santa ejecuta la animación de lanzamiento. */
+static u8 santaThrowTarget; /**< Lado objetivo del regalo (0 izquierda, 1 derecha). */
+static u8 santaThrowGiftSpawned; /**< TRUE cuando el regalo ya se generó en la animación. */
+static u8 santaReturnToIdle; /**< Solicitud de volver a la animación base. */
 
 static Map* mapBackground; /**< Mapa del plano B para el tejado. */
 static s16 backgroundOffsetY; /**< Offset vertical del scroll de fondo. */
@@ -133,24 +156,30 @@ static void initSanta(void);
 static void initChimneys(void);
 static void initEnemies(void);
 static void initGiftDrops(void);
+static void initLauncherMarkers(void);
 static void initGiftCounterSprites(void);
 static s16 advanceVerticalScroll(void);
 static void applyBackgroundScroll(void);
 static void updateChimneys(s16 scrollStep);
 static void updateEnemies(s16 scrollStep);
 static void updateGiftDrops(s16 scrollStep);
+static void updateLauncherMarkers(s16 scrollStep);
+static void updateSantaThrowState(void);
 static void respawnEnemyFromTop(Enemy* enemy, u8 offsetIndex);
 static void resetChimneySpawnCursor(void);
 static s16 takeNextChimneySpawnY(void);
 static s16 pickChimneyX(void);
 static u8 rollChimneyProhibited(void);
 static void updateGiftCounter(void);
-static void spawnGiftDrop(void);
-static void handleGiftDrop(void);
+static void spawnGiftDrop(u8 targetSide);
+static void startGiftThrow(u8 targetSide);
+static void resolveGiftDropAtTarget(const GiftDrop* drop);
+static Chimney* findChimneyAtPoint(s16 x, s16 y);
+static s16 approachValue(s16 current, s16 target, s16 step);
 static void checkEnemyCollision(void);
 static void startRecovery(void);
 static void updateRecovery(void);
-static u8 isSantaOverChimney(const Chimney* chimney);
+static void onSantaFrameChange(Sprite* sprite);
 
 /** @brief Configura recursos, estado inicial de la fase. */
 void minigameDelivery_init(void) {
@@ -160,6 +189,8 @@ void minigameDelivery_init(void) {
     VDP_clearPlane(BG_A, TRUE);
     VDP_clearPlane(BG_B, TRUE);
     VDP_setPlaneSize(64, 64, TRUE);
+    SPR_reset();
+    kprintf("[SANTA] starting Santa init at pos=(%d,%d)", (WORLD_WIDTH - SANTA_WIDTH) / 2, SANTA_START_Y);
 
     frameCounter = 0;
     giftsRemaining = DELIVERY_TARGET;
@@ -168,6 +199,10 @@ void minigameDelivery_init(void) {
     dropCooldown = 0;
     recoveringFrames = 0;
     previousInput = 0;
+    santaThrowing = FALSE;
+    santaThrowGiftSpawned = FALSE;
+    santaReturnToIdle = FALSE;
+    santaThrowTarget = 0;
     backgroundOffsetY = SCROLL_LOOP_PX;
     backgroundOffsetY %= SCROLL_LOOP_PX;
     scrollAccumulator = FIX16(0);
@@ -175,11 +210,12 @@ void minigameDelivery_init(void) {
 
     
     initBackground();
+    initSanta();
     initChimneys();
     initEnemies();
     initGiftDrops();
+    initLauncherMarkers();
     initGiftCounterSprites();
-    initSanta();
     updateGiftCounter();
 
     gameCore_initTimer(&gameTimer, 120);
@@ -194,6 +230,15 @@ void minigameDelivery_update(void) {
     snowEffect_update(&snowEffect, frameCounter);
 
     u16 input = gameCore_readInput();
+    updateSantaThrowState();
+
+    static u8 santaMissingLogged = FALSE;
+    if (santa.sprite == NULL && !santaMissingLogged) {
+        kprintf("[SANTA][ERROR] missing sprite at update frame=%u", frameCounter);
+        santaMissingLogged = TRUE;
+    } else if (santa.sprite && (frameCounter % 120) == 0) {
+        kprintf("[SANTA] frame=%u pos=(%d,%d) depth=%d visible_check", frameCounter, santa.x, santa.y, DEPTH_SANTA);
+    }
 
     if (recoveringFrames > 0) {
         updateRecovery();
@@ -215,8 +260,13 @@ void minigameDelivery_update(void) {
             dropCooldown--;
         }
 
-        if ((input & BUTTON_A) && !(previousInput & BUTTON_A) && dropCooldown == 0) {
-            handleGiftDrop();
+        const u8 pressedA = (input & BUTTON_A) && !(previousInput & BUTTON_A);
+        const u8 pressedB = (input & BUTTON_B) && !(previousInput & BUTTON_B);
+
+        if (pressedA) {
+            startGiftThrow(0);
+        } else if (pressedB) {
+            startGiftThrow(1);
         }
     }
 
@@ -224,6 +274,7 @@ void minigameDelivery_update(void) {
     applyBackgroundScroll();
     updateChimneys(scrollStep);
     updateEnemies(scrollStep);
+    updateLauncherMarkers(scrollStep);
     updateGiftDrops(scrollStep);
 
     SPR_setPosition(santa.sprite, santa.x, santa.y);
@@ -263,7 +314,9 @@ static void initBackground(void) {
     if (image_fondo_tejados_pal.data) {
         PAL_setPalette(PAL_COMMON, image_fondo_tejados_pal.data, CPU);
     }
-    if (sprite_santa_car.palette) {
+    if (sprite_santa_car_volando.palette) {
+        PAL_setPalette(PAL_PLAYER, sprite_santa_car_volando.palette->data, CPU);
+    } else if (sprite_santa_car.palette) {
         PAL_setPalette(PAL_PLAYER, sprite_santa_car.palette->data, CPU);
     }
     if (sprite_duende_malo_volador.palette) {
@@ -281,7 +334,7 @@ static void initBackground(void) {
     }
     SYS_doVBlankProcess();
 
-    snowEffect_init(&snowEffect, &globalTileIndex, 1, -2);
+    snowEffect_init(&snowEffect, &globalTileIndex, 2, -2);
 }
 
 static void initSanta(void) {
@@ -290,10 +343,20 @@ static void initSanta(void) {
     santa.vx = 0;
     santa.vy = 0;
 
-    santa.sprite = SPR_addSpriteSafe(&sprite_santa_car, santa.x, santa.y,
+    kprintf("[SANTA] starting Santa init at pos=(%d,%d)", santa.x, santa.y);
+    santa.sprite = SPR_addSpriteSafe(&sprite_santa_car_volando, santa.x, santa.y,
         TILE_ATTR(PAL_PLAYER, FALSE, FALSE, FALSE));
-    SPR_setDepth(santa.sprite, DEPTH_SANTA);
-    SPR_setAutoAnimation(santa.sprite, TRUE);
+    if (santa.sprite) {
+        kprintf("[SANTA] sprite created successfully");
+        SPR_setDepth(santa.sprite, DEPTH_SANTA);
+        SPR_setAutoAnimation(santa.sprite, TRUE);
+        SPR_setAnimationLoop(santa.sprite, TRUE);
+        SPR_setFrameChangeCallback(santa.sprite, onSantaFrameChange);
+        SPR_setVisibility(santa.sprite, VISIBLE);
+        kprintf("[SANTA] sprite ok depth=%d pos=(%d,%d)", DEPTH_SANTA, santa.x, santa.y);
+    } else {
+        kprintf("[SANTA][ERROR] sprite not created");
+    }
 }
 
 static void initChimneys(void) {
@@ -350,13 +413,40 @@ static void initEnemies(void) {
 static void initGiftDrops(void) {
     memset(drops, 0, sizeof(drops));
     for (u8 i = 0; i < NUM_GIFT_DROPS; i++) {
-        drops[i].sprite = SPR_addSpriteSafe(&sprite_regalo_entrega, 0, 0,
-            TILE_ATTR(PAL_PLAYER, FALSE, FALSE, FALSE));
+        drops[i].sprite = SPR_addSpriteSafe(&sprite_regalo, 0, 0,
+            TILE_ATTR(PAL_EFFECT, FALSE, FALSE, FALSE));
         drops[i].active = FALSE;
-        drops[i].vy = GIFT_DROP_SPEED;
+        drops[i].targetSide = 0;
+        drops[i].targetX = 0;
+        drops[i].targetY = 0;
         if (drops[i].sprite) {
             SPR_setDepth(drops[i].sprite, DEPTH_EFFECTS);
+            SPR_setAutoAnimation(drops[i].sprite, FALSE);
+            SPR_setAnim(drops[i].sprite, 0);
             SPR_setVisibility(drops[i].sprite, HIDDEN);
+        }
+    }
+}
+
+static void initLauncherMarkers(void) {
+    memset(launcherMarkers, 0, sizeof(launcherMarkers));
+
+    launcherMarkers[0].x = CHIMNEY_X_LEFT;
+    launcherMarkers[0].y = MARKER_MIN_Y;
+    launcherMarkers[0].direction = MARKER_SPEED;
+
+    launcherMarkers[1].x = CHIMNEY_X_RIGHT;
+    launcherMarkers[1].y = MARKER_MAX_Y;
+    launcherMarkers[1].direction = -MARKER_SPEED;
+
+    for (u8 i = 0; i < 2; i++) {
+        LauncherMarker* marker = &launcherMarkers[i];
+        marker->sprite = SPR_addSpriteSafe(&sprite_marca_lanzador, marker->x, marker->y,
+            TILE_ATTR(PAL_PLAYER, FALSE, FALSE, FALSE));
+        if (marker->sprite) {
+            SPR_setDepth(marker->sprite, DEPTH_MARKERS);
+            SPR_setAutoAnimation(marker->sprite, FALSE);
+            SPR_setVisibility(marker->sprite, VISIBLE);
         }
     }
 }
@@ -551,24 +641,67 @@ static void updateEnemies(s16 scrollStep) {
     }
 }
 
+static void updateLauncherMarkers(s16 scrollStep) {
+    for (u8 i = 0; i < 2; i++) {
+        LauncherMarker* marker = &launcherMarkers[i];
+        s16 delta = marker->direction;
+        if (delta < 0 && scrollStep > 0 && MARKER_SCROLL_COMP > 0) {
+            delta -= (scrollStep * MARKER_SCROLL_COMP); /* Ajustable para igualar tiempos subida/bajada. */
+        }
+
+        marker->y += delta;
+
+        if (marker->y <= MARKER_MIN_Y) {
+            marker->y = MARKER_MIN_Y;
+            marker->direction = MARKER_SPEED;
+            kprintf("[MARKER %d] bounce TOP y=%d scroll=%d time=%d", i, marker->y, scrollStep, gameTimer.elapsed);
+        } else if (marker->y >= MARKER_MAX_Y) {
+            marker->y = MARKER_MAX_Y;
+            marker->direction = -MARKER_SPEED;
+            kprintf("[MARKER %d] bounce BOTTOM y=%d scroll=%d time=%d", i, marker->y, scrollStep, gameTimer.elapsed);
+        }
+
+        if (marker->sprite) {
+            SPR_setPosition(marker->sprite, marker->x, marker->y);
+            SPR_setDepth(marker->sprite, DEPTH_MARKERS);
+            SPR_setVisibility(marker->sprite, VISIBLE);
+        }
+    }
+}
+
 static void updateGiftDrops(s16 scrollStep) {
     for (u8 i = 0; i < NUM_GIFT_DROPS; i++) {
         GiftDrop* drop = &drops[i];
         if (!drop->active || drop->sprite == NULL) continue;
 
-        drop->y += drop->vy;
         if (scrollStep) {
             drop->y += scrollStep;
+            drop->targetY += scrollStep;
         }
-        if (drop->y > SCREEN_HEIGHT) {
-            drop->active = FALSE;
-            SPR_setVisibility(drop->sprite, HIDDEN);
-            continue;
-        }
+
+        drop->x = approachValue(drop->x, drop->targetX, GIFT_FLY_SPEED);
+        drop->y = approachValue(drop->y, drop->targetY, GIFT_FLY_SPEED);
 
         SPR_setPosition(drop->sprite, drop->x, drop->y);
         SPR_setVisibility(drop->sprite, VISIBLE);
+
+        if ((drop->x == drop->targetX) && (drop->y == drop->targetY)) {
+            resolveGiftDropAtTarget(drop);
+            drop->active = FALSE;
+            SPR_setVisibility(drop->sprite, HIDDEN);
+        }
     }
+}
+
+static s16 approachValue(s16 current, s16 target, s16 step) {
+    if (current < target) {
+        s16 next = current + step;
+        return (next > target) ? target : next;
+    } else if (current > target) {
+        s16 next = current - step;
+        return (next < target) ? target : next;
+    }
+    return current;
 }
 
 static void updateGiftCounter(void) {
@@ -577,36 +710,125 @@ static void updateGiftCounter(void) {
     giftCounter_render(&giftCounterHUD, displayValue);
 }
 
-static void spawnGiftDrop(void) {
+static Chimney* findChimneyAtPoint(s16 x, s16 y) {
+    for (u8 i = 0; i < NUM_CHIMNEYS; i++) {
+        Chimney* chimney = &chimneys[i];
+        if (chimney->prohibited || chimney->state != CHIMNEY_ACTIVE) continue;
+
+        if (gameCore_checkCollision(x, y, GIFT_SIZE, GIFT_SIZE,
+                chimney->x, chimney->y, CHIMNEY_SIZE, CHIMNEY_SIZE)) {
+            return chimney;
+        }
+    }
+
+    return NULL;
+}
+
+static void resolveGiftDropAtTarget(const GiftDrop* drop) {
+    if (drop == NULL) return;
+
+    Chimney* chimney = findChimneyAtPoint(drop->targetX, drop->targetY);
+    if (chimney == NULL) {
+        kprintf("[THROW] gift landed no chimney x=%d y=%d", drop->targetX, drop->targetY);
+        return;
+    }
+
+    chimney->state = CHIMNEY_COOLDOWN;
+    chimney->cooldown = CHIMNEY_RESET_FRAMES;
+    chimney->blink = 0;
+
+    if (deliveriesCompleted < DELIVERY_TARGET) {
+        deliveriesCompleted++;
+    }
+    if (giftsRemaining > 0) {
+        giftsRemaining--;
+    }
+    kprintf("[THROW] gift delivered at chimney x=%d y=%d deliveries=%u giftsLeft=%u",
+        chimney->x, chimney->y, deliveriesCompleted, giftsRemaining);
+}
+
+static void spawnGiftDrop(u8 targetSide) {
     for (u8 i = 0; i < NUM_GIFT_DROPS; i++) {
         GiftDrop* drop = &drops[i];
         if (drop->active || drop->sprite == NULL) continue;
 
         drop->active = TRUE;
-        drop->x = santa.x + (SANTA_WIDTH / 2) - 12;
-        drop->y = santa.y + (SANTA_HEIGHT / 2);
+        drop->targetSide = targetSide;
+        drop->x = santa.x + 38;
+        drop->y = santa.y + 110;
+        const LauncherMarker* marker = &launcherMarkers[(targetSide != 0) ? 1 : 0];
+        const s16 markerCenterX = marker->x + (MARKER_SIZE / 2);
+        const s16 markerCenterY = marker->y + (MARKER_SIZE / 2);
+        drop->targetX = markerCenterX - (GIFT_SIZE / 2);
+        drop->targetY = markerCenterY - (GIFT_SIZE / 2);
         SPR_setPosition(drop->sprite, drop->x, drop->y);
         SPR_setVisibility(drop->sprite, VISIBLE);
+        kprintf("[THROW] spawn gift idx=%u targetSide=%u pos=(%d,%d) target=(%d,%d)", i, targetSide, drop->x, drop->y, drop->targetX, drop->targetY);
         break;
     }
 }
 
-static void handleGiftDrop(void) {
+static void startGiftThrow(u8 targetSide) {
     if (giftsRemaining == 0) return;
+    if (dropCooldown > 0) return;
+    if (santaThrowing) return;
 
-    for (u8 i = 0; i < NUM_CHIMNEYS; i++) {
-        Chimney* chimney = &chimneys[i];
-        if (chimney->prohibited || chimney->state != CHIMNEY_ACTIVE) continue;
-
-        if (isSantaOverChimney(chimney)) {
-            chimney->state = CHIMNEY_COOLDOWN;
-            chimney->cooldown = CHIMNEY_RESET_FRAMES;
-            chimney->blink = 0;
-            deliveriesCompleted++;
-            giftsRemaining--;
-            dropCooldown = DROP_COOLDOWN_FRAMES;
-            spawnGiftDrop();
+    u8 hasSlot = FALSE;
+    for (u8 i = 0; i < NUM_GIFT_DROPS; i++) {
+        if (!drops[i].active && drops[i].sprite != NULL) {
+            hasSlot = TRUE;
             break;
+        }
+    }
+    if (!hasSlot) return;
+
+    santaThrowing = TRUE;
+    santaThrowTarget = targetSide;
+    santaThrowGiftSpawned = FALSE;
+    santaReturnToIdle = FALSE;
+    dropCooldown = DROP_COOLDOWN_FRAMES;
+    kprintf("[THROW] start side=%u giftsRemaining=%u cooldown=%d", santaThrowTarget, giftsRemaining, dropCooldown);
+
+    if (santa.sprite) {
+        SPR_setAnim(santa.sprite, 1);
+        SPR_setAnimationLoop(santa.sprite, FALSE);
+        SPR_setAutoAnimation(santa.sprite, TRUE);
+    }
+}
+
+static void updateSantaThrowState(void) {
+    if (!santaThrowing) return;
+
+    if (santaReturnToIdle || santa.sprite == NULL) {
+        santaThrowing = FALSE;
+        santaThrowGiftSpawned = FALSE;
+        santaReturnToIdle = FALSE;
+        if (santa.sprite) {
+            SPR_setAnim(santa.sprite, 0);
+            SPR_setAnimationLoop(santa.sprite, TRUE);
+            SPR_setAutoAnimation(santa.sprite, TRUE);
+            kprintf("[THROW] Santa back to idle");
+        }
+        if (santa.sprite == NULL) {
+            kprintf("[THROW][WARN] Santa sprite NULL during throw cleanup");
+        }
+    }
+}
+
+static void onSantaFrameChange(Sprite* sprite) {
+    if (sprite == NULL || sprite != santa.sprite) return;
+
+    if (santaThrowing) {
+        if (!santaThrowGiftSpawned && sprite->frameInd >= SANTA_THROW_SPAWN_FRAME) {
+            santaThrowGiftSpawned = TRUE;
+            spawnGiftDrop(santaThrowTarget);
+            kprintf("[THROW] Santa frame=%d spawn gift side=%u", sprite->frameInd, santaThrowTarget);
+        }
+
+        Animation* anim = sprite->animation;
+        if ((anim == NULL) || (anim->numFrame == 0) || (sprite->frameInd >= (anim->numFrame - 1))) {
+            santaReturnToIdle = TRUE;
+            kprintf("[THROW] animation finished frame=%d", sprite->frameInd);
         }
     }
 }
@@ -633,10 +855,19 @@ static void checkEnemyCollision(void) {
 static void startRecovery(void) {
     recoveringFrames = RECOVERY_FRAMES;
     dropCooldown = DROP_COOLDOWN_FRAMES;
+    santaThrowing = FALSE;
+    santaThrowGiftSpawned = FALSE;
+    santaReturnToIdle = FALSE;
+    santaThrowTarget = 0;
     santa.x = (WORLD_WIDTH - SANTA_WIDTH) / 2;
     santa.y = SANTA_START_Y;
     santa.vx = 0;
     santa.vy = 0;
+    if (santa.sprite) {
+        SPR_setAnim(santa.sprite, 0);
+        SPR_setAnimationLoop(santa.sprite, TRUE);
+        SPR_setAutoAnimation(santa.sprite, TRUE);
+    }
     SPR_setPosition(santa.sprite, santa.x, santa.y);
 }
 
@@ -655,14 +886,4 @@ static void updateRecovery(void) {
     if (recoveringFrames == 0 && santa.sprite) {
         SPR_setVisibility(santa.sprite, VISIBLE);
     }
-}
-
-static u8 isSantaOverChimney(const Chimney* chimney) {
-    if (chimney == NULL) return FALSE;
-
-    s16 santaHitX = santa.x + ((SANTA_WIDTH - SANTA_HITBOX_WIDTH) / 2);
-    s16 santaHitY = santa.y + (SANTA_HEIGHT - SANTA_HITBOX_HEIGHT);
-
-    return gameCore_checkCollision(santaHitX, santaHitY, SANTA_HITBOX_WIDTH, SANTA_HITBOX_HEIGHT,
-        chimney->x, chimney->y, CHIMNEY_SIZE, CHIMNEY_SIZE);
 }
