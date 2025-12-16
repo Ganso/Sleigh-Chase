@@ -711,7 +711,7 @@ void minigameBells_init(void) {
     initBullets();
 
     /* Timer */
-    gameCore_initTimer(&gameTimer, 999);
+    gameCore_initTimer(&gameTimer, 0);
 
     /* Variables */
     bellsCompleted = 0;

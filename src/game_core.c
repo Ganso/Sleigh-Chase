@@ -15,27 +15,32 @@ u16 gameCore_readInput(void) {
 /**
  * @brief Inicializa un temporizador en segundos.
  * @param timer Estructura de temporizador a preparar.
- * @param seconds Duración total en segundos antes de marcar derrota.
+ * @param seconds Duración de referencia en segundos (0 = sin límite).
  */
 void gameCore_initTimer(GameTimer *timer, u16 seconds) {
-    timer->elapsed = 0;              /**< El tiempo arranca en cero frames. */
-    timer->max_frames = seconds * 60; /**< Frames máximos antes de derrota. */
-    timer->state = 0;                /**< Estado inicial: corriendo. */
+    timer->elapsed = 0;               /**< El tiempo arranca en cero frames. */
+    timer->max_frames = seconds ? (seconds * 60) : 0; /**< Frames de referencia (0 = sin límite). */
+    timer->state = 0;                 /**< Estado inicial: corriendo. */
 }
 
 /**
- * @brief Avanza el temporizador y reporta el tiempo restante.
+ * @brief Avanza el temporizador y reporta el tiempo restante o transcurrido.
  * @param timer Cronómetro a actualizar.
- * @return Frames restantes antes de agotar el tiempo.
+ * @return Frames restantes si existe límite; frames transcurridos si max_frames es 0.
  */
 s32 gameCore_updateTimer(GameTimer *timer) {
     if (timer->state == 0) {
         timer->elapsed++;
-        if (timer->elapsed >= timer->max_frames) {
-            timer->state = 2;  /* DEFEAT por timeout */
-            return 0;
-        }
     }
+
+    if (timer->max_frames == 0) {
+        return (s32)timer->elapsed;
+    }
+
+    if (timer->elapsed >= timer->max_frames) {
+        return 0;
+    }
+
     return timer->max_frames - timer->elapsed;
 }
 
