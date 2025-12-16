@@ -43,6 +43,46 @@ enum {
 
 /* Variables globales */
 static u8 currentPhase = PHASE_INTRO; /**< Fase actual del bucle principal. */
+static u32 phaseTimerStart = 0;       /**< Tiempo de inicio de la fase en unidades de 1/256s. */
+static u32 phaseDurationsSeconds[PHASE_END]; /**< Tiempo consumido por fase. */
+
+static void startPhaseTimer(void) {
+    phaseTimerStart = getTime(1);
+    const u32 startSec = phaseTimerStart / TIMEPERSECOND;
+    kprintf("Fase iniciada en %lu s (raw=%lu)\n",
+        (unsigned long)startSec, (unsigned long)phaseTimerStart);
+}
+
+static void stopPhaseTimer(u8 phaseId) {
+    if (phaseId >= PHASE_END) return;
+    const u32 now = getTime(1);
+    const u32 elapsedUnits = now - phaseTimerStart; /* Unidades de 1/256s */
+    const u32 elapsedSeconds = (elapsedUnits + (TIMEPERSECOND / 2)) / TIMEPERSECOND; /* Redondeo */
+    phaseDurationsSeconds[phaseId] = elapsedSeconds;
+    kprintf("Fase %u terminada: %lu s (raw=%lu, startRaw=%lu)\n",
+        phaseId,
+        (unsigned long)elapsedSeconds,
+        (unsigned long)elapsedUnits,
+        (unsigned long)phaseTimerStart);
+}
+
+static void drawPhaseDurations(u16 startY) {
+    char buffer[32];
+
+    VDP_drawText("Tiempo por fase (s)", 7, startY);
+
+    sprintf(buffer, "Fase 1: %lus", (unsigned long)phaseDurationsSeconds[PHASE_PICKUP]);
+    VDP_drawText(buffer, 8, startY + 2);
+
+    sprintf(buffer, "Fase 2: %lus", (unsigned long)phaseDurationsSeconds[PHASE_DELIVERY]);
+    VDP_drawText(buffer, 8, startY + 3);
+
+    sprintf(buffer, "Fase 3: %lus", (unsigned long)phaseDurationsSeconds[PHASE_BELLS]);
+    VDP_drawText(buffer, 8, startY + 4);
+
+    sprintf(buffer, "Fase 4: %lus", (unsigned long)phaseDurationsSeconds[PHASE_CELEBRATION]);
+    VDP_drawText(buffer, 8, startY + 5);
+}
 
 /**
  * @brief Punto de entrada principal del cartucho.
@@ -74,12 +114,14 @@ int main() {
                 /* Fase 1: Recogida - Polo Norte */
                 KLog("Fase 1: Recogida");
                 cutscene_phase1_intro();
+                startPhaseTimer();
                 minigamePickup_init();
                 while (!minigamePickup_isComplete()) {
                     minigamePickup_update();
                     minigamePickup_render();
                     JOY_readJoypad(JOY_1);
                 }
+                stopPhaseTimer(PHASE_PICKUP);
                 gameCore_fadeToBlack();
                 currentPhase = PHASE_DELIVERY;
                 break;
@@ -89,12 +131,14 @@ int main() {
                 KLog("Fase 2: Entrega");
                 cutscene_phase2_intro();
                 audio_play_phase2();
+                startPhaseTimer();
                 minigameDelivery_init();
                 while (!minigameDelivery_isComplete()) {
                     minigameDelivery_update();
                     minigameDelivery_render();
                     JOY_readJoypad(JOY_1);
                 }
+                stopPhaseTimer(PHASE_DELIVERY);
                 gameCore_fadeToBlack();
                 currentPhase = PHASE_BELLS;
                 break;
@@ -103,11 +147,13 @@ int main() {
                 /* Fase 3: Campanadas - IMPLEMENTADA */
                 KLog("Fase 3: Campanadas");
                 cutscene_phase3_intro();
+                startPhaseTimer();
                 minigameBells_init();
                 while (!minigameBells_isComplete()) {
                     minigameBells_update();
                     minigameBells_render();
                 }
+                stopPhaseTimer(PHASE_BELLS);
                 gameCore_fadeToBlack();
                 currentPhase = PHASE_CELEBRATION;
                 break;
@@ -116,12 +162,14 @@ int main() {
                 /* Fase 4: Celebración */
                 KLog("Fase 4: Celebración");
                 audio_play_phase4();
+                startPhaseTimer();
                 minigameCelebration_init();
                 while (!minigameCelebration_isComplete()) {
                     minigameCelebration_update();
                     minigameCelebration_render();
                     JOY_readJoypad(JOY_1);
                 }
+                stopPhaseTimer(PHASE_CELEBRATION);
                 gameCore_fadeToBlack();
                 currentPhase = PHASE_END;
                 break;
@@ -134,6 +182,7 @@ int main() {
                 VDP_clearPlane(BG_B, TRUE);
                 VDP_drawText("!FELIZ 2026!", 10, 10);
                 VDP_drawText("Proyecto Navidad Mega Drive", 5, 14);
+                drawPhaseDurations(16);
                 SYS_doVBlankProcess();
                 JOY_waitPress(JOY_ALL, BUTTON_ALL);
                 return 0;
@@ -145,3 +194,4 @@ int main() {
 
     return 0;
 }
+

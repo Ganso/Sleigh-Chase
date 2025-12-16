@@ -9,6 +9,7 @@ Notas para cualquier asistente que edite el proyecto. Mantener este resumen visi
 - No reescribas ficheros generados por SGDK (`res/*.h`, `resources_*.h`, `res_geesebumps.h`). Si hacen falta nuevos assets, se editan los `.res` y se regeneran localmente.
 - Respeta la estructura de minijuegos: cada fase expone `*_init`, `*_update`, `*_render`, `*_isComplete` y el bucle principal orquesta el avance de fase.
 - Usa el helper de logging de SGDK (`KLog`, `kprintf`, `KDebug_AlertNumber`) para depurar en emulador; no introduzcas `printf` estandar.
+- Nunca añadas las librerías stdio, stdlib o strings de C estándar: Vienen por defecto
 
 ## Flujo y arquitectura
 - `src/main.c` es el orquestador: fases `INTRO -> PICKUP -> DELIVERY -> BELLS -> CELEBRATION -> END`. Tras cada `*_isComplete()` se aplica `gameCore_fadeToBlack()` antes de avanzar.
