@@ -62,9 +62,12 @@
 #define TARGET_MARK_SIZE 16
 #define SANTA_THROW_SPAWN_FRAME 4
 #define GIFT_COUNTER_BLINK_INTERVAL_FRAMES 3 /* Intervalo de parpadeo del HUD. */
-#define SANTA_SPEED 3
-#define THROW_TARGET_RADIUS 50
-#define THROW_FALLBACK_OFFSET_Y 60
+#define GIFT_COUNTER_BLINK_DURATION_FRAMES 18 /* Duración total del parpadeo. */
+#define SANTA_SPEED 6
+#define SANTA_THROW_OFFSET_X 38
+#define SANTA_THROW_OFFSET_Y 110
+#define THROW_TARGET_RADIUS 100
+#define THROW_FALLBACK_OFFSET_X 60
 
 #define SANTA_WIDTH 80
 #define SANTA_HEIGHT 128
@@ -87,6 +90,7 @@ enum {
 typedef struct {
     Sprite* sprite;
     Sprite* blockedSprite;
+    Sprite* usedSprite;
     s16 x;
     s16 y;
     u8 state;
@@ -149,6 +153,7 @@ static Sprite* giftCounterTop; /**< Contador gráfico fila superior. */
 static Sprite* giftCounterBottom; /**< Contador gráfico fila inferior. */
 static GiftCounterHUD giftCounterHUD; /**< Configuración del contador de regalos. */
 static GiftCounterBlink giftCounterBlink; /**< Parpadeo compartido para el HUD. */
+static u16 giftCounterBlinkStartFrame; /**< Momento en el que comenz¢ el parpadeo. */
 
 static s16 nextChimneySpawnY; /**< Cursor vertical para nuevas chimeneas. */
 static u16 frameCounter; /**< Contador global de frames. */
@@ -238,6 +243,7 @@ void minigameDelivery_init(void) {
     updateEnemyActivation();
     updateGiftCounter();
 
+    giftCounterBlinkStartFrame = 0;
     gameCore_initTimer(&gameTimer, 0);
 
     XGM2_playPCM(snd_santa_hohoho, sizeof(snd_santa_hohoho), SOUND_PCM_CH_AUTO);
@@ -305,7 +311,7 @@ void minigameDelivery_update(void) {
     gameCore_updateTimer(&gameTimer);
     updateGiftCounter();
 
-    if (deliveriesCompleted >= DELIVERY_TARGET) {
+    if (giftCounterValue >= DELIVERY_TARGET) {
         phaseCompleted = TRUE;
     }
 
@@ -397,6 +403,9 @@ static void initChimneys(void) {
         chimneys[i].blockedSprite = SPR_addSpriteSafe(&sprite_chimenea_prohibida,
             chimneys[i].x, chimneys[i].y,
             TILE_ATTR(PAL_PLAYER, FALSE, FALSE, FALSE));
+        chimneys[i].usedSprite = SPR_addSpriteSafe(&sprite_chimenea_utilizada,
+            chimneys[i].x, chimneys[i].y,
+            TILE_ATTR(PAL_PLAYER, FALSE, FALSE, FALSE));
         const u8 visible = (chimneys[i].y + CHIMNEY_SIZE > 0) && (chimneys[i].y < SCREEN_HEIGHT);
         if (chimneys[i].sprite) {
             SPR_setDepth(chimneys[i].sprite, DEPTH_BACKGROUND);
@@ -407,6 +416,12 @@ static void initChimneys(void) {
             SPR_setDepth(chimneys[i].blockedSprite, DEPTH_BACKGROUND);
             SPR_setVisibility(chimneys[i].blockedSprite,
                 (chimneys[i].prohibited && visible) ? VISIBLE : HIDDEN);
+        }
+        if (chimneys[i].usedSprite) {
+            SPR_setDepth(chimneys[i].usedSprite, DEPTH_BACKGROUND);
+            SPR_setAutoAnimation(chimneys[i].usedSprite, TRUE);
+            SPR_setAnimationLoop(chimneys[i].usedSprite, TRUE);
+            SPR_setVisibility(chimneys[i].usedSprite, HIDDEN);
         }
     }
 }
@@ -549,7 +564,7 @@ static void updateChimneys(s16 scrollStep) {
     for (u8 i = 0; i < NUM_CHIMNEYS; i++) {
         Chimney* chimney = &chimneys[i];
 
-        if (chimney->toggleTimer > 0) {
+        if ((chimney->state != CHIMNEY_COOLDOWN) && chimney->toggleTimer > 0) {
             chimney->toggleTimer--;
             if (chimney->toggleTimer == 0) {
                 chimney->prohibited = !chimney->prohibited;
@@ -560,9 +575,6 @@ static void updateChimneys(s16 scrollStep) {
         if (chimney->state == CHIMNEY_COOLDOWN) {
             if (chimney->cooldown > 0) {
                 chimney->cooldown--;
-            } else {
-                chimney->state = CHIMNEY_ACTIVE;
-                chimney->blink = 0;
             }
         }
 
@@ -577,6 +589,9 @@ static void updateChimneys(s16 scrollStep) {
             chimney->cooldown = 0;
             chimney->blink = 0;
             chimney->toggleTimer = rollChimneyToggleFrames();
+            if (chimney->usedSprite) {
+                SPR_setVisibility(chimney->usedSprite, HIDDEN);
+            }
         }
 
         s16 screenX = chimney->x;
@@ -587,6 +602,9 @@ static void updateChimneys(s16 scrollStep) {
         if (chimney->blockedSprite) {
             SPR_setPosition(chimney->blockedSprite, screenX, chimney->y);
         }
+        if (chimney->usedSprite) {
+            SPR_setPosition(chimney->usedSprite, screenX, chimney->y);
+        }
 
         if (chimney->prohibited) {
             if (chimney->blockedSprite) {
@@ -595,12 +613,20 @@ static void updateChimneys(s16 scrollStep) {
             if (chimney->sprite) {
                 SPR_setVisibility(chimney->sprite, HIDDEN);
             }
+            if (chimney->usedSprite) {
+                SPR_setVisibility(chimney->usedSprite, HIDDEN);
+            }
             continue;
         }
 
         if (chimney->state == CHIMNEY_COOLDOWN) {
             /* Mantener visible durante cooldown para que no desaparezca. */
-            if (chimney->sprite) {
+            if (chimney->usedSprite) {
+                SPR_setVisibility(chimney->usedSprite, visible ? VISIBLE : HIDDEN);
+                if (chimney->sprite) {
+                    SPR_setVisibility(chimney->sprite, HIDDEN);
+                }
+            } else if (chimney->sprite) {
                 SPR_setVisibility(chimney->sprite, visible ? VISIBLE : HIDDEN);
             }
             if (chimney->blockedSprite) {
@@ -612,6 +638,9 @@ static void updateChimneys(s16 scrollStep) {
             }
             if (chimney->blockedSprite) {
                 SPR_setVisibility(chimney->blockedSprite, HIDDEN);
+            }
+            if (chimney->usedSprite) {
+                SPR_setVisibility(chimney->usedSprite, HIDDEN);
             }
         }
     }
@@ -873,6 +902,13 @@ static s16 abs16(s16 value) {
 }
 
 static void updateGiftCounter(void) {
+    if (giftCounterBlink.active) {
+        const u16 elapsed = frameCounter - giftCounterBlinkStartFrame;
+        if (elapsed >= GIFT_COUNTER_BLINK_DURATION_FRAMES) {
+            giftCounter_stopBlink(&giftCounterBlink);
+        }
+    }
+
     const u16 displayValue = giftCounter_getDisplayValue(&giftCounterBlink,
         giftCounterValue, frameCounter);
     giftCounter_render(&giftCounterHUD, displayValue);
@@ -911,12 +947,11 @@ static void onGiftSuccess(void) {
     if (giftCounterValue < DELIVERY_TARGET) {
         giftCounterValue++;
     }
-    if (deliveriesCompleted < DELIVERY_TARGET) {
-        deliveriesCompleted++;
-    }
+    deliveriesCompleted = giftCounterValue;
     if (previousValue != giftCounterValue) {
         giftCounter_startBlink(&giftCounterBlink, previousValue, giftCounterValue,
             GIFT_COUNTER_BLINK_INTERVAL_FRAMES);
+        giftCounterBlinkStartFrame = frameCounter;
     }
     updateEnemyActivation();
     updateGiftCounter();
@@ -927,9 +962,11 @@ static void onGiftFailure(void) {
     if (giftCounterValue > 0) {
         giftCounterValue--;
     }
+    deliveriesCompleted = giftCounterValue;
     if (previousValue != giftCounterValue) {
         giftCounter_startBlink(&giftCounterBlink, previousValue, giftCounterValue,
             GIFT_COUNTER_BLINK_INTERVAL_FRAMES);
+        giftCounterBlinkStartFrame = frameCounter;
     }
     updateEnemyActivation();
     updateGiftCounter();
@@ -1002,6 +1039,16 @@ static void resolveGiftDropAtTarget(const GiftDrop* drop) {
     chimney->state = CHIMNEY_COOLDOWN;
     chimney->cooldown = CHIMNEY_RESET_FRAMES;
     chimney->blink = 0;
+    if (chimney->usedSprite) {
+        SPR_setAnim(chimney->usedSprite, 0);
+        SPR_setAnimationLoop(chimney->usedSprite, TRUE);
+        SPR_setAutoAnimation(chimney->usedSprite, TRUE);
+        SPR_setPosition(chimney->usedSprite, chimney->x, chimney->y);
+        SPR_setVisibility(chimney->usedSprite, VISIBLE);
+        if (chimney->sprite) {
+            SPR_setVisibility(chimney->sprite, HIDDEN);
+        }
+    }
 
     onGiftSuccess();
     kprintf("[THROW] gift delivered at chimney x=%d y=%d deliveries=%u giftsLeft=%u",
@@ -1041,8 +1088,8 @@ static void spawnGiftDrop(void) {
 
     drop->active = TRUE;
     drop->pending = FALSE;
-    drop->x = santa.x + 38;
-    drop->y = santa.y + 110;
+    drop->x = santa.x + SANTA_THROW_OFFSET_X;
+    drop->y = santa.y + SANTA_THROW_OFFSET_Y;
     drop->fx = FIX16(drop->x);
     drop->fy = FIX16(drop->y);
     const s16 dx = drop->targetX - drop->x;
@@ -1072,6 +1119,10 @@ static Chimney* findNearestChimneyInRange(s16 centerX, s16 centerY, u16 radius, 
 
     for (u8 i = 0; i < NUM_CHIMNEYS; i++) {
         Chimney* chimney = &chimneys[i];
+        /* Se permite apuntar incluso a chimeneas encendidas; solo se excluyen las usadas en cooldown. */
+        if (chimney->state != CHIMNEY_ACTIVE) {
+            continue;
+        }
         const s16 chimneyCenterX = chimney->x + (CHIMNEY_SIZE / 2);
         const s16 chimneyCenterY = chimney->y + (CHIMNEY_SIZE / 2);
         const s32 dx = (s32)chimneyCenterX - (s32)centerX;
@@ -1113,14 +1164,14 @@ static void startGiftThrow(void) {
     pendingDrop->fx = FIX16(0);
     pendingDrop->fy = FIX16(0);
 
-    const s16 santaCenterX = santa.x + (SANTA_WIDTH / 2);
-    const s16 santaCenterY = santa.y + (SANTA_HEIGHT / 2);
+    const s16 santaThrowX = santa.x + SANTA_THROW_OFFSET_X;
+    const s16 santaThrowY = santa.y + SANTA_THROW_OFFSET_Y;
     s32 distanceSq = 0;
-    Chimney* nearest = findNearestChimneyInRange(santaCenterX, santaCenterY,
+    Chimney* nearest = findNearestChimneyInRange(santaThrowX, santaThrowY,
         THROW_TARGET_RADIUS, &distanceSq);
 
-    s16 targetCenterX = santaCenterX;
-    s16 targetCenterY = santaCenterY - THROW_FALLBACK_OFFSET_Y;
+    s16 targetCenterX = santaThrowX + THROW_FALLBACK_OFFSET_X;
+    s16 targetCenterY = santaThrowY;
     if (nearest != NULL) {
         targetCenterX = nearest->x + (CHIMNEY_SIZE / 2);
         targetCenterY = nearest->y + (CHIMNEY_SIZE / 2);

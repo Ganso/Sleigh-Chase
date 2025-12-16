@@ -13,6 +13,7 @@ extern const SpriteDefinition sprite_sombra_regalo;
 extern const SpriteDefinition sprite_icono_regalo;
 extern const SpriteDefinition sprite_chimenea;
 extern const SpriteDefinition sprite_chimenea_prohibida;
+extern const SpriteDefinition sprite_chimenea_utilizada;
 extern const SpriteDefinition sprite_santa_car_volando;
 extern const SpriteDefinition sprite_duende_malo_volador;
 extern const SpriteDefinition sprite_marca_lanzador;

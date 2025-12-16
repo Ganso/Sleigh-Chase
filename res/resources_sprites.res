@@ -12,6 +12,7 @@ SPRITE sprite_icono_regalo "sprites/IconoRegalo.png" 16 4 BEST 6
 # Fase 2
 SPRITE sprite_chimenea "sprites/Chimenea.png" 4 4 BEST 1
 SPRITE sprite_chimenea_prohibida "sprites/ChimeneaProhibida.png" 4 4 BEST 1
+SPRITE sprite_chimenea_utilizada "sprites/ChimeneaUtilizada.png" 4 4 BEST 1
 SPRITE sprite_santa_car_volando "sprites/SantaCar_Volando.png" 10 16 BEST 1
 SPRITE sprite_duende_malo_volador "sprites/DuendeMaloVolador.png" 4 4 BEST 1
 SPRITE sprite_marca_lanzador "sprites/MarcaLanzador.png" 4 4 BEST 1
