@@ -17,7 +17,6 @@ extern const SpriteDefinition sprite_chimenea_utilizada;
 extern const SpriteDefinition sprite_santa_car_volando;
 extern const SpriteDefinition sprite_duende_malo_volador;
 extern const SpriteDefinition sprite_marca_lanzador;
-extern const SpriteDefinition sprite_regalo_entrega;
 extern const SpriteDefinition sprite_campana;
 extern const SpriteDefinition sprite_campana_bn;
 extern const SpriteDefinition sprite_canon;

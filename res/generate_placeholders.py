@@ -146,16 +146,6 @@ ENTRIES = [
     },
     # Fase 2
     {
-        "path": "sprites/Regalos_Pequeno.png",
-        "resource_line": 'SPRITE sprite_regalo_entrega "sprites/Regalos_Pequeno.png" 3 3 BEST 1 # Placeholder (Regalo pequeno entrega tejados volador)',
-        "width": 24,
-        "height": 24,
-        "usage": "Regalo pequeno que se lanza a las chimeneas en fase de tejados",
-        "frames": 1,
-        "palette": "PAL_PLAYER con rojo y cinta dorada",
-        "visual": "Caja cubica miniatura con lazo superior, pensada para rotar en vuelo",
-    },
-    {
         "path": "sprites/Chimenea.png",
         "resource_line": 'SPRITE sprite_chimenea "sprites/Chimenea.png" 6 6 BEST 1 # Placeholder (Chimenea activable con regalo encendida)',
         "width": 48,

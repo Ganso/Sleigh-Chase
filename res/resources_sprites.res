@@ -16,8 +16,6 @@ SPRITE sprite_chimenea_utilizada "sprites/ChimeneaUtilizada.png" 4 4 BEST 1
 SPRITE sprite_santa_car_volando "sprites/SantaCar_Volando.png" 10 16 BEST 1
 SPRITE sprite_duende_malo_volador "sprites/DuendeMaloVolador.png" 4 4 BEST 1
 SPRITE sprite_marca_lanzador "sprites/MarcaLanzador.png" 4 4 BEST 1
-# sprite_regalo_entrega : Placeholder (Regalo pequeño entrega tejados volador)
-SPRITE sprite_regalo_entrega "sprites/Regalos_Pequeno.png" 3 3 BEST 1
 
 # Fase 3
 SPRITE sprite_campana "sprites/Campana.png" 4 4 
