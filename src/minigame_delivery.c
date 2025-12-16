@@ -54,6 +54,7 @@
 #define MARKER_MIN_Y 0
 #define MARKER_MAX_Y 160
 #define GIFT_SIZE 32
+#define TARGET_MARK_SIZE 16
 #define SANTA_THROW_SPAWN_FRAME 4
 
 #define SANTA_WIDTH 80
@@ -96,11 +97,18 @@ typedef struct {
 
 typedef struct {
     Sprite* sprite;
+    Sprite* targetSprite;
     s16 x;
     s16 y;
     s16 targetX;
     s16 targetY;
+    fix16 fx;
+    fix16 fy;
+    fix16 vx;
+    fix16 vy;
+    u16 framesToTarget;
     u8 active;
+    u8 pending;
     u8 targetSide;
 } GiftDrop;
 
@@ -175,7 +183,7 @@ static void spawnGiftDrop(u8 targetSide);
 static void startGiftThrow(u8 targetSide);
 static void resolveGiftDropAtTarget(const GiftDrop* drop);
 static Chimney* findChimneyAtPoint(s16 x, s16 y);
-static s16 approachValue(s16 current, s16 target, s16 step);
+static s16 abs16(s16 value);
 static void checkEnemyCollision(void);
 static void startRecovery(void);
 static void updateRecovery(void);
@@ -419,11 +427,23 @@ static void initGiftDrops(void) {
         drops[i].targetSide = 0;
         drops[i].targetX = 0;
         drops[i].targetY = 0;
+        drops[i].fx = FIX16(0);
+        drops[i].fy = FIX16(0);
+        drops[i].vx = FIX16(0);
+        drops[i].vy = FIX16(0);
+        drops[i].framesToTarget = 0;
+        drops[i].pending = FALSE;
+        drops[i].targetSprite = SPR_addSpriteSafe(&sprite_marca_x, 0, 0,
+            TILE_ATTR(PAL_PLAYER, FALSE, FALSE, FALSE));
         if (drops[i].sprite) {
             SPR_setDepth(drops[i].sprite, DEPTH_EFFECTS);
             SPR_setAutoAnimation(drops[i].sprite, FALSE);
             SPR_setAnim(drops[i].sprite, 0);
             SPR_setVisibility(drops[i].sprite, HIDDEN);
+        }
+        if (drops[i].targetSprite) {
+            SPR_setDepth(drops[i].targetSprite, DEPTH_MARKERS);
+            SPR_setVisibility(drops[i].targetSprite, HIDDEN);
         }
     }
 }
@@ -672,36 +692,63 @@ static void updateLauncherMarkers(s16 scrollStep) {
 static void updateGiftDrops(s16 scrollStep) {
     for (u8 i = 0; i < NUM_GIFT_DROPS; i++) {
         GiftDrop* drop = &drops[i];
-        if (!drop->active || drop->sprite == NULL) continue;
+        const u8 hasTarget = drop->pending || drop->active;
+        if (!hasTarget) continue;
 
         if (scrollStep) {
-            drop->y += scrollStep;
             drop->targetY += scrollStep;
+            if (drop->active) {
+                drop->fy += FIX16(scrollStep);
+            }
         }
 
-        drop->x = approachValue(drop->x, drop->targetX, GIFT_FLY_SPEED);
-        drop->y = approachValue(drop->y, drop->targetY, GIFT_FLY_SPEED);
+        if (drop->active && drop->framesToTarget > 0) {
+            drop->framesToTarget--;
+        }
 
-        SPR_setPosition(drop->sprite, drop->x, drop->y);
-        SPR_setVisibility(drop->sprite, VISIBLE);
+        if (drop->active && drop->sprite) {
+            drop->fx += drop->vx;
+            drop->fy += drop->vy;
 
-        if ((drop->x == drop->targetX) && (drop->y == drop->targetY)) {
-            resolveGiftDropAtTarget(drop);
-            drop->active = FALSE;
-            SPR_setVisibility(drop->sprite, HIDDEN);
+            drop->x = F16_toInt(drop->fx);
+            drop->y = F16_toInt(drop->fy);
+
+            SPR_setPosition(drop->sprite, drop->x, drop->y);
+            SPR_setVisibility(drop->sprite, VISIBLE);
+        }
+
+        if (drop->targetSprite) {
+            const s16 markOffset = (GIFT_SIZE - TARGET_MARK_SIZE) / 2;
+            const s16 targetMarkX = drop->targetX + markOffset;
+            const s16 targetMarkY = drop->targetY + markOffset;
+            SPR_setDepth(drop->targetSprite, DEPTH_MARKERS);
+            SPR_setPosition(drop->targetSprite, targetMarkX, targetMarkY);
+            SPR_setVisibility(drop->targetSprite, VISIBLE);
+        }
+
+        if (drop->active && drop->sprite) {
+            const u8 arrivedByFrames = (drop->framesToTarget == 0);
+            const u8 closeEnough = (abs16(drop->x - drop->targetX) <= 1) && (abs16(drop->y - drop->targetY) <= 1);
+            if (arrivedByFrames || closeEnough) {
+                drop->x = drop->targetX;
+                drop->y = drop->targetY;
+                drop->fx = FIX16(drop->x);
+                drop->fy = FIX16(drop->y);
+                SPR_setPosition(drop->sprite, drop->x, drop->y);
+                resolveGiftDropAtTarget(drop);
+                drop->active = FALSE;
+                drop->pending = FALSE;
+                SPR_setVisibility(drop->sprite, HIDDEN);
+                if (drop->targetSprite) {
+                    SPR_setVisibility(drop->targetSprite, HIDDEN);
+                }
+            }
         }
     }
 }
 
-static s16 approachValue(s16 current, s16 target, s16 step) {
-    if (current < target) {
-        s16 next = current + step;
-        return (next > target) ? target : next;
-    } else if (current > target) {
-        s16 next = current - step;
-        return (next < target) ? target : next;
-    }
-    return current;
+static s16 abs16(s16 value) {
+    return (value < 0) ? -value : value;
 }
 
 static void updateGiftCounter(void) {
@@ -748,24 +795,60 @@ static void resolveGiftDropAtTarget(const GiftDrop* drop) {
 }
 
 static void spawnGiftDrop(u8 targetSide) {
+    GiftDrop* drop = NULL;
+    u8 dropIndex = 0;
     for (u8 i = 0; i < NUM_GIFT_DROPS; i++) {
-        GiftDrop* drop = &drops[i];
-        if (drop->active || drop->sprite == NULL) continue;
-
-        drop->active = TRUE;
-        drop->targetSide = targetSide;
-        drop->x = santa.x + 38;
-        drop->y = santa.y + 110;
-        const LauncherMarker* marker = &launcherMarkers[(targetSide != 0) ? 1 : 0];
-        const s16 markerCenterX = marker->x + (MARKER_SIZE / 2);
-        const s16 markerCenterY = marker->y + (MARKER_SIZE / 2);
-        drop->targetX = markerCenterX - (GIFT_SIZE / 2);
-        drop->targetY = markerCenterY - (GIFT_SIZE / 2);
-        SPR_setPosition(drop->sprite, drop->x, drop->y);
-        SPR_setVisibility(drop->sprite, VISIBLE);
-        kprintf("[THROW] spawn gift idx=%u targetSide=%u pos=(%d,%d) target=(%d,%d)", i, targetSide, drop->x, drop->y, drop->targetX, drop->targetY);
-        break;
+        GiftDrop* candidate = &drops[i];
+        if (candidate->pending && candidate->targetSide == targetSide) {
+            drop = candidate;
+            dropIndex = i;
+            break;
+        }
     }
+    if (drop == NULL) {
+        kprintf("[THROW][WARN] no pending target for side=%u", targetSide);
+        return;
+    }
+
+    if (drop->sprite == NULL) {
+        drop->sprite = SPR_addSpriteSafe(&sprite_regalo, 0, 0,
+            TILE_ATTR(PAL_EFFECT, FALSE, FALSE, FALSE));
+        if (drop->sprite == NULL) {
+            drop->pending = FALSE;
+            if (drop->targetSprite) {
+                SPR_setVisibility(drop->targetSprite, HIDDEN);
+            }
+            return;
+        }
+        SPR_setDepth(drop->sprite, DEPTH_EFFECTS);
+        SPR_setAutoAnimation(drop->sprite, FALSE);
+        SPR_setAnim(drop->sprite, 0);
+    }
+
+    drop->active = TRUE;
+    drop->pending = FALSE;
+    drop->x = santa.x + 38;
+    drop->y = santa.y + 110;
+    drop->fx = FIX16(drop->x);
+    drop->fy = FIX16(drop->y);
+    const s16 dx = drop->targetX - drop->x;
+    const s16 dy = drop->targetY - drop->y;
+    const s16 absDx = (dx < 0) ? -dx : dx;
+    const s16 absDy = (dy < 0) ? -dy : dy;
+    u16 travelFrames = (absDx > absDy) ? absDx : absDy;
+    travelFrames = (travelFrames / GIFT_FLY_SPEED);
+    if (travelFrames == 0) {
+        travelFrames = 1;
+    }
+    drop->framesToTarget = travelFrames;
+    drop->vx = F16_div(FIX16(dx), FIX16(travelFrames));
+    drop->vy = F16_div(FIX16(dy), FIX16(travelFrames));
+    SPR_setPosition(drop->sprite, drop->x, drop->y);
+    SPR_setVisibility(drop->sprite, VISIBLE);
+
+    kprintf("[THROW] spawn gift idx=%u targetSide=%u pos=(%d,%d) target=(%d,%d) frames=%u vx=%ld vy=%ld",
+        dropIndex, targetSide, drop->x, drop->y, drop->targetX, drop->targetY,
+        travelFrames, (long)drop->vx, (long)drop->vy);
 }
 
 static void startGiftThrow(u8 targetSide) {
@@ -773,14 +856,44 @@ static void startGiftThrow(u8 targetSide) {
     if (dropCooldown > 0) return;
     if (santaThrowing) return;
 
-    u8 hasSlot = FALSE;
+    s8 pendingIndex = -1;
     for (u8 i = 0; i < NUM_GIFT_DROPS; i++) {
-        if (!drops[i].active && drops[i].sprite != NULL) {
-            hasSlot = TRUE;
+        if (!drops[i].active && !drops[i].pending) {
+            pendingIndex = (s8)i;
             break;
         }
     }
-    if (!hasSlot) return;
+    if (pendingIndex < 0) return;
+
+    GiftDrop* pendingDrop = &drops[pendingIndex];
+    pendingDrop->pending = TRUE;
+    pendingDrop->active = FALSE;
+    pendingDrop->targetSide = targetSide;
+    pendingDrop->framesToTarget = 0;
+    pendingDrop->vx = FIX16(0);
+    pendingDrop->vy = FIX16(0);
+    pendingDrop->fx = FIX16(0);
+    pendingDrop->fy = FIX16(0);
+
+    const LauncherMarker* marker = &launcherMarkers[(targetSide != 0) ? 1 : 0];
+    const s16 markerCenterX = marker->x + (MARKER_SIZE / 2);
+    const s16 markerCenterY = marker->y + (MARKER_SIZE / 2);
+    pendingDrop->targetX = markerCenterX - (GIFT_SIZE / 2);
+    pendingDrop->targetY = markerCenterY - (GIFT_SIZE / 2);
+    const s16 markOffset = (GIFT_SIZE - TARGET_MARK_SIZE) / 2;
+    const s16 targetMarkX = pendingDrop->targetX + markOffset;
+    const s16 targetMarkY = pendingDrop->targetY + markOffset;
+
+    if (pendingDrop->targetSprite == NULL) {
+        pendingDrop->targetSprite = SPR_addSpriteSafe(&sprite_marca_x, targetMarkX, targetMarkY,
+            TILE_ATTR(PAL_PLAYER, FALSE, FALSE, FALSE));
+    }
+    if (pendingDrop->targetSprite) {
+        SPR_setDepth(pendingDrop->targetSprite, DEPTH_MARKERS);
+        SPR_setPosition(pendingDrop->targetSprite, targetMarkX, targetMarkY);
+        SPR_setVisibility(pendingDrop->targetSprite, VISIBLE);
+    }
+    kprintf("[THROW] lock target idx=%d side=%u target=(%d,%d)", pendingIndex, targetSide, pendingDrop->targetX, pendingDrop->targetY);
 
     santaThrowing = TRUE;
     santaThrowTarget = targetSide;
