@@ -41,11 +41,11 @@ extern u32 globalTileIndex;
 void gameCore_resetTileIndex(void);
 
 /**
- * @brief Cronómetro simple para fases con límite de tiempo.
+ * @brief Cronómetro simple para fases con o sin límite de tiempo.
  */
 typedef struct {
     u32 elapsed;       /**< Frames transcurridos desde el inicio. */
-    u32 max_frames;    /**< Frames máximos permitidos antes de derrota. */
+    u32 max_frames;    /**< Frames de referencia (0 = sin límite). */
     u8 state;          /**< 0=RUNNING, 1=VICTORY, 2=DEFEAT. */
 } GameTimer;
 
@@ -60,14 +60,14 @@ u16 gameCore_readInput(void);
 /**
  * @brief Inicializa un temporizador en segundos.
  * @param timer Estructura a rellenar.
- * @param seconds Tiempo máximo permitido en segundos.
+ * @param seconds Tiempo de referencia en segundos (0 = sin límite).
  */
 void gameCore_initTimer(GameTimer *timer, u16 seconds);
 
 /**
- * @brief Avanza el temporizador y devuelve el tiempo restante.
+ * @brief Avanza el temporizador y devuelve el tiempo restante o transcurrido.
  * @param timer Cronómetro a actualizar.
- * @return Frames restantes antes de agotar el tiempo.
+ * @return Frames restantes si hay límite; frames transcurridos si max_frames es 0.
  */
 s32 gameCore_updateTimer(GameTimer *timer);
 
