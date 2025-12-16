@@ -7,9 +7,10 @@
  * @file minigame_delivery.h
  * @brief Interfaces públicas para la fase 2: Entrega en tejados.
  *
- * La fase 2 reutiliza la estructura de minijuego con movimiento libre,
- * gestión manual de regalos y chimeneas que aceptan entregas cuando se
- * pulsa A sobre ellas.
+ * La fase 2 reutiliza la estructura de minijuego con movimiento libre
+ * sin inercia, autoapunta la entrega al pulsar A hacia la chimenea más
+ * cercana en un radio corto y mantiene el contador de regalos con
+ * parpadeo al subir o bajar.
  */
 
 /** @brief Inicializa estado y recursos del minijuego de entrega. */
