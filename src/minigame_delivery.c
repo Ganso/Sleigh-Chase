@@ -36,23 +36,31 @@
 #define CHIMNEY_MARGIN_X 4              /* Margen lateral respecto al borde. */
 #define CHIMNEY_X_LEFT CHIMNEY_MARGIN_X /* Posición X para chimeneas de la izquierda. */
 #define CHIMNEY_X_RIGHT (SCREEN_WIDTH - CHIMNEY_SIZE - CHIMNEY_MARGIN_X) /* X derecha. */
-#define CHIMNEY_PROHIBITED_PERCENT 60   /* Probabilidad % de chimenea prohibida. */
+#define CHIMNEY_PROHIBITED_PERCENT 30   /* Probabilidad % de chimenea prohibida. */
 #define HOUSE_HEIGHT 128                /* Altura de cada casa en el fondo. */
 #define CHIMNEY_ROW_OFFSET 64           /* Offset vertical para centrar en las casas. */
 #define ENEMY_WIDTH 48
 #define ENEMY_HEIGHT 48
-#define ENEMY_HORIZONTAL_SPEED 3
-#define ENEMY_VERTICAL_SPEED 0
+#define ENEMY_SPEED 3
+#define ENEMY_DIR_CHANGE_MIN_FRAMES (2 * 60)
+#define ENEMY_DIR_CHANGE_MAX_FRAMES (3 * 60)
+#define ENEMY_STEAL_ANIM_FRAMES 5
 #define DROP_COOLDOWN_FRAMES 18
 #define CHIMNEY_RESET_FRAMES 90
 #define CHIMNEY_TOGGLE_MIN_FRAMES (5 * 60)
 #define CHIMNEY_TOGGLE_MAX_FRAMES (10 * 60)
 #define RECOVERY_FRAMES 90
-#define GIFT_FLY_SPEED 9
+#define GIFT_FLY_SPEED 8
+
+#define HUD_MARGIN_PX 3
+#define GIFT_COUNTER_SPRITE_WIDTH 128
+#define GIFT_COUNTER_ROW_OFFSET_Y 10
+#define GIFT_COUNTER_SECOND_ROW_OFFSET_X 10
+#define GIFT_COUNTER_ROW_SIZE 5
 
 #define MARKER_SIZE 32
-#define MARKER_SPEED 4
-#define MARKER_SCROLL_COMP 2 /* Factor de compensación del scroll al subir (0 = sin ajuste). */
+#define MARKER_SPEED 6
+#define MARKER_SCROLL_COMP 0 /* Factor de compensación del scroll al subir (0 = sin ajuste). */
 #define MARKER_MIN_Y 0
 #define MARKER_MAX_Y 160
 #define GIFT_SIZE 32
@@ -96,6 +104,9 @@ typedef struct {
     s8 vx;
     s8 vy;
     u8 active;
+    u8 stealAnimTimer;
+    u16 directionTimer;
+    u8 hasSpawned;
 } Enemy;
 
 typedef struct {
@@ -182,6 +193,7 @@ static s16 takeNextChimneySpawnY(void);
 static s16 pickChimneyX(void);
 static u8 rollChimneyProhibited(void);
 static u16 rollChimneyToggleFrames(void);
+static u16 rollEnemyDirectionTimer(void);
 static void updateGiftCounter(void);
 static void spawnGiftDrop(u8 targetSide);
 static void startGiftThrow(u8 targetSide);
@@ -197,6 +209,11 @@ static void updateEnemyActivation(void);
 static u8 getTargetEnemyCount(void);
 static void deactivateGiftDrop(GiftDrop* drop);
 static u8 checkGiftEnemyCollision(GiftDrop* drop);
+static u8 getActiveGiftTargetPos(s16* targetX, s16* targetY);
+static void playElfAppearSound(void);
+static void playRandomElfStealSound(void);
+static void playGiftDeliveredSound(void);
+static void playGiftLostSound(void);
 
 /** @brief Configura recursos, estado inicial de la fase. */
 void minigameDelivery_init(void) {
@@ -414,7 +431,10 @@ static void initEnemies(void) {
     for (u8 i = 0; i < MAX_ENEMIES; i++) {
         enemies[i].active = FALSE;
         enemies[i].vx = 0;
-        enemies[i].vy = ENEMY_VERTICAL_SPEED;
+        enemies[i].vy = 0;
+        enemies[i].stealAnimTimer = 0;
+        enemies[i].directionTimer = rollEnemyDirectionTimer();
+        enemies[i].hasSpawned = FALSE;
         enemies[i].sprite = SPR_addSpriteSafe(&sprite_duende_malo_volador, 0, 0,
             TILE_ATTR(PAL_EFFECT, FALSE, FALSE, FALSE));
         if (enemies[i].sprite) {
@@ -481,25 +501,30 @@ static void initLauncherMarkers(void) {
 }
 
 static void initGiftCounterSprites(void) {
-    const s16 baseX = SCREEN_WIDTH - 140;
-    const s16 baseY = SCREEN_HEIGHT - 40;
+    const s16 baseX = SCREEN_WIDTH - HUD_MARGIN_PX - GIFT_COUNTER_SPRITE_WIDTH - 8;
+    const s16 baseY = SCREEN_HEIGHT - GIFT_SIZE - HUD_MARGIN_PX;
 
-    giftCounterTop = SPR_addSpriteSafe(&sprite_icono_regalo, baseX, baseY - 16,
+    giftCounterTop = SPR_addSpriteSafe(&sprite_icono_regalo, baseX, baseY - GIFT_COUNTER_ROW_OFFSET_Y,
         TILE_ATTR(PAL_EFFECT, FALSE, FALSE, FALSE));
     if (giftCounterTop) {
         SPR_setAutoAnimation(giftCounterTop, FALSE);
         SPR_setDepth(giftCounterTop, DEPTH_HUD + 1);
+        SPR_setFrame(giftCounterTop, 0);
+        SPR_setVisibility(giftCounterTop, VISIBLE);
     }
 
-    giftCounterBottom = SPR_addSpriteSafe(&sprite_icono_regalo, baseX + 12, baseY,
+    giftCounterBottom = SPR_addSpriteSafe(&sprite_icono_regalo, baseX + GIFT_COUNTER_SECOND_ROW_OFFSET_X, baseY,
         TILE_ATTR(PAL_EFFECT, FALSE, FALSE, FALSE));
     if (giftCounterBottom) {
         SPR_setAutoAnimation(giftCounterBottom, FALSE);
         SPR_setDepth(giftCounterBottom, DEPTH_HUD);
+        SPR_setFrame(giftCounterBottom, 0);
+        SPR_setVisibility(giftCounterBottom, VISIBLE);
     }
 
     giftCounter_initHUD(&giftCounterHUD, giftCounterTop, giftCounterBottom,
-        baseX, baseY, -16, 12, DEPTH_HUD + 1, DEPTH_HUD, 5, DELIVERY_TARGET);
+        baseX, baseY, -GIFT_COUNTER_ROW_OFFSET_Y, GIFT_COUNTER_SECOND_ROW_OFFSET_X,
+        DEPTH_HUD + 1, DEPTH_HUD, GIFT_COUNTER_ROW_SIZE, DELIVERY_TARGET);
     giftCounter_stopBlink(&giftCounterBlink);
 }
 
@@ -573,9 +598,6 @@ static void updateChimneys(s16 scrollStep) {
         if (chimney->state == CHIMNEY_COOLDOWN) {
             if (chimney->cooldown > 0) {
                 chimney->cooldown--;
-                if ((chimney->cooldown % 6) == 0) {
-                    chimney->blink = !chimney->blink;
-                }
             } else {
                 chimney->state = CHIMNEY_ACTIVE;
                 chimney->blink = 0;
@@ -615,12 +637,9 @@ static void updateChimneys(s16 scrollStep) {
         }
 
         if (chimney->state == CHIMNEY_COOLDOWN) {
+            /* Mantener visible durante cooldown para que no desaparezca. */
             if (chimney->sprite) {
-                if (chimney->blink) {
-                    SPR_setVisibility(chimney->sprite, HIDDEN);
-                } else {
-                    SPR_setVisibility(chimney->sprite, visible ? VISIBLE : HIDDEN);
-                }
+                SPR_setVisibility(chimney->sprite, visible ? VISIBLE : HIDDEN);
             }
             if (chimney->blockedSprite) {
                 SPR_setVisibility(chimney->blockedSprite, HIDDEN);
@@ -640,14 +659,26 @@ static void respawnEnemyFromTop(Enemy* enemy, u8 offsetIndex) {
     if (enemy == NULL) return;
 
     enemy->x = random() % (WORLD_WIDTH - ENEMY_WIDTH);
-    enemy->y = -(ENEMY_HEIGHT + (offsetIndex * 40));
-    enemy->vx = (random() & 1) ? ENEMY_HORIZONTAL_SPEED : -ENEMY_HORIZONTAL_SPEED;
-    enemy->vy = ENEMY_VERTICAL_SPEED;
+    enemy->y = -(ENEMY_HEIGHT + (offsetIndex * 20));
+    enemy->vx = 0;
+    enemy->vy = ENEMY_SPEED;
+    enemy->stealAnimTimer = 0;
+    enemy->directionTimer = rollEnemyDirectionTimer();
+    if (enemy->hasSpawned) {
+        XGM2_playPCM(snd_elfo_volador_aparece, sizeof(snd_elfo_volador_aparece), SOUND_PCM_CH_AUTO);
+    } else {
+        enemy->hasSpawned = TRUE;
+    }
 
     if (enemy->sprite) {
         SPR_setPosition(enemy->sprite, enemy->x, enemy->y);
         SPR_setVisibility(enemy->sprite, HIDDEN);
+        SPR_setAnim(enemy->sprite, 0);
+        SPR_setAnimationLoop(enemy->sprite, TRUE);
+        SPR_setAutoAnimation(enemy->sprite, TRUE);
     }
+
+    /* Sonido de aparición desactivado temporalmente. */
 }
 
 static void updateEnemies(s16 scrollStep) {
@@ -655,21 +686,75 @@ static void updateEnemies(s16 scrollStep) {
         Enemy* enemy = &enemies[i];
         if (!enemy->active || enemy->sprite == NULL) continue;
 
-        enemy->x += enemy->vx;
-        if (enemy->x < 0) {
-            enemy->x = 0;
-            enemy->vx = ENEMY_HORIZONTAL_SPEED;
-        } else if (enemy->x > (WORLD_WIDTH - ENEMY_WIDTH)) {
-            enemy->x = WORLD_WIDTH - ENEMY_WIDTH;
-            enemy->vx = -ENEMY_HORIZONTAL_SPEED;
+        (void)scrollStep; /* El enemigo ya no depende del scroll vertical. */
+
+        if (enemy->stealAnimTimer > 0) {
+            enemy->stealAnimTimer--;
+            if (enemy->stealAnimTimer == 0) {
+                SPR_setAnim(enemy->sprite, 0);
+                SPR_setAnimationLoop(enemy->sprite, TRUE);
+                SPR_setAutoAnimation(enemy->sprite, TRUE);
+            }
         }
 
-        enemy->y += enemy->vy;
-        if (scrollStep) {
-            enemy->y += scrollStep;
+        s16 targetX = 0;
+        s16 targetY = 0;
+        const u8 hasGiftTarget = getActiveGiftTargetPos(&targetX, &targetY);
+        if (hasGiftTarget) {
+            const s16 enemyCenterX = enemy->x + (ENEMY_WIDTH / 2);
+            const s16 enemyCenterY = enemy->y + (ENEMY_HEIGHT / 2);
+            if (enemyCenterX < targetX) {
+                enemy->vx = ENEMY_SPEED;
+            } else if (enemyCenterX > targetX) {
+                enemy->vx = -ENEMY_SPEED;
+            } else {
+                enemy->vx = 0;
+            }
+
+            if (enemyCenterY < targetY) {
+                enemy->vy = ENEMY_SPEED;
+            } else if (enemyCenterY > targetY) {
+                enemy->vy = -ENEMY_SPEED;
+            } else {
+                enemy->vy = 0;
+            }
+            enemy->directionTimer = rollEnemyDirectionTimer();
+        } else {
+            if (enemy->directionTimer > 0) {
+                enemy->directionTimer--;
+            }
+            if (enemy->directionTimer == 0) {
+                /* Elegir nueva dirección aleatoria, evitando vector nulo. */
+                s8 dirX = 0;
+                s8 dirY = 0;
+                do {
+                    dirX = (random() % 3) - 1; /* -1, 0 o 1 */
+                    dirY = (random() % 3) - 1; /* -1, 0 o 1 */
+                } while (dirX == 0 && dirY == 0);
+
+                enemy->vx = dirX * ENEMY_SPEED;
+                enemy->vy = dirY * ENEMY_SPEED;
+                enemy->directionTimer = rollEnemyDirectionTimer();
+            }
         }
-        if (enemy->y > SCREEN_HEIGHT) {
-            respawnEnemyFromTop(enemy, i);
+
+        enemy->x += enemy->vx;
+        enemy->y += enemy->vy;
+
+        if (enemy->x < 0) {
+            enemy->x = 0;
+            enemy->vx = ENEMY_SPEED;
+        } else if (enemy->x > (WORLD_WIDTH - ENEMY_WIDTH)) {
+            enemy->x = WORLD_WIDTH - ENEMY_WIDTH;
+            enemy->vx = -ENEMY_SPEED;
+        }
+
+        if (enemy->y < 0) {
+            enemy->y = 0;
+            enemy->vy = ENEMY_SPEED;
+        } else if (enemy->y > (SCREEN_HEIGHT - ENEMY_HEIGHT)) {
+            enemy->y = SCREEN_HEIGHT - ENEMY_HEIGHT;
+            enemy->vy = -ENEMY_SPEED;
         }
 
         const u8 visible = (enemy->y + ENEMY_HEIGHT > 0) && (enemy->y < SCREEN_HEIGHT);
@@ -763,6 +848,13 @@ static u8 checkGiftEnemyCollision(GiftDrop* drop) {
         if (gameCore_checkCollision(drop->x, drop->y, GIFT_SIZE, GIFT_SIZE,
                 enemy->x, enemy->y, ENEMY_WIDTH, ENEMY_HEIGHT)) {
             kprintf("[THROW] gift captured by enemy idx=%u at (%d,%d)", i, drop->x, drop->y);
+            playRandomElfStealSound();
+            enemy->stealAnimTimer = ENEMY_STEAL_ANIM_FRAMES;
+            if (enemy->sprite) {
+                SPR_setAnim(enemy->sprite, 1);
+                SPR_setAnimationLoop(enemy->sprite, FALSE);
+                SPR_setAutoAnimation(enemy->sprite, TRUE);
+            }
             deactivateGiftDrop(drop);
             return TRUE;
         }
@@ -842,6 +934,54 @@ static void updateGiftCounter(void) {
     giftCounter_render(&giftCounterHUD, displayValue);
 }
 
+static u16 rollEnemyDirectionTimer(void) {
+    const u16 minFrames = ENEMY_DIR_CHANGE_MIN_FRAMES;
+    const u16 maxFrames = ENEMY_DIR_CHANGE_MAX_FRAMES;
+    const u16 span = (maxFrames > minFrames) ? (maxFrames - minFrames) : 0;
+    const u16 randomOffset = span ? (random() % (span + 1)) : 0;
+    return minFrames + randomOffset;
+}
+
+static u8 getActiveGiftTargetPos(s16* targetX, s16* targetY) {
+    if (targetX == NULL || targetY == NULL) return FALSE;
+
+    for (u8 i = 0; i < NUM_GIFT_DROPS; i++) {
+        const GiftDrop* drop = &drops[i];
+        if (drop->active) {
+            *targetX = drop->x + (GIFT_SIZE / 2);
+            *targetY = drop->y + (GIFT_SIZE / 2);
+            return TRUE;
+        }
+        if (drop->pending) {
+            *targetX = drop->targetX + (GIFT_SIZE / 2);
+            *targetY = drop->targetY + (GIFT_SIZE / 2);
+            return TRUE;
+        }
+    }
+
+    return FALSE;
+}
+
+static void playElfAppearSound(void) {
+    /* Temporalmente desactivado. */
+}
+
+static void playRandomElfStealSound(void) {
+    if (random() & 1) {
+        XGM2_playPCM(snd_elfo_volador_robando_1, sizeof(snd_elfo_volador_robando_1), SOUND_PCM_CH_AUTO);
+    } else {
+        XGM2_playPCM(snd_elfo_volador_robando_2, sizeof(snd_elfo_volador_robando_2), SOUND_PCM_CH_AUTO);
+    }
+}
+
+static void playGiftDeliveredSound(void) {
+    XGM2_playPCM(snd_regalo_recogido, sizeof(snd_regalo_recogido), SOUND_PCM_CH_AUTO);
+}
+
+static void playGiftLostSound(void) {
+    XGM2_playPCM(snd_regalo_desaparece, sizeof(snd_regalo_desaparece), SOUND_PCM_CH_AUTO);
+}
+
 static Chimney* findChimneyAtPoint(s16 x, s16 y) {
     for (u8 i = 0; i < NUM_CHIMNEYS; i++) {
         Chimney* chimney = &chimneys[i];
@@ -876,12 +1016,15 @@ static void resolveGiftDropAtTarget(const GiftDrop* drop) {
         Chimney* blocked = findAnyChimneyAtPoint(drop->targetX, drop->targetY);
         if (blocked && blocked->prohibited) {
             kprintf("[THROW] gift burned at prohibited chimney x=%d y=%d", blocked->x, blocked->y);
+            XGM2_playPCM(snd_regalo_quemado, sizeof(snd_regalo_quemado), SOUND_PCM_CH_AUTO);
         } else {
             kprintf("[THROW] gift landed no chimney x=%d y=%d", drop->targetX, drop->targetY);
+            playGiftLostSound();
         }
         return;
     }
 
+    playGiftDeliveredSound();
     chimney->state = CHIMNEY_COOLDOWN;
     chimney->cooldown = CHIMNEY_RESET_FRAMES;
     chimney->blink = 0;
