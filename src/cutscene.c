@@ -52,17 +52,18 @@ void cutscene_phase2_intro(void) {
         "los regalos que faltaban",
         "    ",
         "Apunta a las chimeneas",
-        "que no tengan humo,",
-        "y esquiva a los duendes"
+        "que no tengan humo, y",
+        "utiliza el bot*n A para",
+        "lanzar los regalos"
     };
-    cutscene_play(lines, 6);
+    cutscene_play(lines, 7);
 }
 
 void cutscene_phase3_intro(void) {
     static const char* const lines[CUTSCENE_MAX_LINES] = {
         "Gracias por salvar",
         "la Navidad conmigo",
-        "",
+        "    ",
         "Se acerca el a^o nuevo",
         "Toca las campanas y",
         "forma la felicitaci*n"

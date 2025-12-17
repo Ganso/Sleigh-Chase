@@ -35,7 +35,6 @@
 #define CANNON_FRICTION 1                /* Fricción horizontal del cañón. */
 #define CANNON_MAX_VEL 6                 /* Velocidad máxima del cañón. */
 #define BULLET_COOLDOWN_FRAMES 30        /* Enfriamiento entre disparos. */
-#define BUTTON_B_COOLDOWN_FRAMES 30      /* Enfriamiento entre acciones con B. */
 
 #define LETTER_WIDTH 32                  /* Ancho de cada letra en píxeles. */
 #define LETTER_HEIGHT 32                 /* Alto de cada letra en píxeles. */
@@ -101,7 +100,6 @@ static u8 cannonFiring; /**< Estado de disparo en curso. */
 static u8 currentPhase; /**< Subfase interna (campanas/letras/fin). */
 static u8 currentLetterIndex; /**< Índice de letra que debe recogerse ahora. */
 static u8 victoryTriggered; /**< Evita repetir la secuencia de victoria. */
-static s8 buttonBCooldown; /**< Retraso entre disparos con botón B. */
 
 static u16 bellsCompleted; /**< Campanas encendidas correctamente. */
 static u16 activeBullets; /**< Proyectiles actualmente en pantalla. */
@@ -116,10 +114,6 @@ static const SpriteDefinition* const letterSpritesColor[NUM_LETTERS] = {
     &sprite_letra_f, &sprite_letra_e, &sprite_letra_l, &sprite_letra_i,
     &sprite_letra_z, &sprite_letra_2, &sprite_letra_0, &sprite_letra_6
 }; /**< Versiones a color de las letras descendentes. */
-static const SpriteDefinition* const letterSpritesBW[NUM_LETTERS] = {
-    &sprite_letra_bn_f, &sprite_letra_bn_e, &sprite_letra_bn_l, &sprite_letra_bn_i,
-    &sprite_letra_bn_z, &sprite_letra_bn_2, &sprite_letra_bn_0, &sprite_letra_bn_6
-}; /**< Versiones en blanco y negro para indicar letras ya conseguidas. */
 static const SpriteDefinition* const felizSpritesColor[NUM_TARGET_LETTERS] = {
     &sprite_letra_f, &sprite_letra_e, &sprite_letra_l, &sprite_letra_i,
     &sprite_letra_z, &sprite_letra_2, &sprite_letra_0, &sprite_letra_2, &sprite_letra_6
@@ -550,7 +544,6 @@ static void handleLetterCollision(Bullet* bullet, Letter* letter) {
 
     letter->isBlinking = TRUE;
     letter->blinkCounter = FRAMES_BLINK;
-    SPR_setDefinition(letter->sprite, letterSpritesBW[hitIndex]);
 }
 
 /**
@@ -722,7 +715,6 @@ void minigameBells_init(void) {
     cannonVelocity = 0;
     cannonFiring = FALSE;
     bulletCooldown = 0;
-    buttonBCooldown = 0;
     currentPhase = PHASE_BELLS;
     currentLetterIndex = 0;
     victoryTriggered = FALSE;
@@ -749,32 +741,6 @@ void minigameBells_update(void) {
         SPR_setAnim(playerCannon, 1);
         fireBullet();
         bulletCooldown = BULLET_COOLDOWN_FRAMES;
-    }
-
-    /* Ataque alternativo con botón B (impacto directo). */
-    if ((input & BUTTON_B) && buttonBCooldown <= 0 && currentPhase != PHASE_COMPLETED) {
-        buttonBCooldown = BUTTON_B_COOLDOWN_FRAMES;
-        if (currentPhase == PHASE_BELLS) {
-            s16 lowestY = -32;
-            Bell* targetBell = NULL;
-            for (u8 i = 0; i < NUM_BELLS; i++) {
-                if (!bells[i].isBlinking && bells[i].y > lowestY) {
-                    lowestY = bells[i].y;
-                    targetBell = &bells[i];
-                }
-            }
-            if (targetBell) {
-                handleBellCollision(NULL, targetBell);
-            }
-        } else if (currentPhase == PHASE_LETTERS) {
-            u8 targetIndex = getTargetLetterIndex();
-            for (u8 i = 0; i < NUM_LETTERS; i++) {
-                if (i == targetIndex && !letters[i].isBlinking) {
-                    handleLetterCollision(NULL, &letters[i]);
-                    break;
-                }
-            }
-        }
     }
 
     if (cannonFiring) {
@@ -810,7 +776,6 @@ void minigameBells_update(void) {
     gameCore_updateTimer(&gameTimer);
     frameCounter++;
     if (bulletCooldown > 0) bulletCooldown--;
-    if (buttonBCooldown > 0) buttonBCooldown--;
 }
 
 /** @brief Renderiza sprites y sincroniza con VBlank. */

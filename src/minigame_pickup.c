@@ -69,6 +69,7 @@ static void traceFunc(const char *funcName);
 #define GIFT_COUNTER_ROW_OFFSET_Y 12 /* Separación vertical entre filas de contador. */
 #define GIFT_COUNTER_SECOND_ROW_OFFSET_X 6 /* Desfase X de la segunda fila HUD. */
 #define GIFT_COUNTER_MAX 10      /* Límite de regalos mostrados. */
+#define GIFT_LOSS_MAX_OFFSET 2   /* Hasta cuanto puede bajar el contador respecto al máximo. */
 #define MUSIC_START_DELAY_FRAMES 40 /* Frames de retraso antes de arrancar música. */
 #define MUSIC_FM_VOLUME 70          /* Volumen FM para la pista de fase 1. */
 #define MUSIC_PSG_VOLUME 100        /* Volumen PSG para la pista de fase 1. */
@@ -194,6 +195,8 @@ static void clearElvesOnTreeCollision(void);
 static void clearOtherTreesOnCollision(const SimpleActor *treeToKeep);
 static void pauseSantaAnimation(void);
 static void resumeSantaAnimation(void);
+static u16 giftsLossFloor(void);
+static u8 applyGiftLoss(u16 amount);
 
 /**
  * @brief Comprueba un rango horizontal y registra errores si es inválido.
@@ -728,6 +731,51 @@ static void debugPrintScrollState(const char* context, s16 scrollStep) {
         frameCounter);
 }
 
+/**
+ * @brief Devuelve el suelo de regalos permitido según el máximo alcanzado.
+ */
+static u16 giftsLossFloor(void) {
+    TRACE_FUNC();
+    if (maxGiftsCollected > GIFT_LOSS_MAX_OFFSET) {
+        return maxGiftsCollected - GIFT_LOSS_MAX_OFFSET;
+    }
+    return 0;
+}
+
+/**
+ * @brief Resta regalos aplicando el límite inferior parametrizable.
+ * @param amount Cantidad a restar del contador actual.
+ * @return TRUE si el contador llegó a modificarse.
+ */
+static u8 applyGiftLoss(u16 amount) {
+    TRACE_FUNC();
+    if (giftsCollected == 0) {
+        return FALSE;
+    }
+
+    const u16 previousGifts = giftsCollected;
+    const u16 minAllowed = giftsLossFloor();
+
+    if (amount >= giftsCollected) {
+        giftsCollected = 0;
+    } else {
+        giftsCollected -= amount;
+    }
+
+    if (giftsCollected < minAllowed) {
+        giftsCollected = minAllowed;
+    }
+
+    if (giftsCollected < previousGifts) {
+        giftCounter_startBlink(&giftCounterBlink, previousGifts, giftsCollected,
+            GIFT_COUNTER_BLINK_INTERVAL_FRAMES);
+        updateGiftCounter();
+        return TRUE;
+    }
+
+    return FALSE;
+}
+
 /** @brief Procesa la recogida de un regalo y avanza la misión. */
 static void collectGift(void) {
     TRACE_FUNC();
@@ -820,11 +868,7 @@ static void beginTreeCollision(SimpleActor *tree) {
     clearOtherTreesOnCollision(tree);
 
     if (giftsCollected > 0) {
-        const u16 previousGifts = giftsCollected;
-        giftsCollected--;
-        giftCounter_startBlink(&giftCounterBlink, previousGifts, giftsCollected,
-            GIFT_COUNTER_BLINK_INTERVAL_FRAMES);
-        updateGiftCounter();
+        applyGiftLoss(1);
     }
 
     XGM2_playPCM(snd_obstaculo_golpe, sizeof(snd_obstaculo_golpe), SOUND_PCM_CH_AUTO);
@@ -1343,11 +1387,7 @@ void minigamePickup_update(void) {
                 enemies[i].y + (ENEMY_SIZE - ENEMY_HITBOX_HEIGHT),
                 ENEMY_SIZE, ENEMY_HITBOX_HEIGHT)) {
             if (giftsCollected > 0) {
-                const u16 previousGifts = giftsCollected;
-                giftsCollected--;
-                giftCounter_startBlink(&giftCounterBlink, previousGifts, giftsCollected,
-                    GIFT_COUNTER_BLINK_INTERVAL_FRAMES);
-                updateGiftCounter();
+                applyGiftLoss(1);
                 beginEnemyStealSequence(i);
                 updateEnemyStealSequence();
                 reorderDepthByBottom();
