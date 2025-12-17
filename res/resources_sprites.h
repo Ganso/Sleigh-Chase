@@ -3,6 +3,8 @@
 #ifndef _RES_RESOURCES_SPRITES_H_
 #define _RES_RESOURCES_SPRITES_H_
 
+extern const Image font;
+extern const Image font_dark;
 extern const SpriteDefinition sprite_regalo;
 extern const SpriteDefinition sprite_santa_car;
 extern const SpriteDefinition sprite_arbol_pista;
@@ -36,7 +38,7 @@ extern const SpriteDefinition sprite_letra_2;
 extern const SpriteDefinition sprite_letra_bn_2;
 extern const SpriteDefinition sprite_letra_0;
 extern const SpriteDefinition sprite_letra_bn_0;
-extern const SpriteDefinition sprite_letra_5;
-extern const SpriteDefinition sprite_letra_bn_5;
+extern const SpriteDefinition sprite_letra_6;
+extern const SpriteDefinition sprite_letra_bn_6;
 
 #endif // _RES_RESOURCES_SPRITES_H_

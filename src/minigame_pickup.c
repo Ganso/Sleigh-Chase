@@ -66,8 +66,8 @@ static void traceFunc(const char *funcName);
 #define GIFT_COUNTER_ROW_SIZE 5  /* Regalos por fila en HUD. */
 #define GIFT_COUNTER_SPRITE_WIDTH 96 /* Ancho del sprite contador. */
 #define GIFT_COUNTER_SPRITE_HEIGHT 24 /* Alto del sprite contador. */
-#define GIFT_COUNTER_ROW_OFFSET_Y 24 /* Separación vertical entre filas de contador. */
-#define GIFT_COUNTER_SECOND_ROW_OFFSET_X 0 /* Desfase X de la segunda fila HUD. */
+#define GIFT_COUNTER_ROW_OFFSET_Y 12 /* Separación vertical entre filas de contador. */
+#define GIFT_COUNTER_SECOND_ROW_OFFSET_X 6 /* Desfase X de la segunda fila HUD. */
 #define GIFT_COUNTER_MAX 10      /* Límite de regalos mostrados. */
 #define MUSIC_START_DELAY_FRAMES 40 /* Frames de retraso antes de arrancar música. */
 #define MUSIC_FM_VOLUME 70          /* Volumen FM para la pista de fase 1. */
@@ -81,7 +81,7 @@ static void traceFunc(const char *funcName);
 #define TRACK_HEIGHT_PX 512         /* Altura total del trazado. */
 #define SCROLL_SPEED_MIN FIX16(0.5) /* Velocidad mínima del scroll. */
 #define SCROLL_SPEED_MAX FIX16(1.5) /* Velocidad máxima del scroll. */
-#define HUD_MARGIN_PX 3             /* Margen de HUD en píxeles. */
+#define HUD_MARGIN_PX 5             /* Margen de HUD en píxeles. */
 #define DEPTH_HUD SPR_MIN_DEPTH     /* HUD siempre por delante del resto. */
 #define DEPTH_SANTA (SPR_MIN_DEPTH + 24)   /* Santa delante de actores pero tras el HUD. */
 #define DEPTH_ACTORS_START (DEPTH_SANTA + 2) /* Profundidad inicial de actores. */

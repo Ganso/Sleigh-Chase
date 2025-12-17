@@ -6,6 +6,7 @@
 #include "cutscene.h"
 #include "game_core.h"
 #include "resources_bg.h"
+#include "resources_sprites.h"
 #include "audio_manager.h"
 #include <string.h>
 
@@ -21,6 +22,17 @@ static u8 waitFramesOrSkip(u16 frames);
 static u8 isSkipButtonPressed(void);
 static void waitSkipRelease(void);
 
+// SPANISH CHARSET
+// ñ --> ^
+// á --> #
+// é --> $
+// í --> %
+// ó --> *
+// ú --> /
+// < --> ¿
+// > --> ¡
+// {} --> Flechas para remarcar
+
 void cutscene_phase1_intro(void) {
     static const char* const lines[CUTSCENE_MAX_LINES] = {
         "Los esbirros del Grinch",
@@ -28,7 +40,7 @@ void cutscene_phase1_intro(void) {
         "que faltan por repartir",
         "    ",
         "Mis fieles ayudantes",
-        "los elfos me ayudaran",
+        "los elfos me ayudar#n",
         "a recuperarlos"
     };
     cutscene_play(lines, 7);
@@ -50,10 +62,10 @@ void cutscene_phase3_intro(void) {
     static const char* const lines[CUTSCENE_MAX_LINES] = {
         "Gracias por salvar",
         "la Navidad conmigo",
-        "Ahora formaremos el",
-        "mensaje de ano nuevo",
-        "tras sonar las doce",
-        "campanadas finales"
+        "",
+        "Se acerca el a^o nuevo",
+        "Toca las campanas y",
+        "forma la felicitaci*n"
     };
     cutscene_play(lines, 6);
 }
@@ -78,7 +90,12 @@ static void cutscene_play(const char* const* lines, u8 lineCount) {
     VDP_setBackgroundColor(0);
     gameCore_resetTileIndex();
     SYS_doVBlankProcess();
-    
+       
+    // Load font and set text palette
+    VDP_loadFont(font_dark.tileset, DMA);
+    PAL_setPalette(PAL_EFFECT, font_dark.palette->data, CPU);
+    VDP_setTextPalette(PAL_EFFECT);
+
     if (image_fondo_cutscene.palette != NULL) {
         PAL_setPalette(PAL_COMMON, image_fondo_cutscene.palette->data, CPU);
     }
@@ -95,7 +112,7 @@ static void cutscene_play(const char* const* lines, u8 lineCount) {
         }
     }
 
-    const char* prompt = "> PULSA UN BOTON <";
+    const char* prompt = "} PULSA UN BOTON {";
     u16 promptX = CUTSCENE_TEXT_START_X;
     u16 promptY = CUTSCENE_TEXT_START_Y + lineCount + 2;
     u8 promptVisible = TRUE;

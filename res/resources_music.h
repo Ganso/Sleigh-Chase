@@ -5,6 +5,5 @@
 
 extern const u8 musica_MerryGentelmen[2304];
 extern const u8 musica_Rudolph[5888];
-extern const u8 musica_test[160768];
 
 #endif // _RES_RESOURCES_MUSIC_H_

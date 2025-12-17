@@ -114,19 +114,19 @@ static SnowEffect snowEffect; /**< Partículas de nieve reutilizadas. */
 static const GameInertia cannonInertia = { CANNON_ACCEL, CANNON_FRICTION, 1, CANNON_MAX_VEL }; /**< Configuración de inercia del cañón. */
 static const SpriteDefinition* const letterSpritesColor[NUM_LETTERS] = {
     &sprite_letra_f, &sprite_letra_e, &sprite_letra_l, &sprite_letra_i,
-    &sprite_letra_z, &sprite_letra_2, &sprite_letra_0, &sprite_letra_5
+    &sprite_letra_z, &sprite_letra_2, &sprite_letra_0, &sprite_letra_6
 }; /**< Versiones a color de las letras descendentes. */
 static const SpriteDefinition* const letterSpritesBW[NUM_LETTERS] = {
     &sprite_letra_bn_f, &sprite_letra_bn_e, &sprite_letra_bn_l, &sprite_letra_bn_i,
-    &sprite_letra_bn_z, &sprite_letra_bn_2, &sprite_letra_bn_0, &sprite_letra_bn_5
+    &sprite_letra_bn_z, &sprite_letra_bn_2, &sprite_letra_bn_0, &sprite_letra_bn_6
 }; /**< Versiones en blanco y negro para indicar letras ya conseguidas. */
 static const SpriteDefinition* const felizSpritesColor[NUM_TARGET_LETTERS] = {
     &sprite_letra_f, &sprite_letra_e, &sprite_letra_l, &sprite_letra_i,
-    &sprite_letra_z, &sprite_letra_2, &sprite_letra_0, &sprite_letra_2, &sprite_letra_5
+    &sprite_letra_z, &sprite_letra_2, &sprite_letra_0, &sprite_letra_2, &sprite_letra_6
 }; /**< Muestra de referencia de la palabra final coloreada. */
 static const SpriteDefinition* const felizSpritesBW[NUM_TARGET_LETTERS] = {
     &sprite_letra_bn_f, &sprite_letra_bn_e, &sprite_letra_bn_l, &sprite_letra_bn_i,
-    &sprite_letra_bn_z, &sprite_letra_bn_2, &sprite_letra_bn_0, &sprite_letra_bn_2, &sprite_letra_bn_5
+    &sprite_letra_bn_z, &sprite_letra_bn_2, &sprite_letra_bn_0, &sprite_letra_bn_2, &sprite_letra_bn_6
 }; /**< Variante monocroma del mensaje final. */
 
 static void detectarColisionesBala(Bullet* bala);
@@ -149,7 +149,7 @@ static void initBell(Bell* bell, u8 index) {
     s16 posX = random() % (SCREEN_WIDTH - 32);
 
     bell->sprite = SPR_addSpriteSafe(&sprite_campana, posX, -32,
-        TILE_ATTR(PAL_PLAYER, FALSE, FALSE, FALSE));
+        TILE_ATTR(PAL_ENEMY, FALSE, FALSE, FALSE));
 
     bell->x = posX;
     bell->y = -32 - (random() % 100);
@@ -214,7 +214,7 @@ static void initFixedBells(void) {
 
     for (u8 i = 0; i < NUM_FIXED_BELLS; i++) {
         fixedBells[i].sprite = SPR_addSprite(&sprite_campana_bn, x, y,
-            TILE_ATTR(PAL_PLAYER, FALSE, FALSE, FALSE));
+            TILE_ATTR(PAL_ENEMY, FALSE, FALSE, FALSE));
         fixedBells[i].active = FALSE;
 
         x += separador_x;
@@ -309,7 +309,7 @@ static void initLetter(Letter* letter, u8 index) {
     s16 posX = random() % (SCREEN_WIDTH - LETTER_WIDTH);
 
     letter->sprite = SPR_addSpriteSafe(letterSpritesColor[index], posX, -32,
-        TILE_ATTR(PAL_PLAYER, FALSE, FALSE, FALSE));
+        TILE_ATTR(PAL_ENEMY, FALSE, FALSE, FALSE));
 
     letter->x = posX;
     letter->y = -32 - (random() % 100);
@@ -597,23 +597,23 @@ static void initFeliz2025(void) {
     s16 x = 0;
     s16 y = SCREEN_HEIGHT - 4 - LETTER_HEIGHT;
 
-    felizSprites[0] = SPR_addSpriteSafe(&sprite_letra_bn_f, x, y, TILE_ATTR(PAL_PLAYER, FALSE, FALSE, FALSE));
+    felizSprites[0] = SPR_addSpriteSafe(&sprite_letra_bn_f, x, y, TILE_ATTR(PAL_ENEMY, FALSE, FALSE, FALSE));
     x += LETTER_WIDTH / 2;
-    felizSprites[1] = SPR_addSpriteSafe(&sprite_letra_bn_e, x + 4, y, TILE_ATTR(PAL_PLAYER, FALSE, FALSE, FALSE));
+    felizSprites[1] = SPR_addSpriteSafe(&sprite_letra_bn_e, x + 4, y, TILE_ATTR(PAL_ENEMY, FALSE, FALSE, FALSE));
     x += LETTER_WIDTH / 2;
-    felizSprites[2] = SPR_addSpriteSafe(&sprite_letra_bn_l, x + 4, y, TILE_ATTR(PAL_PLAYER, FALSE, FALSE, FALSE));
+    felizSprites[2] = SPR_addSpriteSafe(&sprite_letra_bn_l, x + 4, y, TILE_ATTR(PAL_ENEMY, FALSE, FALSE, FALSE));
     x += LETTER_WIDTH / 2;
-    felizSprites[3] = SPR_addSpriteSafe(&sprite_letra_bn_i, x, y, TILE_ATTR(PAL_PLAYER, FALSE, FALSE, FALSE));
+    felizSprites[3] = SPR_addSpriteSafe(&sprite_letra_bn_i, x, y, TILE_ATTR(PAL_ENEMY, FALSE, FALSE, FALSE));
     x += LETTER_WIDTH / 2;
-    felizSprites[4] = SPR_addSpriteSafe(&sprite_letra_bn_z, x, y, TILE_ATTR(PAL_PLAYER, FALSE, FALSE, FALSE));
+    felizSprites[4] = SPR_addSpriteSafe(&sprite_letra_bn_z, x, y, TILE_ATTR(PAL_ENEMY, FALSE, FALSE, FALSE));
     x += 20;
-    felizSprites[5] = SPR_addSpriteSafe(&sprite_letra_bn_2, x, y, TILE_ATTR(PAL_PLAYER, FALSE, FALSE, FALSE));
+    felizSprites[5] = SPR_addSpriteSafe(&sprite_letra_bn_2, x, y, TILE_ATTR(PAL_ENEMY, FALSE, FALSE, FALSE));
     x += LETTER_WIDTH / 2;
-    felizSprites[6] = SPR_addSpriteSafe(&sprite_letra_bn_0, x, y, TILE_ATTR(PAL_PLAYER, FALSE, FALSE, FALSE));
+    felizSprites[6] = SPR_addSpriteSafe(&sprite_letra_bn_0, x, y, TILE_ATTR(PAL_ENEMY, FALSE, FALSE, FALSE));
     x += LETTER_WIDTH / 2;
-    felizSprites[7] = SPR_addSpriteSafe(&sprite_letra_bn_2, x, y, TILE_ATTR(PAL_PLAYER, FALSE, FALSE, FALSE));
+    felizSprites[7] = SPR_addSpriteSafe(&sprite_letra_bn_2, x, y, TILE_ATTR(PAL_ENEMY, FALSE, FALSE, FALSE));
     x += LETTER_WIDTH / 2;
-    felizSprites[8] = SPR_addSpriteSafe(&sprite_letra_bn_5, x, y, TILE_ATTR(PAL_PLAYER, FALSE, FALSE, FALSE));
+    felizSprites[8] = SPR_addSpriteSafe(&sprite_letra_bn_6, x, y, TILE_ATTR(PAL_ENEMY, FALSE, FALSE, FALSE));
 }
 
 /** @brief Hace parpadear la letra objetivo de "FELIZ2025". */
@@ -662,13 +662,16 @@ void minigameBells_init(void) {
     JOY_init();
 
     if (sprite_campana.palette) {
-        PAL_setPalette(PAL_PLAYER, sprite_campana.palette->data, CPU);
+        PAL_setPalette(PAL_ENEMY, sprite_campana.palette->data, CPU);
     }
     if (sprite_bomba.palette) {
         PAL_setPalette(PAL_EFFECT, sprite_bomba.palette->data, CPU);
     }
     if (image_fondo_pal.data) {
         PAL_setPalette(PAL_COMMON, image_fondo_pal.data, CPU);
+    }
+    if (sprite_canon.palette) {
+        PAL_setPalette(PAL_PLAYER, sprite_canon.palette->data, CPU);
     }
 
     VDP_setBackgroundColor(0);

@@ -15,5 +15,8 @@ extern const Palette image_fondo_tejados_pal;
 extern const TileSet image_fondo_tile;
 extern const MapDefinition image_fondo_map;
 extern const Palette image_fondo_pal;
+extern const TileSet image_fondo_fiesta_tile;
+extern const MapDefinition image_fondo_fiesta_map;
+extern const Palette image_fondo_fiesta_pal;
 
 #endif // _RES_RESOURCES_BG_H_

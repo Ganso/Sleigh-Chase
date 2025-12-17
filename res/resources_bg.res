@@ -19,3 +19,8 @@ PALETTE image_fondo_tejados_pal "bg/FondoCalle.png" BEST
 TILESET image_fondo_tile "bg/Fondo.png" BEST
 MAP image_fondo_map "bg/Fondo.png" image_fondo_tile BEST
 PALETTE image_fondo_pal "bg/Fondo.png" BEST
+
+# Celebracion final
+TILESET image_fondo_fiesta_tile "bg/FondoFiesta.png" BEST
+MAP image_fondo_fiesta_map "bg/FondoFiesta.png" image_fondo_fiesta_tile BEST
+PALETTE image_fondo_fiesta_pal "bg/FondoFiesta.png" BEST

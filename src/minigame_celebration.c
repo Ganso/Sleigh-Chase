@@ -1,69 +1,162 @@
 /**
  * @file minigame_celebration.c
- * @brief Fase 4: Celebración - placeholder con temporizador fijo.
- *
- * Recursos actuales:
- * - No se cargan fondos ni paletas específicas; la fase limpia ambos planos y
- *   reutiliza la configuración de VDP por defecto. Los sprites de confeti y
- *   personajes están pendientes de asignar desde `resources_sprites.h` cuando
- *   se implementen, por lo que este módulo actúa como esqueleto documentado.
+ * @brief Fase 4: Celebracion final con resumen de tiempos y reinicio.
  */
 
 #include "minigame_celebration.h"
+#include "resources_sprites.h"
+#include "resources_bg.h"
 
-#define NUM_CONFETI 50           /* Número de partículas de confeti simuladas. */
-#define NUM_PERSONAJES 2         /* Personajes decorativos en pantalla. */
-#define DURACION_CELEBRACION 300 /* Duración total de la fase en frames. */
+#define PROMPT_BUTTONS (BUTTON_A | BUTTON_B | BUTTON_C | BUTTON_START)
 
-/** @brief Partícula de confeti simple. */
-typedef struct {
-    Sprite* sprite;
-    s16 x, y;
-    s8 velX, velY;
-    u8 active;
-} Confeti;
+typedef enum {
+    CELEB_STATE_MESSAGE = 0,
+    CELEB_STATE_TIMES,
+    CELEB_STATE_RESETTING,
+} CelebrationState;
 
-/** @brief Personaje decorativo durante la celebración. */
-typedef struct {
-    Sprite* sprite;
-    s16 x, y;
-    u8 frameAnim;
-} PersonajeFiesta;
+static CelebrationState celebrationState;
+static Map* celebrationMap;
+static u16 prevInput;
 
-static Confeti confetis[NUM_CONFETI]; /**< Pool de partículas de confeti. */
-static PersonajeFiesta personajes[NUM_PERSONAJES]; /**< Personajes decorativos. */
-static u16 frameCounter; /**< Cronómetro de duración de la celebración. */
+static u32 timePickup;
+static u32 timeDelivery;
+static u32 timeBells;
+static u32 timeTotal;
 
-/** @brief Prepara sprites y limpia el escenario para la celebración. */
+static void loadCelebrationBackground(void);
+static void drawCenteredText(const char* text, u16 y, VDPPlane plane);
+static void drawVictoryMessage(void);
+static void drawTimesBoard(void);
+
+void minigameCelebration_setTimes(u32 pickup, u32 delivery, u32 bells) {
+    timePickup = pickup;
+    timeDelivery = delivery;
+    timeBells = bells;
+    timeTotal = pickup + delivery + bells;
+}
+
 void minigameCelebration_init(void) {
     VDP_setScreenWidth320();
     VDP_setScreenHeight224();
+    VDP_setBackgroundColor(0);
     VDP_clearPlane(BG_A, TRUE);
     VDP_clearPlane(BG_B, TRUE);
 
-    memset(confetis, 0, sizeof(confetis));
-    memset(personajes, 0, sizeof(personajes));
-    frameCounter = 0; /**< Se reinicia el cronómetro al iniciar la fase. */
+    loadCelebrationBackground();
+    drawVictoryMessage();
 
-    /* HUD desactivado temporalmente */
+    celebrationState = CELEB_STATE_MESSAGE;
+    prevInput = 0;
 }
 
-/** @brief Avanza el contador de celebración. */
 void minigameCelebration_update(void) {
-    frameCounter++;
+    u16 input = gameCore_readInput();
+    u16 pressed = input & ~prevInput;
+    prevInput = input;
+
+    if (celebrationState == CELEB_STATE_MESSAGE) {
+        if (pressed & PROMPT_BUTTONS) {
+            drawTimesBoard();
+            celebrationState = CELEB_STATE_TIMES;
+        }
+    } else if (celebrationState == CELEB_STATE_TIMES) {
+        if (pressed & PROMPT_BUTTONS) {
+            celebrationState = CELEB_STATE_RESETTING;
+            SYS_hardReset();
+        }
+    }
 }
 
-/** @brief Actualiza sprites y procesa VBlank. */
 void minigameCelebration_render(void) {
-    /* HUD desactivado temporalmente */
-    SPR_update();
     SYS_doVBlankProcess();
 }
 
-/**
- * @brief Devuelve si la duración predefinida ha concluido.
- * @return TRUE cuando se supera DURACION_CELEBRACION.
- */
 u8 minigameCelebration_isComplete(void) {
-    return frameCounter >= DURACION_CELEBRACION;
+    return celebrationState == CELEB_STATE_RESETTING;
+}
+
+static void loadCelebrationBackground(void) {
+    gameCore_resetTileIndex();
+
+    VDP_loadTileSet(&image_fondo_fiesta_tile, globalTileIndex, CPU);
+    celebrationMap = MAP_create(&image_fondo_fiesta_map, BG_B,
+        TILE_ATTR_FULL(PAL_COMMON, FALSE, FALSE, FALSE, globalTileIndex));
+    globalTileIndex += image_fondo_tile.numTile;
+    PAL_setPalette(PAL_COMMON, image_fondo_fiesta_pal.data, CPU);
+    MAP_scrollTo(celebrationMap, 0, 0);
+    (void)celebrationMap;
+}
+
+static void drawCenteredText(const char* text, u16 y, VDPPlane plane) {
+    if (!text) return;
+    u16 len = strlen(text);
+    u16 x = (len < 40) ? (40 - len) / 2 : 0;
+    VDP_drawTextBG(plane, text, x, y);
+}
+
+// SPANISH CHARSET
+// ñ --> ^
+// á --> #
+// é --> $
+// í --> %
+// ó --> *
+// ú --> /
+// < --> ¿
+// > --> ¡
+// {} --> Flechas para remarcar
+
+static void drawVictoryMessage(void) {
+    static const char* mensajes[] = {
+        ">FELIZ 2026!",
+        "",
+        "Que este nuevo a^o te traiga",
+        "alegria, salud y prosperidad.",
+        "",
+        "Que todos tus planes y metas",
+        "se hagan realidad.",
+        "",
+        ">Felices Fiestas!",
+        "",
+        "",
+        "GeeseBumps.com 2025",
+    };
+
+    const u16 totalLines = sizeof(mensajes) / sizeof(mensajes[0]);
+    const u16 screenRows = SCREEN_HEIGHT / 8;
+    u16 startY = 5;
+
+    VDP_clearPlane(BG_A, TRUE);
+         
+    VDP_loadFont(font.tileset, DMA);
+    PAL_setPalette(PAL_EFFECT, font.palette->data, CPU);
+    VDP_setTextPalette(PAL_EFFECT);
+
+    for (u16 i = 0; i < totalLines; i++) {
+        drawCenteredText(mensajes[i], startY + i, BG_A);
+    }
+
+    drawCenteredText("} Pulsa para ver tus tiempos {", startY + totalLines + 2, BG_A);
+}
+
+static void drawTimesBoard(void) {
+    char buffer[40];
+    VDP_clearPlane(BG_A, TRUE);
+
+    drawCenteredText("Resumen de partida", 4, BG_A);
+
+    sprintf(buffer, "Fase 1: %lus", (unsigned long)timePickup);
+    drawCenteredText(buffer, 7, BG_A);
+
+    sprintf(buffer, "Fase 2: %lus", (unsigned long)timeDelivery);
+    drawCenteredText(buffer, 8, BG_A);
+
+    sprintf(buffer, "Fase 3: %lus", (unsigned long)timeBells);
+    drawCenteredText(buffer, 9, BG_A);
+
+    sprintf(buffer, "Total: %lus", (unsigned long)timeTotal);
+    drawCenteredText(buffer, 11, BG_A);
+
+    drawCenteredText(">Intenta mejorar estos numeros!", 14, BG_A);
+    drawCenteredText("} Pulsa un boton para reiniciar {", 16, BG_A);
 }

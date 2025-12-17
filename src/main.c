@@ -29,6 +29,7 @@
 #include "geesebumps.h"
 #include "audio_manager.h"
 #include "resources_music.h"
+#include "resources_sprites.h"
 #include "cutscene.h"
 
 /* Fases del juego */
@@ -42,7 +43,7 @@ enum {
 };
 
 /* Variables globales */
-static u8 currentPhase = PHASE_DELIVERY; /**< Fase actual del bucle principal. */
+static u8 currentPhase = PHASE_INTRO; /**< Fase actual del bucle principal. */
 static u32 phaseTimerStart = 0;       /**< Tiempo de inicio de la fase en unidades de 1/256s. */
 static u32 phaseDurationsSeconds[PHASE_END]; /**< Tiempo consumido por fase. */
 
@@ -104,7 +105,6 @@ int main() {
             case PHASE_INTRO:
                 /* Mostrar intro o pasar a Fase 1 */
                 KLog("Mostrando intro...");
-                audio_play_intro();
                 geesebumps_logo();
                 //gameCore_fadeToBlack();
                 currentPhase = PHASE_PICKUP;
@@ -114,6 +114,7 @@ int main() {
                 /* Fase 1: Recogida - Polo Norte */
                 KLog("Fase 1: Recogida");
                 cutscene_phase1_intro();
+                gameCore_fadeToBlack();
                 startPhaseTimer();
                 minigamePickup_init();
                 while (!minigamePickup_isComplete()) {
@@ -130,6 +131,7 @@ int main() {
                 /* Fase 2: Entrega - Tejados */
                 KLog("Fase 2: Entrega");
                 cutscene_phase2_intro();
+                gameCore_fadeToBlack();
                 audio_play_phase2();
                 startPhaseTimer();
                 minigameDelivery_init();
@@ -147,6 +149,7 @@ int main() {
                 /* Fase 3: Campanadas - IMPLEMENTADA */
                 KLog("Fase 3: Campanadas");
                 cutscene_phase3_intro();
+                gameCore_fadeToBlack();
                 startPhaseTimer();
                 minigameBells_init();
                 while (!minigameBells_isComplete()) {
@@ -154,6 +157,10 @@ int main() {
                     minigameBells_render();
                 }
                 stopPhaseTimer(PHASE_BELLS);
+                minigameCelebration_setTimes(
+                    phaseDurationsSeconds[PHASE_PICKUP],
+                    phaseDurationsSeconds[PHASE_DELIVERY],
+                    phaseDurationsSeconds[PHASE_BELLS]);
                 gameCore_fadeToBlack();
                 currentPhase = PHASE_CELEBRATION;
                 break;
@@ -194,4 +201,3 @@ int main() {
 
     return 0;
 }
-

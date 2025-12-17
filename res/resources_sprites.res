@@ -1,3 +1,6 @@
+# Font
+IMAGE font "font.png" BEST none
+IMAGE font_dark "font_dark.png" BEST none
 
 # Fase 1
 SPRITE sprite_regalo "sprites/Regalo.png" 2 2 BEST 5
@@ -39,7 +42,7 @@ SPRITE sprite_letra_2 "sprites/letras/Letra2.png" 4 4 BEST 1
 SPRITE sprite_letra_bn_2 "sprites/letras/Letra2bn.png" 4 4 BEST 1
 SPRITE sprite_letra_0 "sprites/letras/Letra0.png" 4 4 BEST 1
 SPRITE sprite_letra_bn_0 "sprites/letras/Letra0bn.png" 4 4 BEST 1
-SPRITE sprite_letra_5 "sprites/letras/Letra5.png" 4 4 BEST 1
-SPRITE sprite_letra_bn_5 "sprites/letras/Letra5bn.png" 4 4 BEST 1
+SPRITE sprite_letra_6 "sprites/letras/Letra6.png" 4 4 BEST 1
+SPRITE sprite_letra_bn_6 "sprites/letras/Letra6bn.png" 4 4 BEST 1
 
 # Fase 4
