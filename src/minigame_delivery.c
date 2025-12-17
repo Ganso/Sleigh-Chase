@@ -39,12 +39,20 @@
 #define CHIMNEY_PROHIBITED_PERCENT 30   /* Probabilidad % de chimenea prohibida. */
 #define HOUSE_HEIGHT 128                /* Altura de cada casa en el fondo. */
 #define CHIMNEY_ROW_OFFSET 64           /* Offset vertical para centrar en las casas. */
+#define CHIMNEY_HITBOX_OFFSET_X 6
+#define CHIMNEY_HITBOX_OFFSET_Y 7
+#define CHIMNEY_HITBOX_WIDTH 19
+#define CHIMNEY_HITBOX_HEIGHT 17
 #define ENEMY_WIDTH 32
 #define ENEMY_HEIGHT 32
 #define ENEMY_SPEED 3
 #define ENEMY_DIR_CHANGE_MIN_FRAMES (2 * 60)
 #define ENEMY_DIR_CHANGE_MAX_FRAMES (3 * 60)
 #define ENEMY_STEAL_ANIM_FRAMES 5
+#define ENEMY_HITBOX_OFFSET_X 7
+#define ENEMY_HITBOX_OFFSET_Y 8
+#define ENEMY_HITBOX_WIDTH 16
+#define ENEMY_HITBOX_HEIGHT 18
 #define DROP_COOLDOWN_FRAMES 18
 #define CHIMNEY_RESET_FRAMES 90
 #define CHIMNEY_TOGGLE_MIN_FRAMES (5 * 60)
@@ -59,6 +67,10 @@
 #define GIFT_COUNTER_ROW_SIZE 5
 
 #define GIFT_SIZE 32
+#define GIFT_HITBOX_OFFSET_X 2
+#define GIFT_HITBOX_OFFSET_Y 2
+#define GIFT_HITBOX_WIDTH 12
+#define GIFT_HITBOX_HEIGHT 12
 #define TARGET_MARK_SIZE 16
 #define SANTA_THROW_SPAWN_FRAME 4
 #define GIFT_COUNTER_BLINK_INTERVAL_FRAMES 3 /* Intervalo de parpadeo del HUD. */
@@ -817,8 +829,13 @@ static u8 checkGiftEnemyCollision(GiftDrop* drop) {
         Enemy* enemy = &enemies[i];
         if (!enemy->active) continue;
 
-        if (gameCore_checkCollision(drop->x, drop->y, GIFT_SIZE, GIFT_SIZE,
-                enemy->x, enemy->y, ENEMY_WIDTH, ENEMY_HEIGHT)) {
+        const s16 giftHitX = drop->x + GIFT_HITBOX_OFFSET_X;
+        const s16 giftHitY = drop->y + GIFT_HITBOX_OFFSET_Y;
+        const s16 enemyHitX = enemy->x + ENEMY_HITBOX_OFFSET_X;
+        const s16 enemyHitY = enemy->y + ENEMY_HITBOX_OFFSET_Y;
+
+        if (gameCore_checkCollision(giftHitX, giftHitY, GIFT_HITBOX_WIDTH, GIFT_HITBOX_HEIGHT,
+                enemyHitX, enemyHitY, ENEMY_HITBOX_WIDTH, ENEMY_HITBOX_HEIGHT)) {
             kprintf("[THROW] gift captured by enemy idx=%u at (%d,%d)", i, drop->x, drop->y);
             playRandomElfStealSound();
             enemy->stealAnimTimer = ENEMY_STEAL_ANIM_FRAMES;
@@ -997,8 +1014,13 @@ static Chimney* findChimneyAtPoint(s16 x, s16 y) {
         Chimney* chimney = &chimneys[i];
         if (chimney->prohibited || chimney->state != CHIMNEY_ACTIVE) continue;
 
-        if (gameCore_checkCollision(x, y, GIFT_SIZE, GIFT_SIZE,
-                chimney->x, chimney->y, CHIMNEY_SIZE, CHIMNEY_SIZE)) {
+        const s16 giftHitX = x + GIFT_HITBOX_OFFSET_X;
+        const s16 giftHitY = y + GIFT_HITBOX_OFFSET_Y;
+        const s16 chimneyHitX = chimney->x + CHIMNEY_HITBOX_OFFSET_X;
+        const s16 chimneyHitY = chimney->y + CHIMNEY_HITBOX_OFFSET_Y;
+
+        if (gameCore_checkCollision(giftHitX, giftHitY, GIFT_HITBOX_WIDTH, GIFT_HITBOX_HEIGHT,
+                chimneyHitX, chimneyHitY, CHIMNEY_HITBOX_WIDTH, CHIMNEY_HITBOX_HEIGHT)) {
             return chimney;
         }
     }
@@ -1009,8 +1031,13 @@ static Chimney* findChimneyAtPoint(s16 x, s16 y) {
 static Chimney* findAnyChimneyAtPoint(s16 x, s16 y) {
     for (u8 i = 0; i < NUM_CHIMNEYS; i++) {
         Chimney* chimney = &chimneys[i];
-        if (gameCore_checkCollision(x, y, GIFT_SIZE, GIFT_SIZE,
-                chimney->x, chimney->y, CHIMNEY_SIZE, CHIMNEY_SIZE)) {
+        const s16 giftHitX = x + GIFT_HITBOX_OFFSET_X;
+        const s16 giftHitY = y + GIFT_HITBOX_OFFSET_Y;
+        const s16 chimneyHitX = chimney->x + CHIMNEY_HITBOX_OFFSET_X;
+        const s16 chimneyHitY = chimney->y + CHIMNEY_HITBOX_OFFSET_Y;
+
+        if (gameCore_checkCollision(giftHitX, giftHitY, GIFT_HITBOX_WIDTH, GIFT_HITBOX_HEIGHT,
+                chimneyHitX, chimneyHitY, CHIMNEY_HITBOX_WIDTH, CHIMNEY_HITBOX_HEIGHT)) {
             return chimney;
         }
     }
@@ -1258,8 +1285,11 @@ static void checkEnemyCollision(void) {
         Enemy* enemy = &enemies[i];
         if (!enemy->active) continue;
 
+        const s16 enemyHitX = enemy->x + ENEMY_HITBOX_OFFSET_X;
+        const s16 enemyHitY = enemy->y + ENEMY_HITBOX_OFFSET_Y;
+
         if (gameCore_checkCollision(santaHitX, santaHitY, SANTA_HITBOX_WIDTH, SANTA_HITBOX_HEIGHT,
-                enemy->x, enemy->y, ENEMY_WIDTH, ENEMY_HEIGHT)) {
+                enemyHitX, enemyHitY, ENEMY_HITBOX_WIDTH, ENEMY_HITBOX_HEIGHT)) {
             startRecovery();
             break;
         }
