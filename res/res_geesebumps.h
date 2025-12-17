@@ -3,7 +3,7 @@
 #ifndef _RES_RES_GEESEBUMPS_H_
 #define _RES_RES_GEESEBUMPS_H_
 
-extern const u8 music_geesebumps[1024];
+extern const u8 music_geesebumps[2304];
 extern const Palette geesebumps_pal_black;
 extern const Palette geesebumps_pal_white;
 extern const Palette geesebumps_pal_white2;

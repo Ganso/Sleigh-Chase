@@ -64,9 +64,10 @@ static void traceFunc(const char *funcName);
 #define GIFT_SIZE 32             /* Tamaño del sprite de regalo. */
 #define GIFT_ARC_HEIGHT 50       /* Altura máxima de la parábola del regalo. */
 #define GIFT_COUNTER_ROW_SIZE 5  /* Regalos por fila en HUD. */
-#define GIFT_COUNTER_SPRITE_WIDTH 128 /* Ancho del sprite contador. */
-#define GIFT_COUNTER_ROW_OFFSET_Y 10 /* Separación vertical entre filas de contador. */
-#define GIFT_COUNTER_SECOND_ROW_OFFSET_X 10 /* Desfase X de la segunda fila HUD. */
+#define GIFT_COUNTER_SPRITE_WIDTH 96 /* Ancho del sprite contador. */
+#define GIFT_COUNTER_SPRITE_HEIGHT 24 /* Alto del sprite contador. */
+#define GIFT_COUNTER_ROW_OFFSET_Y 24 /* Separación vertical entre filas de contador. */
+#define GIFT_COUNTER_SECOND_ROW_OFFSET_X 0 /* Desfase X de la segunda fila HUD. */
 #define GIFT_COUNTER_MAX 10      /* Límite de regalos mostrados. */
 #define MUSIC_START_DELAY_FRAMES 40 /* Frames de retraso antes de arrancar música. */
 #define MUSIC_FM_VOLUME 70          /* Volumen FM para la pista de fase 1. */
@@ -1145,8 +1146,8 @@ void minigamePickup_init(void) {
     SPR_setAutoAnimation(santa.sprite, TRUE);
     XGM2_playPCM(snd_santa_hohoho, sizeof(snd_santa_hohoho), SOUND_PCM_CH_AUTO);
 
-    const s16 giftBaseX = SCREEN_WIDTH - HUD_MARGIN_PX - GIFT_COUNTER_SPRITE_WIDTH - 8;
-    const s16 giftBaseY = SCREEN_HEIGHT - GIFT_SIZE - HUD_MARGIN_PX;
+    const s16 giftBaseX = SCREEN_WIDTH - HUD_MARGIN_PX - GIFT_COUNTER_SPRITE_WIDTH;
+    const s16 giftBaseY = SCREEN_HEIGHT - GIFT_COUNTER_SPRITE_HEIGHT - HUD_MARGIN_PX;
 
     giftCounterSpriteFirstRow = SPR_addSpriteSafe(&sprite_icono_regalo,
         giftBaseX, giftBaseY - GIFT_COUNTER_ROW_OFFSET_Y,

@@ -7,15 +7,15 @@ SPRITE sprite_elfo_lateral "sprites/ElfoLateral.png" 4 4 BEST 5
 SPRITE sprite_duende_malo "sprites/DuendeMalo.png" 4 4 BEST 5
 SPRITE sprite_marca_x "sprites/MarcaX.png" 2 2 BEST 1
 SPRITE sprite_sombra_regalo "sprites/SombraRegalo.png" 2 2 BEST 1
-SPRITE sprite_icono_regalo "sprites/IconoRegalo.png" 16 4 BEST 6
+SPRITE sprite_icono_regalo "sprites/IconoRegalo.png" 12 3 BEST 6
 
 # Fase 2
 SPRITE sprite_chimenea "sprites/Chimenea.png" 4 4 BEST 1
 SPRITE sprite_chimenea_prohibida "sprites/ChimeneaProhibida.png" 4 4 BEST 1
 SPRITE sprite_chimenea_utilizada "sprites/ChimeneaUtilizada.png" 4 4 BEST 1
 SPRITE sprite_santa_car_volando "sprites/SantaCar_Volando.png" 10 16 BEST 1
-SPRITE sprite_duende_malo_volador "sprites/DuendeMaloVolador.png" 4 4 BEST 1
-SPRITE sprite_marca_lanzador "sprites/MarcaLanzador.png" 4 4 BEST 1
+SPRITE sprite_duende_malo_volador "sprites/DuendeMaloVolador.png" 4 4 BEST 3
+SPRITE sprite_marca_x_2 "sprites/MarcaX_2.png" 2 2 BEST 5
 
 # Fase 3
 SPRITE sprite_campana "sprites/Campana.png" 4 4 

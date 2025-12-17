@@ -36,13 +36,12 @@ void cutscene_phase1_intro(void) {
 
 void cutscene_phase2_intro(void) {
     static const char* const lines[CUTSCENE_MAX_LINES] = {
-        "Toca repartir los",
-        "10 regalos a la",
-        "ciudad dormida",
+        "Por fin puedo repartir",
+        "los regalos que faltaban",
         "    ",
-        "Evita chimeneas con",
-        "humo: estan ardiendo",
-        "y no se pueden usar."
+        "Apunta a las chimeneas",
+        "que no tengan humo,",
+        "y esquiva a los duendes"
     };
     cutscene_play(lines, 6);
 }
