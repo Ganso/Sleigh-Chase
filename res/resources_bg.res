@@ -1,3 +1,12 @@
+# Titulo
+TILESET image_titulo_tile "bg/FondoTitulo.png" BEST
+MAP image_titulo_map "bg/FondoTitulo.png" image_titulo_tile BEST
+PALETTE image_titulo_pal "bg/FondoTitulo.png" BEST
+
+TILESET image_sleigh_chase_tile "bg/SleighChase.png" BEST
+MAP image_sleigh_chase_map "bg/SleighChase.png" image_sleigh_chase_tile BEST
+PALETTE image_sleigh_chase_pal "bg/SleighChase.png" BEST
+
 # Efecto de nieve
 TILESET image_primer_plano_nieve_tile "bg/PrimerPlanoNieve.png" BEST
 MAP image_primer_plano_nieve_map "bg/PrimerPlanoNieve.png" image_primer_plano_nieve_tile BEST

@@ -18,6 +18,7 @@ extern const u8 snd_regalo_desaparece[10752];
 extern const u8 snd_elfo_volador_robando_1[13312];
 extern const u8 snd_elfo_volador_robando_2[13312];
 extern const u8 snd_regalo_quemado[13312];
+extern const u8 snd_sleigh_chase[55552];
 extern const u8 snd_disparo_red[3328];
 extern const u8 snd_entrega_exitosa[3328];
 extern const u8 snd_confeti_choque[3328];

@@ -13,6 +13,7 @@ WAV snd_regalo_desaparece "sfx/snd_regalo_desaparece.wav" XGM2
 WAV snd_elfo_volador_robando_1 "sfx/snd_elfo_volador_robando_1.wav" XGM2
 WAV snd_elfo_volador_robando_2 "sfx/snd_elfo_volador_robando_2.wav" XGM2
 WAV snd_regalo_quemado "sfx/snd_regalo_quemado.wav" XGM2
+WAV snd_sleigh_chase "sfx/snd_sleighchase.wav" XGM2
 
 # snd_disparo_red : Placeholder (Disparo red confeti polo rapido)
 WAV snd_disparo_red "sfx/snd_disparo_red.wav" XGM2

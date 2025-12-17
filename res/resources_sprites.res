@@ -44,5 +44,3 @@ SPRITE sprite_letra_0 "sprites/letras/Letra0.png" 4 4 BEST 1
 SPRITE sprite_letra_bn_0 "sprites/letras/Letra0bn.png" 4 4 BEST 1
 SPRITE sprite_letra_6 "sprites/letras/Letra6.png" 4 4 BEST 1
 SPRITE sprite_letra_bn_6 "sprites/letras/Letra6bn.png" 4 4 BEST 1
-
-# Fase 4

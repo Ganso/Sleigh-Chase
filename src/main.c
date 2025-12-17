@@ -1,24 +1,29 @@
 /**
  * @file main.c
- * @brief Orquestador principal que encadena las cuatro fases del juego.
+ * @brief Orquestador principal que encadena intro, titulo y las cuatro fases del juego.
  *
  * Bloque de recursos por fase:
+ * - Pantalla de titulo: usa el mapa `image_sleigh_chase_map` y tiles
+ *   `image_sleigh_chase_tile` de @ref resources_bg.h, con el audio
+ *   `snd_sleigh_chase` de @ref resources_sfx.h.
  * - Fase 1 (Recogida): usa tiles y sprites definidos en @ref resources_bg.h y
- *   @ref resources_sprites.h, con paletas extraídas de esos mismos ficheros.
+ *   @ref resources_sprites.h, con paletas extraidas de esos mismos ficheros.
  *   La paleta principal proviene de los fondos de nieve de `resources_bg.h` y
  *   se aplica a los tiles del escenario; los sprites de Santa y los elfos usan
  *   las paletas de `resources_sprites.h`.
  * - Fase 2 (Entrega): consume fondos y sprites de tejados definidos en
  *   `resources_bg.h` y `resources_sprites.h`. La paleta de tejados se declara
- *   junto a los gráficos de fondo y se comparte con los objetos interactivos.
+ *   junto a los graficos de fondo y se comparte con los objetos interactivos.
  * - Fase 3 (Campanadas): reutiliza assets musicales de `resources_music.h` y
  *   sprites de campanas de `resources_sprites.h`; la paleta asociada a las
  *   campanas se obtiene del mismo fichero de sprites.
- * - Fase 4 (Celebración): emplea el tema musical de fin de partida definido en
+ * - Fase 4 (Celebracion): emplea el tema musical de fin de partida definido en
  *   `resources_music.h` y sprites festivos de `resources_sprites.h`, con la
  *   paleta celebrativa declarada junto a dichos sprites.
  * - Pantalla final: solamente usa texto plano de VDP, sin recursos externos.
  */
+
+
 
 #include <genesis.h>
 #include "game_core.h"
@@ -27,6 +32,7 @@
 #include "minigame_delivery.h"
 #include "minigame_celebration.h"
 #include "geesebumps.h"
+#include "title_screen.h"
 #include "audio_manager.h"
 #include "resources_music.h"
 #include "resources_sprites.h"
@@ -35,15 +41,16 @@
 /* Fases del juego */
 enum {
     PHASE_INTRO = 0,
-    PHASE_PICKUP = 1,
-    PHASE_DELIVERY = 2,
-    PHASE_BELLS = 3,
-    PHASE_CELEBRATION = 4,
-    PHASE_END = 5
+    PHASE_TITLE = 1,
+    PHASE_PICKUP = 2,
+    PHASE_DELIVERY = 3,
+    PHASE_BELLS = 4,
+    PHASE_CELEBRATION = 5,
+    PHASE_END = 6
 };
 
 /* Variables globales */
-static u8 currentPhase = PHASE_BELLS; /**< Fase actual del bucle principal. */
+static u8 currentPhase = PHASE_TITLE; /**< Fase actual del bucle principal. */
 static u32 phaseTimerStart = 0;       /**< Tiempo de inicio de la fase en unidades de 1/256s. */
 static u32 phaseDurationsSeconds[PHASE_END]; /**< Tiempo consumido por fase. */
 
@@ -107,6 +114,13 @@ int main() {
                 KLog("Mostrando intro...");
                 geesebumps_logo();
                 //gameCore_fadeToBlack();
+                currentPhase = PHASE_TITLE;
+                break;
+
+            case PHASE_TITLE:
+                /* Pantalla de titulo */
+                KLog("Pantalla de titulo");
+                title_show();
                 currentPhase = PHASE_PICKUP;
                 break;
 
