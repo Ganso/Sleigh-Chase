@@ -16,7 +16,6 @@
  */
 
 #include "minigame_delivery.h"
-#include "audio_manager.h"
 #include "resources_bg.h"
 #include "resources_sfx.h"
 #include "resources_sprites.h"
@@ -227,7 +226,6 @@ static void playGiftLostSound(void);
 
 /** @brief Configura recursos, estado inicial de la fase. */
 void minigameDelivery_init(void) {
-    audio_stop_music();
     gameCore_resetVideoState();
     kprintf("[SANTA] starting Santa init at pos=(%d,%d)", (WORLD_WIDTH - SANTA_WIDTH) / 2, SANTA_START_Y);
 
@@ -340,6 +338,14 @@ void minigameDelivery_render(void) {
 /** @brief Indica si se alcanzó el objetivo de entregas. */
 u8 minigameDelivery_isComplete(void) {
     return phaseCompleted;
+}
+
+/** @brief Libera el mapa de fondo y evita fugas entre fases. */
+void minigameDelivery_shutdown(void) {
+    if (mapBackground) {
+        MAP_release(mapBackground);
+        mapBackground = NULL;
+    }
 }
 
 static void initBackground(void) {

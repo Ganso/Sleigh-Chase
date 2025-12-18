@@ -33,6 +33,8 @@ static void audio_play_loop(const u8* track) {
 
 void audio_play_intro(void) {
     XGM2_setLoopNumber(0); /**< Intro se reproduce una sola vez. */
+    XGM2_setFMVolume(70);   /**< Baja FM para dejar espacio a efectos SFX. */
+    XGM2_setPSGVolume(100); /**< Nivel estándar de PSG para ambientes. */
     XGM2_play(music_geesebumps);
 }
 

@@ -28,4 +28,7 @@ void minigameDelivery_render(void);
  */
 u8 minigameDelivery_isComplete(void);
 
+/** @brief Libera mapas y estructuras persistentes de la fase. */
+void minigameDelivery_shutdown(void);
+
 #endif

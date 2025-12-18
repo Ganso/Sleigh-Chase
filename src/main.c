@@ -50,7 +50,7 @@ enum {
 };
 
 /* Variables globales */
-static u8 currentPhase = PHASE_PICKUP; /**< Fase actual del bucle principal. */
+static u8 currentPhase = PHASE_INTRO; /**< Fase actual del bucle principal. */
 static u32 phaseTimerStart = 0;       /**< Tiempo de inicio de la fase en unidades de 1/256s. */
 static u32 phaseDurationsSeconds[PHASE_END]; /**< Tiempo consumido por fase. */
 
@@ -113,6 +113,7 @@ int main() {
                 /* Mostrar intro o pasar a Fase 1 */
                 KLog("Mostrando intro...");
                 geesebumps_logo();
+                gameCore_resetVideoState(); /* Limpia recursos de intro antes del titulo. */
                 //gameCore_fadeToBlack();
                 currentPhase = PHASE_TITLE;
                 break;
@@ -136,6 +137,7 @@ int main() {
                     minigamePickup_render();
                     JOY_readJoypad(JOY_1);
                 }
+                minigamePickup_shutdown();
                 stopPhaseTimer(PHASE_PICKUP);
                 gameCore_fadeToBlack();
                 currentPhase = PHASE_DELIVERY;
@@ -154,6 +156,7 @@ int main() {
                     minigameDelivery_render();
                     JOY_readJoypad(JOY_1);
                 }
+                minigameDelivery_shutdown();
                 stopPhaseTimer(PHASE_DELIVERY);
                 gameCore_fadeToBlack();
                 currentPhase = PHASE_BELLS;
@@ -170,6 +173,7 @@ int main() {
                     minigameBells_update();
                     minigameBells_render();
                 }
+                minigameBells_shutdown();
                 stopPhaseTimer(PHASE_BELLS);
                 minigameCelebration_setTimes(
                     phaseDurationsSeconds[PHASE_PICKUP],
@@ -190,6 +194,7 @@ int main() {
                     minigameCelebration_render();
                     JOY_readJoypad(JOY_1);
                 }
+                minigameCelebration_shutdown();
                 stopPhaseTimer(PHASE_CELEBRATION);
                 gameCore_fadeToBlack();
                 currentPhase = PHASE_END;

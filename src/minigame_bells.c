@@ -787,3 +787,12 @@ void minigameBells_render(void) {
 u8 minigameBells_isComplete(void) {
     return (currentPhase == PHASE_COMPLETED && victoryTriggered);
 }
+
+/** @brief Libera el mapa de fondo de la fase. */
+void minigameBells_shutdown(void) {
+    if (mapBackground) {
+        MAP_release(mapBackground);
+        mapBackground = NULL;
+    }
+}
+

@@ -23,4 +23,7 @@ void minigameBells_render(void);
  */
 u8 minigameBells_isComplete(void);
 
+/** @brief Libera recursos persistentes de la fase de campanas. */
+void minigameBells_shutdown(void);
+
 #endif

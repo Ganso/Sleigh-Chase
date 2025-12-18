@@ -23,4 +23,7 @@ void minigamePickup_render(void);
  */
 u8 minigamePickup_isComplete(void);
 
+/** @brief Libera recursos persistentes (mapas) de la fase de recogida. */
+void minigamePickup_shutdown(void);
+
 #endif

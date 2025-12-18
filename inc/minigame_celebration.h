@@ -31,4 +31,7 @@ void minigameCelebration_render(void);
  */
 u8 minigameCelebration_isComplete(void);
 
+/** @brief Libera recursos persistentes del mapa de celebracion. */
+void minigameCelebration_shutdown(void);
+
 #endif

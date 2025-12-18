@@ -39,7 +39,6 @@ void minigameCelebration_setTimes(u32 pickup, u32 delivery, u32 bells) {
 }
 
 void minigameCelebration_init(void) {
-    audio_stop_music();
     gameCore_resetVideoState();
     loadCelebrationBackground();
     drawVictoryMessage();
@@ -72,6 +71,13 @@ void minigameCelebration_render(void) {
 
 u8 minigameCelebration_isComplete(void) {
     return celebrationState == CELEB_STATE_RESETTING;
+}
+
+void minigameCelebration_shutdown(void) {
+    if (celebrationMap) {
+        MAP_release(celebrationMap);
+        celebrationMap = NULL;
+    }
 }
 
 static void loadCelebrationBackground(void) {

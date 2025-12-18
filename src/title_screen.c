@@ -16,8 +16,10 @@
 #define TITLE_SCROLL_FRAMES 60             /* Duracion del scroll vertical. */
 #define TITLE_SCROLL_START_Y 128       /* Arranca por encima de la vista. */
 #define TITLE_SCROLL_TARGET_Y 0           /* Termina alineado con la pantalla. */
-#define TITLE_LANGUAGE_Y 19             /* Inicio del menú. */
+#define TITLE_LANGUAGE_Y 20             /* Inicio del menú. */
 #define TITLE_TEXT_COLUMNS 40            /* Columnas de texto en modo 320. */
+#define TITLE_TITULO_SCROLL_START_Y 0      /* Arranca visible el mapa titulo. */
+#define TITLE_TITULO_SCROLL_TARGET_Y 128   /* Se desplaza fuera de la pantalla. */
 
 static void title_draw_language_options(u8 englishSelected);
 
@@ -36,28 +38,29 @@ void title_show(void) {
     Map* mapTitulo = MAP_create(&image_titulo_map, BG_B,
         TILE_ATTR_FULL(PAL_PLAYER, FALSE, FALSE, FALSE, globalTileIndex));
     globalTileIndex += image_titulo_tile.numTile;
-    MAP_scrollTo(mapTitulo, 0, 0);
+    MAP_scrollTo(mapTitulo, 0, TITLE_TITULO_SCROLL_START_Y);
 
     VDP_loadTileSet(&image_sleigh_chase_tile, globalTileIndex, CPU);
-    Map* map = MAP_create(&image_sleigh_chase_map, BG_A,
+    Map* mapSleigh = MAP_create(&image_sleigh_chase_map, BG_A,
         TILE_ATTR_FULL(PAL_ENEMY, FALSE, FALSE, FALSE, globalTileIndex));
     globalTileIndex += image_sleigh_chase_tile.numTile;
 
-    MAP_scrollTo(map, 0, TITLE_SCROLL_START_Y);
-
-    for (u16 i = 0; i < TITLE_WAIT_BEFORE_SCROLL_FRAMES; i++) {
-        SYS_doVBlankProcess();
-    }
+    MAP_scrollTo(mapSleigh, 0, TITLE_SCROLL_START_Y);
 
     XGM2_playPCM(snd_sleigh_chase, sizeof(snd_sleigh_chase), SOUND_PCM_CH_AUTO);
 
-    s16 scrollY = TITLE_SCROLL_START_Y;
-    while (scrollY > TITLE_SCROLL_TARGET_Y) {
-        kprintf("Haciendo map hacia (0, %d)", scrollY);
-        MAP_scrollTo(map, 0, scrollY);
-        scrollY-=2;
+    s16 sleighScrollY = TITLE_SCROLL_START_Y;
+    s16 tituloScrollY = TITLE_TITULO_SCROLL_START_Y;
+    while (sleighScrollY > TITLE_SCROLL_TARGET_Y) {
+        kprintf("Haciendo map hacia (0, %d)", sleighScrollY);
+        MAP_scrollTo(mapSleigh, 0, sleighScrollY);
+        MAP_scrollTo(mapTitulo, 0, tituloScrollY);
+        sleighScrollY -= 1;
+        tituloScrollY += 1;
         SYS_doVBlankProcess();
     }
+    MAP_scrollTo(mapSleigh, 0, TITLE_SCROLL_TARGET_Y);
+    MAP_scrollTo(mapTitulo, 0, TITLE_TITULO_SCROLL_TARGET_Y);
 
     VDP_loadFont(font_dark.tileset, DMA);
     PAL_setPalette(PAL_EFFECT, font_dark.palette->data, CPU);
@@ -85,11 +88,10 @@ void title_show(void) {
         SYS_doVBlankProcess();
     }
 
+    MAP_release(mapSleigh);
+    MAP_release(mapTitulo);
     gameCore_fadeToBlack();
-    VDP_releaseAllSprites();
-    SPR_reset();
-    VDP_clearPlane(BG_A, TRUE);
-    VDP_clearPlane(BG_B, TRUE);
+    gameCore_resetVideoState(); /* Limpia recursos de la intro (Sleigh Chase) antes de la fase 1. */
 }
 
 /* --- Helpers --- */

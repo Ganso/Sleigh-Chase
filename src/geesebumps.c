@@ -1,5 +1,7 @@
 #include <genesis.h>
 #include "../res/res_geesebumps.h"
+#include "audio_manager.h"
+#include "game_core.h"
 
 /**
  * @file geesebumps.c
@@ -43,6 +45,7 @@ void geesebumps_logo(void)
     Sprite *logo_text, *logo_lines1, *logo_lines2; /**< Sprites del logo. */
     should_exit = false; /**< Reinicia la bandera de salida temprana. */
 
+    gameCore_resetVideoState(); /**< Garantiza VRAM limpia y reinicia tile index. */
     int indice_tiles = TILE_USER_INDEX; /**< Primer tile libre para cargar BG. */
     
     /* Configura el manejador de joystick */
@@ -55,8 +58,7 @@ void geesebumps_logo(void)
     PAL_setPalette(PAL3, geesebumps_pal_white.data, DMA);
 
     /* Música de fondo */
-    XGM2_setLoopNumber(-1);
-    XGM2_play(music_geesebumps);
+    audio_play_intro();
     
     /* Primera parte del logo (Goose) */
     VDP_drawImageEx(BG_A, &geesebumps_logo_bg, TILE_ATTR_FULL(PAL0, false, false, false, indice_tiles), 0, 0, false, true);

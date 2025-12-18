@@ -1422,6 +1422,14 @@ u8 minigamePickup_isComplete(void) {
     return (giftsCollected >= TARGET_GIFTS);
 }
 
+/** @brief Libera el mapa de pista para evitar fugas entre fases. */
+void minigamePickup_shutdown(void) {
+    if (mapTrack) {
+        MAP_release(mapTrack);
+        mapTrack = NULL;
+    }
+}
+
 /** @brief Activa la música de fase tras reproducir el grito de Santa. */
 static void startMusicAfterHoHoHo(void) {
     if (musicStarted) return;
