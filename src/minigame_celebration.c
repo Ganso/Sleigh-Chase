@@ -6,8 +6,10 @@
 #include "minigame_celebration.h"
 #include "resources_sprites.h"
 #include "resources_bg.h"
+#include "resources_sfx.h"
 
 #define PROMPT_BUTTONS (BUTTON_A | BUTTON_B | BUTTON_C | BUTTON_START)
+#define CELEB_TIMES_START_Y 5      /* Fila base para los textos de tiempos. */
 
 typedef enum {
     CELEB_STATE_MESSAGE = 0,
@@ -37,12 +39,21 @@ void minigameCelebration_setTimes(u32 pickup, u32 delivery, u32 bells) {
 }
 
 void minigameCelebration_init(void) {
+    audio_stop_music();
+    SPR_end();
+    VDP_resetSprites();
+    SPR_init();
+
     VDP_setScreenWidth320();
     VDP_setScreenHeight224();
     VDP_setBackgroundColor(0);
+    VDP_setPlaneSize(64, 64, TRUE);
+    VDP_setHorizontalScroll(BG_A, 0);
+    VDP_setHorizontalScroll(BG_B, 0);
+    VDP_setVerticalScroll(BG_A, 0);
+    VDP_setVerticalScroll(BG_B, 0);
     VDP_clearPlane(BG_A, TRUE);
     VDP_clearPlane(BG_B, TRUE);
-
     loadCelebrationBackground();
     drawVictoryMessage();
 
@@ -149,6 +160,8 @@ static void drawVictoryMessage(void) {
     PAL_setPalette(PAL_EFFECT, font.palette->data, CPU);
     VDP_setTextPalette(PAL_EFFECT);
 
+    XGM2_playPCM(snd_victoria, sizeof(snd_victoria), SOUND_PCM_CH_AUTO);
+
     for (u16 i = 0; i < totalLines; i++) {
         drawCenteredText(mensajes[i], startY + i, BG_A);
     }
@@ -165,33 +178,33 @@ static void drawTimesBoard(void) {
 
     const char* header = (g_selectedLanguage == GAME_LANG_SPANISH) ?
         "Resumen de partida" : "Run summary";
-    drawCenteredText(header, 4, BG_A);
+    drawCenteredText(header, CELEB_TIMES_START_Y, BG_A);
 
     const char* fase1Fmt = (g_selectedLanguage == GAME_LANG_SPANISH) ?
         "Fase 1: %lus" : "Stage 1: %lus";
     sprintf(buffer, fase1Fmt, (unsigned long)timePickup);
-    drawCenteredText(buffer, 7, BG_A);
+    drawCenteredText(buffer, CELEB_TIMES_START_Y + 3, BG_A);
 
     const char* fase2Fmt = (g_selectedLanguage == GAME_LANG_SPANISH) ?
         "Fase 2: %lus" : "Stage 2: %lus";
     sprintf(buffer, fase2Fmt, (unsigned long)timeDelivery);
-    drawCenteredText(buffer, 8, BG_A);
+    drawCenteredText(buffer, CELEB_TIMES_START_Y + 4, BG_A);
 
     const char* fase3Fmt = (g_selectedLanguage == GAME_LANG_SPANISH) ?
         "Fase 3: %lus" : "Stage 3: %lus";
     sprintf(buffer, fase3Fmt, (unsigned long)timeBells);
-    drawCenteredText(buffer, 9, BG_A);
+    drawCenteredText(buffer, CELEB_TIMES_START_Y + 5, BG_A);
 
     sprintf(buffer, "Total: %lus", (unsigned long)timeTotal);
-    drawCenteredText(buffer, 11, BG_A);
+    drawCenteredText(buffer, CELEB_TIMES_START_Y + 7, BG_A);
 
     const char* tip = (g_selectedLanguage == GAME_LANG_SPANISH) ?
         ">Intenta mejorar estos numeros!" :
-        ">Try to beat these times!";
-    drawCenteredText(tip, 14, BG_A);
+        "Try to beat these times!";
+    drawCenteredText(tip, CELEB_TIMES_START_Y + 10, BG_A);
 
     const char* resetPrompt = (g_selectedLanguage == GAME_LANG_SPANISH) ?
         "} Pulsa un boton para reiniciar {" :
         "} Press any button to reset {";
-    drawCenteredText(resetPrompt, 16, BG_A);
+    drawCenteredText(resetPrompt, CELEB_TIMES_START_Y + 12, BG_A);
 }
