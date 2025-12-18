@@ -6,6 +6,7 @@
 #include "game_core.h"
 
 u32 globalTileIndex = TILE_USER_INDEX; /**< Índice global base de tiles libres. */
+GameLanguage g_selectedLanguage = GAME_LANG_ENGLISH; /**< Idioma actual del juego. */
 
 /** @brief Lee entrada del mando 1. */
 u16 gameCore_readInput(void) {
