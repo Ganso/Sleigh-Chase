@@ -153,8 +153,6 @@ static void drawVictoryMessage(void) {
     PAL_setPalette(PAL_EFFECT, font.palette->data, CPU);
     VDP_setTextPalette(PAL_EFFECT);
 
-    XGM2_playPCM(snd_victoria, sizeof(snd_victoria), SOUND_PCM_CH_AUTO);
-
     for (u16 i = 0; i < totalLines; i++) {
         drawCenteredText(mensajes[i], startY + i, BG_A);
     }

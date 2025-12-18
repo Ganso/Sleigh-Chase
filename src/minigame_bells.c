@@ -21,8 +21,6 @@
 #include "resources_sprites.h"
 #include "snow_effect.h"
 
-#define ENABLE_OPTIONAL_LETTER_SFX 0     /* Activa SFX opcional al colocar letras. */
-
 #define NUM_BELLS 6                      /* Campanas móviles en caída. */
 #define NUM_FIXED_BELLS 12               /* Campanas fijas del marcador. */
 #define NUM_BOMBS 3                      /* Bombas concurrentes en pantalla. */
@@ -523,23 +521,16 @@ static void handleLetterCollision(Bullet* bullet, Letter* letter) {
     if (hitIndex == 0xFF) return;
 
     if (hitIndex == targetIndex) {
-        #if ENABLE_OPTIONAL_LETTER_SFX
         XGM2_playPCM(snd_letra_ok, sizeof(snd_letra_ok), SOUND_PCM_CH_AUTO);
-        #endif
         SPR_setDefinition(felizSprites[currentLetterIndex], felizSpritesColor[targetIndex]);
         currentLetterIndex++;
 
         if (currentLetterIndex >= NUM_TARGET_LETTERS) {
             victoryTriggered = TRUE;
             currentPhase = PHASE_COMPLETED;
-        #if ENABLE_OPTIONAL_LETTER_SFX
-        XGM2_playPCM(snd_victoria, sizeof(snd_victoria), SOUND_PCM_CH_AUTO);
-        #endif
         }
     } else {
-        #if ENABLE_OPTIONAL_LETTER_SFX
         XGM2_playPCM(snd_letra_no, sizeof(snd_letra_no), SOUND_PCM_CH_AUTO);
-        #endif
     }
 
     letter->isBlinking = TRUE;
@@ -620,9 +611,7 @@ static void updateFeliz2025Blink(void) {
 /** @brief Transición de campanas a letras replicando la versión 2025. */
 static void startLettersPhase(void) {
     currentPhase = PHASE_LETTERS;
-            #if ENABLE_OPTIONAL_LETTER_SFX
-            XGM2_playPCM(snd_aplausos, sizeof(snd_aplausos), SOUND_PCM_CH3);
-            #endif
+    XGM2_playPCM(snd_aplausos, sizeof(snd_aplausos), SOUND_PCM_CH3);
 
     for (u8 i = 0; i < NUM_BELLS; i++) {
         if (bells[i].sprite) {
@@ -795,4 +784,3 @@ void minigameBells_shutdown(void) {
         mapBackground = NULL;
     }
 }
-

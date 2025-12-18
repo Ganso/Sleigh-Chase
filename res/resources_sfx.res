@@ -14,4 +14,6 @@ WAV snd_elfo_volador_robando_1 "sfx/snd_elfo_volador_robando_1.wav" XGM2
 WAV snd_elfo_volador_robando_2 "sfx/snd_elfo_volador_robando_2.wav" XGM2
 WAV snd_regalo_quemado "sfx/snd_regalo_quemado.wav" XGM2
 WAV snd_sleigh_chase "sfx/snd_sleighchase.wav" XGM2
-WAV snd_victoria "sfx/snd_victoria.wav" XGM2
+WAV snd_letra_ok "sfx/snd_letra_ok.wav" XGM2
+WAV snd_letra_no "sfx/snd_letra_no.wav" XGM2
+WAV snd_aplausos "sfx/snd_aplausos.wav" XGM2

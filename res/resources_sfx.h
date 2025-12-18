@@ -19,6 +19,8 @@ extern const u8 snd_elfo_volador_robando_1[13312];
 extern const u8 snd_elfo_volador_robando_2[13312];
 extern const u8 snd_regalo_quemado[13312];
 extern const u8 snd_sleigh_chase[55552];
-extern const u8 snd_victoria[107264];
+extern const u8 snd_letra_ok[2048];
+extern const u8 snd_letra_no[2560];
+extern const u8 snd_aplausos[104960];
 
 #endif // _RES_RESOURCES_SFX_H_
