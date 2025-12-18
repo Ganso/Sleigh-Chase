@@ -646,12 +646,8 @@ static void startLettersPhase(void) {
 
 /** @brief Configura recursos, sprites y estado inicial de la fase. */
 void minigameBells_init(void) {
-    VDP_setScreenWidth320();
-    VDP_setScreenHeight224();
-
-    gameCore_resetTileIndex();
-
-    SPR_init();
+    audio_stop_music();
+    gameCore_resetVideoState();
     JOY_init();
 
     if (sprite_campana.palette) {

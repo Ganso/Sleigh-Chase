@@ -19,11 +19,11 @@
 #define TITLE_LANGUAGE_Y 19             /* Inicio del menú. */
 #define TITLE_TEXT_COLUMNS 40            /* Columnas de texto en modo 320. */
 
-static void title_reset_video(void);
 static void title_draw_language_options(u8 englishSelected);
 
 void title_show(void) {
-    title_reset_video();
+    audio_stop_music();
+    gameCore_resetVideoState();
 
     if (image_titulo_pal.data != NULL) {
         PAL_setPalette(PAL_PLAYER, image_titulo_pal.data, CPU);
@@ -93,26 +93,6 @@ void title_show(void) {
 }
 
 /* --- Helpers --- */
-
-static void title_reset_video(void) {
-    audio_stop_music();
-    SPR_end();
-    VDP_resetSprites();
-    SPR_init();
-
-    VDP_setScreenWidth320();
-    VDP_setScreenHeight224();
-    VDP_setPlaneSize(64, 64, TRUE);
-    VDP_setHorizontalScroll(BG_A, 0);
-    VDP_setHorizontalScroll(BG_B, 0);
-    VDP_setVerticalScroll(BG_A, 0);
-    VDP_setVerticalScroll(BG_B, 0);
-    VDP_clearPlane(BG_A, TRUE);
-    VDP_clearPlane(BG_B, TRUE);
-    VDP_setBackgroundColor(0);
-    gameCore_resetTileIndex();
-    SYS_doVBlankProcess();
-}
 
 static void title_draw_language_options(u8 englishSelected) {
     const char* englishText = englishSelected ? "} ENGLISH {" : "ENGLISH";

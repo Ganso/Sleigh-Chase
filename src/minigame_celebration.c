@@ -40,20 +40,7 @@ void minigameCelebration_setTimes(u32 pickup, u32 delivery, u32 bells) {
 
 void minigameCelebration_init(void) {
     audio_stop_music();
-    SPR_end();
-    VDP_resetSprites();
-    SPR_init();
-
-    VDP_setScreenWidth320();
-    VDP_setScreenHeight224();
-    VDP_setBackgroundColor(0);
-    VDP_setPlaneSize(64, 64, TRUE);
-    VDP_setHorizontalScroll(BG_A, 0);
-    VDP_setHorizontalScroll(BG_B, 0);
-    VDP_setVerticalScroll(BG_A, 0);
-    VDP_setVerticalScroll(BG_B, 0);
-    VDP_clearPlane(BG_A, TRUE);
-    VDP_clearPlane(BG_B, TRUE);
+    gameCore_resetVideoState();
     loadCelebrationBackground();
     drawVictoryMessage();
 

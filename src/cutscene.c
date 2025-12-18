@@ -105,21 +105,7 @@ static void cutscene_play(const char* const* lines, u8 lineCount) {
 
     /* Asegura estado limpio de video, sprites y audio antes de mostrar. */
     audio_stop_music();
-    SPR_end();          /* Libera sprites y VRAM asociada. */
-    VDP_resetSprites(); /* Limpia tabla de sprites hardware. */
-    SPR_init();         /* Reinicia gestor de sprites. */
-    VDP_setScreenWidth320();
-    VDP_setScreenHeight224();
-    VDP_clearPlane(BG_A, TRUE);
-    VDP_clearPlane(BG_B, TRUE);
-    VDP_setPlaneSize(64, 64, TRUE);
-    VDP_setHorizontalScroll(BG_A, 0);
-    VDP_setHorizontalScroll(BG_B, 0);
-    VDP_setVerticalScroll(BG_A, 0);
-    VDP_setVerticalScroll(BG_B, 0);
-    VDP_setBackgroundColor(0);
-    gameCore_resetTileIndex();
-    SYS_doVBlankProcess();
+    gameCore_resetVideoState();
        
     // Load font and set text palette
     VDP_loadFont(font_dark.tileset, DMA);

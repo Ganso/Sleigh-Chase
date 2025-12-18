@@ -227,13 +227,8 @@ static void playGiftLostSound(void);
 
 /** @brief Configura recursos, estado inicial de la fase. */
 void minigameDelivery_init(void) {
-    VDP_setScreenWidth320();
-    VDP_setScreenHeight224();
-
-    VDP_clearPlane(BG_A, TRUE);
-    VDP_clearPlane(BG_B, TRUE);
-    VDP_setPlaneSize(64, 64, TRUE);
-    SPR_reset();
+    audio_stop_music();
+    gameCore_resetVideoState();
     kprintf("[SANTA] starting Santa init at pos=(%d,%d)", (WORLD_WIDTH - SANTA_WIDTH) / 2, SANTA_START_Y);
 
     frameCounter = 0;
