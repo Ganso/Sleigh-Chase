@@ -1,31 +1,27 @@
-# Feliz 2026 (Mega Drive) by Geesebumps
+# Sleigh Chase (Mega Drive) by Geesebumps
 
 Juego de minijuegos navidenos para Sega Genesis/Mega Drive desarrollado con SGDK.
 
-## Estado actual
-- **Cutscenes**: Antes de cada fase se muestra una escena con `FondoSanta.png` y texto progresivo que introduce los objetivos.
-- **Fase 1**: Recogida (Polo Norte) - ¡Completada a nivel mecánicas! Scroll vertical, inercia completa, recogida de regalos, marcas de elfos, robo de enemigos y gestión de HUD/música. Pendientes solo ajustes de arte/SFX finales si se desea.
-- **Fase 2**: Entrega (Tejados) - Base jugable creada: fondo de tejados con nieve, movimiento libre, chimeneas 48x48 en posiciones fijas y entrega manual de regalos (botón A) con contador decreciente desde 10. Enemigos placeholder reutilizados de los elfos con reinicio al contacto.
-- **Fase 3**: Campanadas (Iglesia) - Implementada: fondo + paralaje de nieve, canion lateral con cooldown, campanas/bombas con SFX y HUD propio.
-- **Fase 4**: Celebracion (Fiesta) - Placeholder: contador simple hasta 300 frames.
+## Fases
 
-## Requisitos
-- SGDK (Sega Genesis Development Kit) configurado en `SGDK_PATH` o `%GDK%`.
-- Toolchain m68k incluida en SGDK; la compilacion se realiza solo en local.
+- **Recogida de regalos**: Los malvados secuaces del Grinch han robado los últimos 10 regalos que le quedan por repartir a Papá Noel. Los elfos verdes, nos los lanzarán desde los laterales, y tenemos que recogerlos esquivando los árboles y a los duendes rojos, que nos robarán los regalos que hayamos recogido.
+- **Entrega en la ciudad**: Sobrevolamos la ciudad con nuestro trineo, buscando diez chimeneas a las que lanzarle los regalos (botón A del mando). No los lances a chimeneas encendidas, y cuidado de nuevo con los duendes malignos que tratarán de interceptarlos.
+- **Campanadas**: Después de salvar la navidad, tocaremos las doce campanas lanzándoles confeti, y formaremos el mensaje de felicitación de año nuevo. No toques las bombas, o tendrás que volver a empezar.
+
+## Librerías
+
+- SGDK (Sega Genesis Development Kit)
 
 ## Estructura
 - `src/`: codigo C de fases y sistemas (core, audio, HUD, nieve, intro).
 - `inc/`: headers correspondientes.
 - `res/`: definiciones `.res` y recursos generados (`resources_*.h`, `res_geesebumps.h`).
 - `documentos/`: documentacion del proyecto y referencia SGDK (`documentos/sgdk-reference-2025-11-15.txt`).
-- `out/`: binarios generados localmente (ROM y objetos); no se editan a mano.
-
-## Compilar y ejecutar (solo en local)
-- En raiz: `make` usa `SGDK_PATH` y genera `build/rom.bin`.
-- VS Code: tareas `make`, `clean` y `run-emulator` en `.vscode/tasks.json` (usa `%GDK%\\bin\\make` y un script Blastem).
-- No ejecutes compilacion desde IA/CI; solo el equipo humano con SGDK instalado.
 
 ## Notas de desarrollo
-- El bucle principal (`src/main.c`) orquesta `INTRO -> PICKUP -> DELIVERY -> BELLS -> CELEBRATION -> END`, aplicando `gameCore_fadeToBlack()` entre fases.
-- Recursos nuevos se anaden editando los `.res` y regenerando con `rescomp`; no modificar a mano los headers generados.
-- Mantener este README actualizado cuando cambie el estado de las fases, dependencias o estructura.
+
+- **Uso de IA**: Todo el código del proyecto se ha creado íntegramente con Codex de OpenAI utilizando la librería SGDK, tanto en su versión web como integrado en VS Code, tomando como base el minijuego de felicitación del año pasado, que solo incluía una fase. Los recursos gráficos han sido diseñados con Nano Banana y adaptados con Aseprite, mientras que los efectos de sonido proceden de generación con Eleven Labs.
+
+- **Música**: Todas las músicas han sido secuenciadas desde cero por Haddhar en DefleMask.
+
+- **Licencia**: Todo el código fuente, los recursos, y los ficheros originales se ofrecen de manera íntegra, totalmente abierta y sin ninguna restricción de uso. Somos conscientes de las implicaciones éticas del uso de IA generativa, y es nuestra manera de tratar de apoyar a la comunidad de desarrolladores ofreciendo el juego como plantilla para cualquiera que quiera desarrollar su proyecto.
