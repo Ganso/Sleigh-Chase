@@ -1,5 +1,4 @@
 #include <genesis.h>
-
 #ifndef _RES_RESOURCES_MUSIC_H_
 #define _RES_RESOURCES_MUSIC_H_
 

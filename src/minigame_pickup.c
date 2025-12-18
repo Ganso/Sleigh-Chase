@@ -154,7 +154,9 @@ static s16 santaStartX; /**< Coordenada X inicial de Santa. */
 static s16 santaStartY; /**< Coordenada Y inicial de Santa. */
 static GameInertia santaInertia; /**< Parámetros de inercia de movimiento. */
 static SnowEffect snowEffect; /**< Sistema de partículas de nieve. */
+#if DEBUG_MODE
 static const char* lastTraceFunc = NULL; /**< Última función trazada. */
+#endif
 static u8 recoveringFromTree; /**< Flag de recuperación tras chocar con árbol. */
 static u16 treeCollisionBlinkFrames; /**< Duración del parpadeo de colisión. */
 static u8 treeCollisionVisible; /**< Controla la visibilidad durante parpadeo. */
@@ -175,7 +177,7 @@ static void traceFunc(const char *funcName) {
     if (funcName == NULL) return;
     if (lastTraceFunc != funcName) {
         lastTraceFunc = funcName;
-        kprintf("[TRACE] %s", funcName);
+        // kprintf("[TRACE] %s", funcName);
     }
     #endif
 }
@@ -208,7 +210,7 @@ static u8 applyGiftLoss(u16 amount);
 static u8 validateHorizontalRange(s16 minX, s16 maxX, const char* context) {
     TRACE_FUNC();
     if (maxX <= minX) {
-        kprintf("[%s] Rango X invalido (min=%d, max=%d)", context, minX, maxX);
+        // kprintf("[%s] Rango X invalido (min=%d, max=%d)", context, minX, maxX);
         return FALSE;
     }
     return TRUE;
@@ -222,7 +224,7 @@ static u8 validateHorizontalRange(s16 minX, s16 maxX, const char* context) {
 static void markActorInactive(SimpleActor *actor, const char* context) {
     TRACE_FUNC();
     actor->active = FALSE;
-    kprintf("[%s] Actor desactivado por error de inicializacion", context);
+    // kprintf("[%s] Actor desactivado por error de inicializacion", context);
     if (actor->sprite != NULL) {
         SPR_setVisibility(actor->sprite, HIDDEN);
     }
@@ -366,7 +368,7 @@ static void spawnElf(SimpleActor *elf, u8 side, u8 index) {
     if (elfGiftSprites[index]) {
         SPR_setVisibility(elfGiftSprites[index], HIDDEN);
     }
-    kprintf("[ELF %d] Aparece en y=%d", index, elf->y);
+    // kprintf("[ELF %d] Aparece en y=%d", index, elf->y);
 
     if (elf->sprite == NULL) {
         elf->sprite = SPR_addSpriteSafe(&sprite_elfo_lateral, elf->x, elf->y,
@@ -447,7 +449,7 @@ static void showElfShadow(u8 index, s16 startX, s16 startY) {
         SPR_setPosition(elfShadowSprites[index], startX, startY);
         elfShadowPosX[index] = startX;
         elfShadowPosY[index] = startY;
-        kprintf("[ELF %d] Sombra iniciada en (%d,%d)", index, startX, startY);
+        // kprintf("[ELF %d] Sombra iniciada en (%d,%d)", index, startX, startY);
     } else {
         elfShadowActive[index] = FALSE;
     }
@@ -550,7 +552,7 @@ static void updateElfGift(u8 index, fix16 progress) {
     elfGiftPosY[index] = posY;
     elfGiftHasLanded[index] = (progress >= FIX16(1));
     if (elfGiftHasLanded[index]) {
-        kprintf("[DEBUG GIFT] landed idx=%d pos=(%d,%d)", index, posX, posY);
+        // kprintf("[DEBUG GIFT] landed idx=%d pos=(%d,%d)", index, posX, posY);
     }
 }
 
@@ -573,7 +575,7 @@ static void scheduleElfRespawn(u8 index, u8 side) {
     hideElfMark(index);
     hideElfShadow(index);
     hideElfGift(index, TRUE);
-    kprintf("[ELF %d] Respawn en %u frames (side=%d)", index, elfRespawnTimer[index], side);
+    // kprintf("[ELF %d] Respawn en %u frames (side=%d)", index, elfRespawnTimer[index], side);
 }
 
 /**
@@ -679,8 +681,8 @@ static void updateElfMark(u8 index, s16 santaHitX, s16 santaHitY, s16 santaHitW,
     if (elfGiftActive[index]  && progress >= FIX16(0.9)) { // Empieza a checkear desde el 90% de caída
         if (gameCore_checkCollision(santaHitX-SANTA_COLECT_EXTRA_MARGIN, santaHitY-SANTA_COLECT_EXTRA_MARGIN, santaHitW+SANTA_COLECT_EXTRA_MARGIN*2, santaHitH+SANTA_COLECT_EXTRA_MARGIN*2, // Hitbox de Santa con margen extra
                 elfGiftPosX[index], elfGiftPosY[index], GIFT_SIZE, GIFT_SIZE)) {
-            kprintf("[DEBUG GIFT] collect landed idx=%d giftPos=(%d,%d) santaHit=(%d,%d,%d,%d)", index,
-                elfGiftPosX[index], elfGiftPosY[index], santaHitX, santaHitY, santaHitW, santaHitH);
+            // kprintf("[DEBUG GIFT] collect landed idx=%d giftPos=(%d,%d) santaHit=(%d,%d,%d,%d)", index,
+            //     elfGiftPosX[index], elfGiftPosY[index], santaHitX, santaHitY, santaHitW, santaHitH);
             collectGift();
             hideElfMark(index);
             hideElfShadow(index);
@@ -704,7 +706,7 @@ static void resetSpecialIfReady(void) {
 static void requestPhaseChange(void) {
     TRACE_FUNC();
     /* TODO: implementar cambio de fase */
-    kprintf("[PHASE] Cambio de fase solicitado (pendiente de implementar)");
+    // kprintf("[PHASE] Cambio de fase solicitado (pendiente de implementar)");
 }
 
 /** @brief Refleja en el HUD el contador de regalos y carga especial. */
@@ -716,21 +718,6 @@ static void updateGiftCounter(void) {
 }
 
 /** @brief Log de depuracion para el estado del scroll vertical. */
-static void debugPrintScrollState(const char* context, s16 scrollStep) {
-    s32 speedInt = F16_toInt(scrollSpeedPerFrame);
-    s32 speedFrac = ((u32)(scrollSpeedPerFrame & 0xFFFF) * 1000) / 65536;
-    s32 accInt = F16_toInt(scrollAccumulator);
-    s32 accFrac = ((u32)(scrollAccumulator & 0xFFFF) * 1000) / 65536;
-
-    kprintf("[DEBUG SCROLL] %s speed=%ld.%03ld acc=%ld.%03ld step=%d gifts=%u max=%u frame=%u",
-        (context != NULL) ? context : "unknown",
-        (long)speedInt, (long)speedFrac,
-        (long)accInt, (long)accFrac,
-        scrollStep,
-        giftsCollected, maxGiftsCollected,
-        frameCounter);
-}
-
 /**
  * @brief Devuelve el suelo de regalos permitido según el máximo alcanzado.
  */
@@ -790,21 +777,21 @@ static void collectGift(void) {
     if (giftsCollected == 3 && activeEnemyCount == 1) { // A los 3 regalos, spawnea el segundo enemigo
         activeEnemyCount = 2;
         spawnEnemy(&enemies[1]);
-        kprintf("[DEBUG ENEMY] activeEnemyCount aumentó a 2");
+        // kprintf("[DEBUG ENEMY] activeEnemyCount aumentó a 2");
     } else if (giftsCollected == 6 && activeEnemyCount == 2) { // A los 6 regalos, spawnea el tercer enemigo
         activeEnemyCount = 3;
         spawnEnemy(&enemies[2]);
-        kprintf("[DEBUG ENEMY] activeEnemyCount aumentó a 3");
+        // kprintf("[DEBUG ENEMY] activeEnemyCount aumentó a 3");
     }
     if (!secondTreeSpawned && (giftsCollected >= GIFTS_FOR_SECOND_TREE)) {
         secondTreeSpawned = TRUE;
         spawnTree(&trees[1]);
         if (trees[1].active) {
-            kprintf("[DEBUG TREE] Segundo árbol activado (regalos=%u)", giftsCollected);
+            // kprintf("[DEBUG TREE] Segundo árbol activado (regalos=%u)", giftsCollected);
         }
     }
 
-    kprintf("[DEBUG GIFT] collectGift giftsCollected=%u giftsCharge=%u", giftsCollected, giftsCharge);
+    // kprintf("[DEBUG GIFT] collectGift giftsCollected=%u giftsCharge=%u", giftsCollected, giftsCharge);
     resetSpecialIfReady();
     updateGiftCounter();
     if (!phaseChangeRequested && (giftsCollected >= GIFT_COUNTER_MAX)) {
@@ -1241,7 +1228,7 @@ void minigamePickup_init(void) {
         elfRespawnTimer[i] = randomFrameDelay(ELF_RESPAWN_DELAY_MIN_FRAMES, ELF_RESPAWN_DELAY_MAX_FRAMES);
         elfSide[i] = i % 2;
         elves[i].active = FALSE;
-        kprintf("[ELF %d] Respawn inicial en %u frames", i, elfRespawnTimer[i]);
+        // kprintf("[ELF %d] Respawn inicial en %u frames", i, elfRespawnTimer[i]);
     }
     activeEnemyCount = 1;  // Empieza con 1 enemigo
     for (u8 i = 0; i < NUM_ENEMIES; i++) {
@@ -1308,9 +1295,6 @@ void minigamePickup_update(void) {
     while (scrollAccumulator >= FIX16(1)) {
         scrollStep++;
         scrollAccumulator -= FIX16(1);
-    }
-    if ((frameCounter & 31) == 0) {
-        debugPrintScrollState("frame", scrollStep);
     }
     if (scrollStep > 0) {
         trackOffsetY -= scrollStep;

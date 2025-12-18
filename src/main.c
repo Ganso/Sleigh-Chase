@@ -56,9 +56,8 @@ static u32 phaseDurationsSeconds[PHASE_END]; /**< Tiempo consumido por fase. */
 
 static void startPhaseTimer(void) {
     phaseTimerStart = getTime(1);
-    const u32 startSec = phaseTimerStart / TIMEPERSECOND;
-    kprintf("Fase iniciada en %lu s (raw=%lu)\n",
-        (unsigned long)startSec, (unsigned long)phaseTimerStart);
+    // kprintf("Fase iniciada en %lu s (raw=%lu)\n",
+    //     (unsigned long)(phaseTimerStart / TIMEPERSECOND), (unsigned long)phaseTimerStart);
 }
 
 static void stopPhaseTimer(u8 phaseId) {
@@ -67,11 +66,11 @@ static void stopPhaseTimer(u8 phaseId) {
     const u32 elapsedUnits = now - phaseTimerStart; /* Unidades de 1/256s */
     const u32 elapsedSeconds = (elapsedUnits + (TIMEPERSECOND / 2)) / TIMEPERSECOND; /* Redondeo */
     phaseDurationsSeconds[phaseId] = elapsedSeconds;
-    kprintf("Fase %u terminada: %lu s (raw=%lu, startRaw=%lu)\n",
-        phaseId,
-        (unsigned long)elapsedSeconds,
-        (unsigned long)elapsedUnits,
-        (unsigned long)phaseTimerStart);
+    // kprintf("Fase %u terminada: %lu s (raw=%lu, startRaw=%lu)\n",
+    //     phaseId,
+    //     (unsigned long)elapsedSeconds,
+    //     (unsigned long)elapsedUnits,
+    //     (unsigned long)phaseTimerStart);
 }
 
 static void drawPhaseDurations(u16 startY) {
