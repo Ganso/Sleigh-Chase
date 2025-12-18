@@ -37,6 +37,19 @@ typedef struct {
 /* TILESET INDEX GLOBAL */
 extern u32 globalTileIndex;
 
+/**
+ * @brief Idiomas disponibles para los textos.
+ */
+typedef enum {
+    GAME_LANG_ENGLISH = 0, /**< Inglés. */
+    GAME_LANG_SPANISH = 1  /**< Español. */
+} GameLanguage;
+
+/**
+ * @brief Idioma seleccionado globalmente.
+ */
+extern GameLanguage g_selectedLanguage;
+
 /** @brief Reinicia el índice global de tiles al valor por defecto del usuario. */
 void gameCore_resetTileIndex(void);
 

@@ -4,19 +4,23 @@
  */
 
 #include <genesis.h>
+#include <string.h>
 #include "title_screen.h"
 #include "game_core.h"
 #include "resources_bg.h"
 #include "resources_sfx.h"
 #include "audio_manager.h"
+#include "resources_sprites.h"
 
 #define TITLE_WAIT_BEFORE_SCROLL_FRAMES 60 /* 1 segundo antes de mover. */
 #define TITLE_SCROLL_FRAMES 60             /* Duracion del scroll vertical. */
 #define TITLE_SCROLL_START_Y 128       /* Arranca por encima de la vista. */
 #define TITLE_SCROLL_TARGET_Y 0           /* Termina alineado con la pantalla. */
+#define TITLE_LANGUAGE_Y 17              /* Fila aproximada al 60% de pantalla. */
+#define TITLE_TEXT_COLUMNS 40            /* Columnas de texto en modo 320. */
 
 static void title_reset_video(void);
-static u8 title_read_button(void);
+static void title_draw_language_options(u8 englishSelected);
 
 void title_show(void) {
     title_reset_video();
@@ -55,7 +59,29 @@ void title_show(void) {
         SYS_doVBlankProcess();
     }
 
-    while (!title_read_button()) {
+    VDP_loadFont(font_dark.tileset, DMA);
+    PAL_setPalette(PAL_EFFECT, font_dark.palette->data, CPU);
+    VDP_setTextPalette(PAL_EFFECT);
+
+    u8 englishSelected = TRUE;
+    title_draw_language_options(englishSelected);
+
+    u16 previousInput = 0;
+    while (TRUE) {
+        const u16 input = JOY_readJoypad(JOY_1);
+        const u16 pressed = input & ~previousInput;
+
+        if (pressed & (BUTTON_UP | BUTTON_DOWN)) {
+            englishSelected = !englishSelected;
+            title_draw_language_options(englishSelected);
+        }
+
+        if (input & (BUTTON_START | BUTTON_A | BUTTON_B | BUTTON_C)) {
+            g_selectedLanguage = englishSelected ? GAME_LANG_ENGLISH : GAME_LANG_SPANISH;
+            break;
+        }
+
+        previousInput = input;
         SYS_doVBlankProcess();
     }
 
@@ -88,7 +114,13 @@ static void title_reset_video(void) {
     SYS_doVBlankProcess();
 }
 
-static u8 title_read_button(void) {
-    const u16 input = JOY_readJoypad(JOY_1);
-    return (input & (BUTTON_START | BUTTON_A | BUTTON_B | BUTTON_C)) ? TRUE : FALSE;
+static void title_draw_language_options(u8 englishSelected) {
+    const char* englishText = englishSelected ? "} ENGLISH {" : "ENGLISH";
+    const char* spanishText = englishSelected ? "ESPA^OL" : "} ESPA^OL {";
+
+    VDP_clearText(0, TITLE_LANGUAGE_Y, TITLE_TEXT_COLUMNS);
+    VDP_clearText(0, TITLE_LANGUAGE_Y + 2, TITLE_TEXT_COLUMNS);
+
+    VDP_drawText(englishText, (TITLE_TEXT_COLUMNS - strlen(englishText)) / 2, TITLE_LANGUAGE_Y);
+    VDP_drawText(spanishText, (TITLE_TEXT_COLUMNS - strlen(spanishText)) / 2, TITLE_LANGUAGE_Y + 2);
 }
