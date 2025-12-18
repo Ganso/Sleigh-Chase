@@ -54,6 +54,11 @@ extern GameLanguage g_selectedLanguage;
 void gameCore_resetTileIndex(void);
 
 /**
+ * @brief Limpia VRAM, planos y sprites para garantizar un inicio de fase limpio.
+ */
+void gameCore_resetVideoState(void);
+
+/**
  * @brief Cronómetro simple para fases con o sin límite de tiempo.
  */
 typedef struct {

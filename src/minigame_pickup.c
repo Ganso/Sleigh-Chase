@@ -1114,12 +1114,8 @@ static void renderDebug(void) {
 /** @brief Inicializa recursos, estado y entidades de la fase de recogida. */
 void minigamePickup_init(void) {
     TRACE_FUNC();
-    VDP_setScreenWidth320();
-    VDP_setScreenHeight224();
-    VDP_clearPlane(BG_A, TRUE);
-    VDP_clearPlane(BG_B, TRUE);
-    VDP_setPlaneSize(64, 64, TRUE);
-    gameCore_resetTileIndex();
+    audio_stop_music();
+    gameCore_resetVideoState();
     giftsCollected = 0;
     maxGiftsCollected = 0;
     giftsCharge = 0;

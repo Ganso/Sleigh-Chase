@@ -62,6 +62,33 @@ void gameCore_resetTileIndex(void) {
 }
 
 /**
+ * @brief Libera sprites y limpia VRAM/planos para empezar una fase desde cero.
+ *
+ * Reinicia el gestor de sprites y restablece los parámetros básicos del VDP,
+ * asegurando que no quedan restos gráficos entre fases consecutivas.
+ */
+void gameCore_resetVideoState(void) {
+    VDP_releaseAllSprites();
+    SPR_end();
+    VDP_resetSprites();
+    SPR_init();
+
+    VDP_setScreenWidth320();
+    VDP_setScreenHeight224();
+    VDP_setPlaneSize(64, 64, TRUE);
+    VDP_setHorizontalScroll(BG_A, 0);
+    VDP_setHorizontalScroll(BG_B, 0);
+    VDP_setVerticalScroll(BG_A, 0);
+    VDP_setVerticalScroll(BG_B, 0);
+    VDP_clearPlane(BG_A, TRUE);
+    VDP_clearPlane(BG_B, TRUE);
+    VDP_setBackgroundColor(0);
+
+    gameCore_resetTileIndex();
+    SYS_doVBlankProcess();
+}
+
+/**
  * @brief Aplica aceleración y fricción a un eje con límites.
  *
  * @param position Posición actual a modificar.
