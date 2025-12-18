@@ -34,7 +34,7 @@ static void waitSkipRelease(void);
 // {} --> Flechas para remarcar
 
 void cutscene_phase1_intro(void) {
-    static const char* const lines[CUTSCENE_MAX_LINES] = {
+    static const char* const linesEs[CUTSCENE_MAX_LINES] = {
         "Los esbirros del Grinch",
         "robaron los 10 regalos",
         "que faltan por repartir",
@@ -43,11 +43,21 @@ void cutscene_phase1_intro(void) {
         "los elfos me ayudar#n",
         "a recuperarlos"
     };
+    static const char* const linesEn[CUTSCENE_MAX_LINES] = {
+        "The Grinch's minions",
+        "stole the 10 presents",
+        "that still must be sent",
+        "    ",
+        "My trusty elf helpers",
+        "will help me get them",
+        "back before delivery"
+    };
+    const char* const* lines = (g_selectedLanguage == GAME_LANG_SPANISH) ? linesEs : linesEn;
     cutscene_play(lines, 7);
 }
 
 void cutscene_phase2_intro(void) {
-    static const char* const lines[CUTSCENE_MAX_LINES] = {
+    static const char* const linesEs[CUTSCENE_MAX_LINES] = {
         "Por fin puedo repartir",
         "los regalos que faltaban",
         "    ",
@@ -56,11 +66,21 @@ void cutscene_phase2_intro(void) {
         "utiliza el bot*n A para",
         "lanzar los regalos"
     };
+    static const char* const linesEn[CUTSCENE_MAX_LINES] = {
+        "Time to deliver the",
+        "presents that were left",
+        "    ",
+        "Aim at chimneys without",
+        "smoke and press button",
+        "A to throw the gifts",
+        "into the right houses"
+    };
+    const char* const* lines = (g_selectedLanguage == GAME_LANG_SPANISH) ? linesEs : linesEn;
     cutscene_play(lines, 7);
 }
 
 void cutscene_phase3_intro(void) {
-    static const char* const lines[CUTSCENE_MAX_LINES] = {
+    static const char* const linesEs[CUTSCENE_MAX_LINES] = {
         "Gracias por salvar",
         "la Navidad conmigo",
         "    ",
@@ -68,6 +88,15 @@ void cutscene_phase3_intro(void) {
         "Toca las campanas y",
         "forma la felicitaci*n"
     };
+    static const char* const linesEn[CUTSCENE_MAX_LINES] = {
+        "Thanks for saving",
+        "Christmas by my side",
+        "    ",
+        "A brand new year is near",
+        "Ring all the bells and",
+        "shape the greeting"
+    };
+    const char* const* lines = (g_selectedLanguage == GAME_LANG_SPANISH) ? linesEs : linesEn;
     cutscene_play(lines, 6);
 }
 
@@ -113,7 +142,9 @@ static void cutscene_play(const char* const* lines, u8 lineCount) {
         }
     }
 
-    const char* prompt = "} PULSA UN BOTON {";
+    const char* prompt = (g_selectedLanguage == GAME_LANG_SPANISH) ?
+        "} PULSA UN BOTON {" :
+        "} PRESS ANY BUTTON {";
     u16 promptX = CUTSCENE_TEXT_START_X;
     u16 promptY = CUTSCENE_TEXT_START_Y + lineCount + 2;
     u8 promptVisible = TRUE;

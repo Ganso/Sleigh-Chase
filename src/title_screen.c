@@ -16,7 +16,7 @@
 #define TITLE_SCROLL_FRAMES 60             /* Duracion del scroll vertical. */
 #define TITLE_SCROLL_START_Y 128       /* Arranca por encima de la vista. */
 #define TITLE_SCROLL_TARGET_Y 0           /* Termina alineado con la pantalla. */
-#define TITLE_LANGUAGE_Y 17              /* Fila aproximada al 60% de pantalla. */
+#define TITLE_LANGUAGE_Y 19             /* Inicio del menú. */
 #define TITLE_TEXT_COLUMNS 40            /* Columnas de texto en modo 320. */
 
 static void title_reset_video(void);

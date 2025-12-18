@@ -107,7 +107,7 @@ static void drawCenteredText(const char* text, u16 y, VDPPlane plane) {
 // {} --> Flechas para remarcar
 
 static void drawVictoryMessage(void) {
-    static const char* mensajes[] = {
+    static const char* const mensajesEs[] = {
         ">FELIZ 2026!",
         "",
         "Que este nuevo a^o te traiga",
@@ -121,8 +121,25 @@ static void drawVictoryMessage(void) {
         "",
         "GeeseBumps.com 2025",
     };
+    static const char* const mensajesEn[] = {
+        "HAPPY 2026!",
+        "",
+        "May this new year bring you",
+        "joy, health and prosperity.",
+        "",
+        "May all your plans and goals",
+        "come true for you.",
+        "",
+        "Happy Holidays!",
+        "",
+        "",
+        "GeeseBumps.com 2025",
+    };
 
-    const u16 totalLines = sizeof(mensajes) / sizeof(mensajes[0]);
+    const char* const* mensajes = (g_selectedLanguage == GAME_LANG_SPANISH) ? mensajesEs : mensajesEn;
+    const u16 totalLines = (g_selectedLanguage == GAME_LANG_SPANISH) ?
+        (sizeof(mensajesEs) / sizeof(mensajesEs[0])) :
+        (sizeof(mensajesEn) / sizeof(mensajesEn[0]));
     const u16 screenRows = SCREEN_HEIGHT / 8;
     u16 startY = 5;
 
@@ -136,27 +153,45 @@ static void drawVictoryMessage(void) {
         drawCenteredText(mensajes[i], startY + i, BG_A);
     }
 
-    drawCenteredText("} Pulsa para ver tus tiempos {", startY + totalLines + 2, BG_A);
+    const char* prompt = (g_selectedLanguage == GAME_LANG_SPANISH) ?
+        "} Pulsa para ver tus tiempos {" :
+        "} Press to see your times {";
+    drawCenteredText(prompt, startY + totalLines + 2, BG_A);
 }
 
 static void drawTimesBoard(void) {
     char buffer[40];
     VDP_clearPlane(BG_A, TRUE);
 
-    drawCenteredText("Resumen de partida", 4, BG_A);
+    const char* header = (g_selectedLanguage == GAME_LANG_SPANISH) ?
+        "Resumen de partida" : "Run summary";
+    drawCenteredText(header, 4, BG_A);
 
-    sprintf(buffer, "Fase 1: %lus", (unsigned long)timePickup);
+    const char* fase1Fmt = (g_selectedLanguage == GAME_LANG_SPANISH) ?
+        "Fase 1: %lus" : "Stage 1: %lus";
+    sprintf(buffer, fase1Fmt, (unsigned long)timePickup);
     drawCenteredText(buffer, 7, BG_A);
 
-    sprintf(buffer, "Fase 2: %lus", (unsigned long)timeDelivery);
+    const char* fase2Fmt = (g_selectedLanguage == GAME_LANG_SPANISH) ?
+        "Fase 2: %lus" : "Stage 2: %lus";
+    sprintf(buffer, fase2Fmt, (unsigned long)timeDelivery);
     drawCenteredText(buffer, 8, BG_A);
 
-    sprintf(buffer, "Fase 3: %lus", (unsigned long)timeBells);
+    const char* fase3Fmt = (g_selectedLanguage == GAME_LANG_SPANISH) ?
+        "Fase 3: %lus" : "Stage 3: %lus";
+    sprintf(buffer, fase3Fmt, (unsigned long)timeBells);
     drawCenteredText(buffer, 9, BG_A);
 
     sprintf(buffer, "Total: %lus", (unsigned long)timeTotal);
     drawCenteredText(buffer, 11, BG_A);
 
-    drawCenteredText(">Intenta mejorar estos numeros!", 14, BG_A);
-    drawCenteredText("} Pulsa un boton para reiniciar {", 16, BG_A);
+    const char* tip = (g_selectedLanguage == GAME_LANG_SPANISH) ?
+        ">Intenta mejorar estos numeros!" :
+        ">Try to beat these times!";
+    drawCenteredText(tip, 14, BG_A);
+
+    const char* resetPrompt = (g_selectedLanguage == GAME_LANG_SPANISH) ?
+        "} Pulsa un boton para reiniciar {" :
+        "} Press any button to reset {";
+    drawCenteredText(resetPrompt, 16, BG_A);
 }
