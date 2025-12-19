@@ -170,6 +170,7 @@ static Sprite* giftCounterBottom; /**< Contador gráfico fila inferior. */
 static GiftCounterHUD giftCounterHUD; /**< Configuración del contador de regalos. */
 static GiftCounterBlink giftCounterBlink; /**< Parpadeo compartido para el HUD. */
 static u16 giftCounterBlinkStartFrame; /**< Momento en el que comenz¢ el parpadeo. */
+static u16 lastGiftCounterDisplay; /**< Último valor pintado en el HUD. */
 
 static u16 frameCounter; /**< Contador global de frames. */
 static GameInertia santaInertia; /**< Inercia de movimiento para Santa (fase 2). */
@@ -187,7 +188,7 @@ static void initEnemies(void);
 static void initGiftDrops(void);
 static void initGiftCounterSprites(void);
 static s16 advanceVerticalScroll(void);
-static void applyBackgroundScroll(void);
+static void applyBackgroundScroll(s16 scrollStep);
 static void updateChimneys(s16 scrollStep);
 static void updateEnemies(s16 scrollStep);
 static void updateGiftDrops(s16 scrollStep);
@@ -306,7 +307,7 @@ void minigameDelivery_update(void) {
     }
 
     s16 scrollStep = advanceVerticalScroll();
-    applyBackgroundScroll();
+    applyBackgroundScroll(scrollStep);
     updateChimneys(scrollStep);
     updateEnemies(scrollStep);
     updateGiftDrops(scrollStep);
@@ -517,6 +518,7 @@ static void initGiftCounterSprites(void) {
         baseX, baseY, -GIFT_COUNTER_ROW_OFFSET_Y, GIFT_COUNTER_SECOND_ROW_OFFSET_X,
         DEPTH_HUD + 1, DEPTH_HUD, GIFT_COUNTER_ROW_SIZE, DELIVERY_TARGET);
     giftCounter_stopBlink(&giftCounterBlink);
+    lastGiftCounterDisplay = 0xFFFF;
 }
 
 static s16 advanceVerticalScroll(void) {
@@ -537,8 +539,8 @@ static s16 advanceVerticalScroll(void) {
     return scrollStep;
 }
 
-static void applyBackgroundScroll(void) {
-    if (mapBackground != NULL) {
+static void applyBackgroundScroll(s16 scrollStep) {
+    if (mapBackground != NULL && scrollStep > 0) {
         MAP_scrollTo(mapBackground, 0, backgroundOffsetY);
     }
 }
@@ -1008,7 +1010,10 @@ static void updateGiftCounter(void) {
 
     const u16 displayValue = giftCounter_getDisplayValue(&giftCounterBlink,
         giftCounterValue, frameCounter);
-    giftCounter_render(&giftCounterHUD, displayValue);
+    if (displayValue != lastGiftCounterDisplay) {
+        giftCounter_render(&giftCounterHUD, displayValue);
+        lastGiftCounterDisplay = displayValue;
+    }
 }
 
 static u16 rollEnemyDirectionTimer(void) {
