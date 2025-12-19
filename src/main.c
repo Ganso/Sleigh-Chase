@@ -50,7 +50,7 @@ enum {
 };
 
 /* Variables globales */
-static u8 currentPhase = PHASE_DELIVERY; /**< Fase actual del bucle principal. */
+static u8 currentPhase = PHASE_INTRO; /**< Fase actual del bucle principal. */
 static u32 phaseTimerStart = 0;       /**< Tiempo de inicio de la fase en unidades de 1/256s. */
 static u32 phaseDurationsSeconds[PHASE_END]; /**< Tiempo consumido por fase. */
 
