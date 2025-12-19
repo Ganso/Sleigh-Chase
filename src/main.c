@@ -110,7 +110,7 @@ int main() {
         switch (currentPhase) {
             case PHASE_INTRO:
                 /* Mostrar intro o pasar a Fase 1 */
-                KLog("Mostrando intro...");
+                // Klog("Mostrando intro...");
                 geesebumps_logo();
                 gameCore_resetVideoState(); /* Limpia recursos de intro antes del titulo. */
                 //gameCore_fadeToBlack();
@@ -119,14 +119,14 @@ int main() {
 
             case PHASE_TITLE:
                 /* Pantalla de titulo */
-                KLog("Pantalla de titulo");
+                // Klog("Pantalla de titulo");
                 title_show();
                 currentPhase = PHASE_PICKUP;
                 break;
 
             case PHASE_PICKUP:
                 /* Fase 1: Recogida - Polo Norte */
-                KLog("Fase 1: Recogida");
+                // Klog("Fase 1: Recogida");
                 cutscene_phase1_intro();
                 gameCore_fadeToBlack();
                 startPhaseTimer();
@@ -144,7 +144,7 @@ int main() {
 
             case PHASE_DELIVERY:
                 /* Fase 2: Entrega - Tejados */
-                KLog("Fase 2: Entrega");
+                // Klog("Fase 2: Entrega");
                 cutscene_phase2_intro();
                 gameCore_fadeToBlack();
                 audio_play_phase2();
@@ -163,7 +163,7 @@ int main() {
 
             case PHASE_BELLS:
                 /* Fase 3: Campanadas - IMPLEMENTADA */
-                KLog("Fase 3: Campanadas");
+                // Klog("Fase 3: Campanadas");
                 cutscene_phase3_intro();
                 gameCore_fadeToBlack();
                 startPhaseTimer();
@@ -184,7 +184,7 @@ int main() {
 
             case PHASE_CELEBRATION:
                 /* Fase 4: Celebración */
-                KLog("Fase 4: Celebración");
+                // Klog("Fase 4: Celebración");
                 audio_play_phase4();
                 startPhaseTimer();
                 minigameCelebration_init();
@@ -201,7 +201,7 @@ int main() {
 
             case PHASE_END:
                 /* Mostrar pantalla final y salir */
-                KLog("Mostrando pantalla final...");
+                // Klog("Mostrando pantalla final...");
                 audio_stop_music();
                 VDP_clearPlane(BG_A, TRUE);
                 VDP_clearPlane(BG_B, TRUE);
