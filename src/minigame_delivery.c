@@ -218,8 +218,6 @@ static u8 checkGiftEnemyCollision(GiftDrop* drop);
 static u8 getActiveGiftTargetPos(s16* targetX, s16* targetY);
 static Chimney* findNearestChimneyInRange(s16 centerX, s16 centerY, u16 radius, s32* outDistanceSq);
 static void onGiftSuccess(void);
-static void onGiftFailure(void);
-static void playElfAppearSound(void);
 static void playRandomElfStealSound(void);
 static void playGiftDeliveredSound(void);
 static void playGiftLostSound(void);
@@ -227,7 +225,7 @@ static void playGiftLostSound(void);
 /** @brief Configura recursos, estado inicial de la fase. */
 void minigameDelivery_init(void) {
     gameCore_resetVideoState();
-    kprintf("[SANTA] starting Santa init at pos=(%d,%d)", (WORLD_WIDTH - SANTA_WIDTH) / 2, SANTA_START_Y);
+    // kprintf("[SANTA] starting Santa init at pos=(%d,%d)", (WORLD_WIDTH - SANTA_WIDTH) / 2, SANTA_START_Y);
 
     frameCounter = 0;
     giftCounterValue = 0;
@@ -275,10 +273,10 @@ void minigameDelivery_update(void) {
 
     static u8 santaMissingLogged = FALSE;
     if (santa.sprite == NULL && !santaMissingLogged) {
-        kprintf("[SANTA][ERROR] missing sprite at update frame=%u", frameCounter);
+        // kprintf("[SANTA][ERROR] missing sprite at update frame=%u", frameCounter);
         santaMissingLogged = TRUE;
     } else if (santa.sprite && (frameCounter % 120) == 0) {
-        kprintf("[SANTA] frame=%u pos=(%d,%d) depth=%d visible_check", frameCounter, santa.x, santa.y, DEPTH_SANTA);
+        // kprintf("[SANTA] frame=%u pos=(%d,%d) depth=%d visible_check", frameCounter, santa.x, santa.y, DEPTH_SANTA);
     }
 
     if (recoveringFrames > 0) {
@@ -387,19 +385,19 @@ static void initSanta(void) {
     santa.vx = 0;
     santa.vy = 0;
 
-    kprintf("[SANTA] starting Santa init at pos=(%d,%d)", santa.x, santa.y);
+    // kprintf("[SANTA] starting Santa init at pos=(%d,%d)", santa.x, santa.y);
     santa.sprite = SPR_addSpriteSafe(&sprite_santa_car_volando, santa.x, santa.y,
         TILE_ATTR(PAL_PLAYER, FALSE, FALSE, FALSE));
     if (santa.sprite) {
-        kprintf("[SANTA] sprite created successfully");
+        // kprintf("[SANTA] sprite created successfully");
         SPR_setDepth(santa.sprite, DEPTH_SANTA);
         SPR_setAutoAnimation(santa.sprite, TRUE);
         SPR_setAnimationLoop(santa.sprite, TRUE);
         SPR_setFrameChangeCallback(santa.sprite, onSantaFrameChange);
         SPR_setVisibility(santa.sprite, VISIBLE);
-        kprintf("[SANTA] sprite ok depth=%d pos=(%d,%d)", DEPTH_SANTA, santa.x, santa.y);
+        // kprintf("[SANTA] sprite ok depth=%d pos=(%d,%d)", DEPTH_SANTA, santa.x, santa.y);
     } else {
-        kprintf("[SANTA][ERROR] sprite not created");
+        // kprintf("[SANTA][ERROR] sprite not created");
     }
 }
 
@@ -502,7 +500,7 @@ static void initGiftCounterSprites(void) {
         SPR_setDepth(giftCounterTop, DEPTH_HUD + 1);
         SPR_setFrame(giftCounterTop, 0);
         SPR_setVisibility(giftCounterTop, VISIBLE);
-        kprintf("[HUD] giftCounterTop pos=(%d,%d)", baseX, baseY - GIFT_COUNTER_ROW_OFFSET_Y);
+        // kprintf("[HUD] giftCounterTop pos=(%d,%d)", baseX, baseY - GIFT_COUNTER_ROW_OFFSET_Y);
     }
 
     giftCounterBottom = SPR_addSpriteSafe(&sprite_icono_regalo, baseX + GIFT_COUNTER_SECOND_ROW_OFFSET_X, baseY,
@@ -512,7 +510,7 @@ static void initGiftCounterSprites(void) {
         SPR_setDepth(giftCounterBottom, DEPTH_HUD);
         SPR_setFrame(giftCounterBottom, 0);
         SPR_setVisibility(giftCounterBottom, VISIBLE);
-        kprintf("[HUD] giftCounterBottom pos=(%d,%d)", baseX + GIFT_COUNTER_SECOND_ROW_OFFSET_X, baseY);
+        // kprintf("[HUD] giftCounterBottom pos=(%d,%d)", baseX + GIFT_COUNTER_SECOND_ROW_OFFSET_X, baseY);
     }
 
     giftCounter_initHUD(&giftCounterHUD, giftCounterTop, giftCounterBottom,
@@ -917,7 +915,7 @@ static u8 checkGiftEnemyCollision(GiftDrop* drop) {
 
         if (gameCore_checkCollision(giftHitX, giftHitY, GIFT_HITBOX_WIDTH, GIFT_HITBOX_HEIGHT,
                 enemyHitX, enemyHitY, ENEMY_HITBOX_WIDTH, ENEMY_HITBOX_HEIGHT)) {
-            kprintf("[THROW] gift captured by enemy idx=%u at (%d,%d)", i, drop->x, drop->y);
+            // kprintf("[THROW] gift captured by enemy idx=%u at (%d,%d)", i, drop->x, drop->y);
             playRandomElfStealSound();
             enemy->stealAnimTimer = ENEMY_STEAL_ANIM_FRAMES;
             if (enemy->sprite) {
@@ -1056,25 +1054,6 @@ static void onGiftSuccess(void) {
     updateGiftCounter();
 }
 
-static void onGiftFailure(void) {
-    const u8 previousValue = giftCounterValue;
-    if (giftCounterValue > 0) {
-        giftCounterValue--;
-    }
-    deliveriesCompleted = giftCounterValue;
-    if (previousValue != giftCounterValue) {
-        giftCounter_startBlink(&giftCounterBlink, previousValue, giftCounterValue,
-            GIFT_COUNTER_BLINK_INTERVAL_FRAMES);
-        giftCounterBlinkStartFrame = frameCounter;
-    }
-    updateEnemyActivation();
-    updateGiftCounter();
-}
-
-static void playElfAppearSound(void) {
-    /* Temporalmente desactivado. */
-}
-
 static void playRandomElfStealSound(void) {
     if (random() & 1) {
         XGM2_playPCM(snd_elfo_volador_robando_1, sizeof(snd_elfo_volador_robando_1), SOUND_PCM_CH_AUTO);
@@ -1134,12 +1113,12 @@ static void resolveGiftDropAtTarget(const GiftDrop* drop) {
     if (chimney == NULL) {
         Chimney* blocked = findAnyChimneyAtPoint(drop->targetX, drop->targetY);
         if (blocked && blocked->prohibited) {
-            kprintf("[THROW] gift burned at prohibited chimney x=%d y=%d", blocked->x, blocked->y);
+            // kprintf("[THROW] gift burned at prohibited chimney x=%d y=%d", blocked->x, blocked->y);
             XGM2_playPCM(snd_regalo_quemado, sizeof(snd_regalo_quemado), SOUND_PCM_CH_AUTO);
             /* Entregas en chimeneas prohibidas ya no restan regalos. */
             /* onGiftFailure(); */
         } else {
-            kprintf("[THROW] gift landed no chimney x=%d y=%d", drop->targetX, drop->targetY);
+            // kprintf("[THROW] gift landed no chimney x=%d y=%d", drop->targetX, drop->targetY);
             playGiftLostSound();
         }
         return;
@@ -1161,23 +1140,21 @@ static void resolveGiftDropAtTarget(const GiftDrop* drop) {
     }
 
     onGiftSuccess();
-    kprintf("[THROW] gift delivered at chimney x=%d y=%d deliveries=%u giftsLeft=%u",
-        chimney->x, chimney->y, deliveriesCompleted, giftCounterValue);
+    // kprintf("[THROW] gift delivered at chimney x=%d y=%d deliveries=%u giftsLeft=%u",
+    //     chimney->x, chimney->y, deliveriesCompleted, giftCounterValue);
 }
 
 static void spawnGiftDrop(void) {
     GiftDrop* drop = NULL;
-    u8 dropIndex = 0;
     for (u8 i = 0; i < NUM_GIFT_DROPS; i++) {
         GiftDrop* candidate = &drops[i];
         if (candidate->pending) {
             drop = candidate;
-            dropIndex = i;
             break;
         }
     }
     if (drop == NULL) {
-        kprintf("[THROW][WARN] no pending target for spawn");
+        // kprintf("[THROW][WARN] no pending target for spawn");
         return;
     }
 
@@ -1217,9 +1194,9 @@ static void spawnGiftDrop(void) {
     SPR_setPosition(drop->sprite, drop->x, drop->y);
     SPR_setVisibility(drop->sprite, VISIBLE);
 
-    kprintf("[THROW] spawn gift idx=%u pos=(%d,%d) target=(%d,%d) frames=%u vx=%ld vy=%ld",
-        dropIndex, drop->x, drop->y, drop->targetX, drop->targetY,
-        travelFrames, (long)drop->vx, (long)drop->vy);
+    // kprintf("[THROW] spawn gift pos=(%d,%d) target=(%d,%d) frames=%u vx=%ld vy=%ld",
+    //     drop->x, drop->y, drop->targetX, drop->targetY,
+    //     travelFrames, (long)drop->vx, (long)drop->vy);
 }
 
 static Chimney* findNearestChimneyInRange(s16 centerX, s16 centerY, u16 radius, s32* outDistanceSq) {
@@ -1265,7 +1242,7 @@ static void startGiftThrow(void) {
     }
     if (pendingIndex < 0) return;
 
-    GiftDrop* pendingDrop = &drops[pendingIndex];
+    GiftDrop* pendingDrop = &drops[(u8)pendingIndex];
     pendingDrop->pending = TRUE;
     pendingDrop->active = FALSE;
     pendingDrop->framesToTarget = 0;
@@ -1286,9 +1263,9 @@ static void startGiftThrow(void) {
     if (nearest != NULL) {
         targetCenterX = nearest->x + (CHIMNEY_SIZE / 2);
         targetCenterY = nearest->y + (CHIMNEY_SIZE / 2);
-        kprintf("[THROW] nearest chimney distSq=%ld pos=(%d,%d)", (long)distanceSq, nearest->x, nearest->y);
+        // kprintf("[THROW] nearest chimney distSq=%ld pos=(%d,%d)", (long)distanceSq, nearest->x, nearest->y);
     } else {
-        kprintf("[THROW] no chimney nearby, fallback target side=%d", (int)fallbackSide);
+        // kprintf("[THROW] no chimney nearby, fallback target side=%d", (int)fallbackSide);
     }
 
     pendingDrop->targetX = targetCenterX - (GIFT_SIZE / 2);
@@ -1306,13 +1283,13 @@ static void startGiftThrow(void) {
         SPR_setPosition(pendingDrop->targetSprite, targetMarkX, targetMarkY);
         SPR_setVisibility(pendingDrop->targetSprite, VISIBLE);
     }
-    kprintf("[THROW] lock target idx=%d target=(%d,%d)", pendingIndex, pendingDrop->targetX, pendingDrop->targetY);
+    // kprintf("[THROW] lock target idx=%d target=(%d,%d)", pendingIndex, pendingDrop->targetX, pendingDrop->targetY);
 
     santaThrowing = TRUE;
     santaThrowGiftSpawned = FALSE;
     santaReturnToIdle = FALSE;
     dropCooldown = DROP_COOLDOWN_FRAMES;
-    kprintf("[THROW] start cooldown=%d", dropCooldown);
+    // kprintf("[THROW] start cooldown=%d", dropCooldown);
 
     if (santa.sprite) {
         SPR_setAnim(santa.sprite, 1);
@@ -1332,10 +1309,10 @@ static void updateSantaThrowState(void) {
             SPR_setAnim(santa.sprite, 0);
             SPR_setAnimationLoop(santa.sprite, TRUE);
             SPR_setAutoAnimation(santa.sprite, TRUE);
-            kprintf("[THROW] Santa back to idle");
+            // kprintf("[THROW] Santa back to idle");
         }
         if (santa.sprite == NULL) {
-            kprintf("[THROW][WARN] Santa sprite NULL during throw cleanup");
+            // kprintf("[THROW][WARN] Santa sprite NULL during throw cleanup");
         }
     }
 }
@@ -1347,13 +1324,13 @@ static void onSantaFrameChange(Sprite* sprite) {
         if (!santaThrowGiftSpawned && sprite->frameInd >= SANTA_THROW_SPAWN_FRAME) {
             santaThrowGiftSpawned = TRUE;
             spawnGiftDrop();
-            kprintf("[THROW] Santa frame=%d spawn gift", sprite->frameInd);
+            // kprintf("[THROW] Santa frame=%d spawn gift", sprite->frameInd);
         }
 
         Animation* anim = sprite->animation;
         if ((anim == NULL) || (anim->numFrame == 0) || (sprite->frameInd >= (anim->numFrame - 1))) {
             santaReturnToIdle = TRUE;
-            kprintf("[THROW] animation finished frame=%d", sprite->frameInd);
+            // kprintf("[THROW] animation finished frame=%d", sprite->frameInd);
         }
     }
 }

@@ -52,7 +52,7 @@ void title_show(void) {
     s16 sleighScrollY = TITLE_SCROLL_START_Y;
     s16 tituloScrollY = TITLE_TITULO_SCROLL_START_Y;
     while (sleighScrollY > TITLE_SCROLL_TARGET_Y) {
-        kprintf("Haciendo map hacia (0, %d)", sleighScrollY);
+        // kprintf("Haciendo map hacia (0, %d)", sleighScrollY);
         MAP_scrollTo(mapSleigh, 0, sleighScrollY);
         MAP_scrollTo(mapTitulo, 0, tituloScrollY);
         sleighScrollY -= 1;
