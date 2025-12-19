@@ -122,6 +122,10 @@ typedef struct {
     s16 y;
     s8 vx;
     s8 vy;
+    fix16 fx;
+    fix16 fy;
+    fix16 fvx;
+    fix16 fvy;
     u8 active;
     u8 stealAnimTimer;
     u16 directionTimer;
@@ -729,6 +733,10 @@ static void respawnEnemyFromTop(Enemy* enemy, u8 offsetIndex) {
     enemy->y = -(ENEMY_HEIGHT + (offsetIndex * 20));
     enemy->vx = 0;
     enemy->vy = ENEMY_SPEED;
+    enemy->fx = FIX16(enemy->x);
+    enemy->fy = FIX16(enemy->y);
+    enemy->fvx = FIX16(enemy->vx);
+    enemy->fvy = FIX16(enemy->vy);
     enemy->stealAnimTimer = 0;
     enemy->directionTimer = rollEnemyDirectionTimer();
 
@@ -834,29 +842,41 @@ static void updateEnemies(s16 scrollStep) {
             }
         }
 
-        enemy->x += enemy->vx;
-        enemy->y += enemy->vy;
+        enemy->fvx = FIX16(enemy->vx);
+        enemy->fvy = FIX16(enemy->vy);
+        enemy->fx += enemy->fvx;
+        enemy->fy += enemy->fvy;
+        enemy->x = F16_toInt(enemy->fx);
+        enemy->y = F16_toInt(enemy->fy);
 
         if (enemy->x < 0) {
             enemy->x = 0;
             enemy->vx = ENEMY_SPEED;
+            enemy->fx = FIX16(enemy->x);
+            enemy->fvx = FIX16(enemy->vx);
         } else if (enemy->x > (WORLD_WIDTH - ENEMY_WIDTH)) {
             enemy->x = WORLD_WIDTH - ENEMY_WIDTH;
             enemy->vx = -ENEMY_SPEED;
+            enemy->fx = FIX16(enemy->x);
+            enemy->fvx = FIX16(enemy->vx);
         }
 
         if (enemy->y < 0) {
             enemy->y = 0;
             enemy->vy = ENEMY_SPEED;
+            enemy->fy = FIX16(enemy->y);
+            enemy->fvy = FIX16(enemy->vy);
         } else if (enemy->y > (SCREEN_HEIGHT - ENEMY_HEIGHT)) {
             enemy->y = SCREEN_HEIGHT - ENEMY_HEIGHT;
             enemy->vy = -ENEMY_SPEED;
+            enemy->fy = FIX16(enemy->y);
+            enemy->fvy = FIX16(enemy->vy);
         }
 
         const u8 visible = (enemy->y + ENEMY_HEIGHT > 0) && (enemy->y < SCREEN_HEIGHT);
         SPR_setPosition(enemy->sprite, enemy->x, enemy->y);
         SPR_setVisibility(enemy->sprite, visible ? VISIBLE : HIDDEN);
-        SPR_setHFlip(enemy->sprite, (enemy->vx < 0));
+        SPR_setHFlip(enemy->sprite, (enemy->fvx < 0));
     }
 }
 
