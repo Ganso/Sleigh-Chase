@@ -371,10 +371,8 @@ static void initBackground(void) {
 
     VDP_setBackgroundColor(0);
 
-    VDP_loadTileSet(&image_fondo_tejados_tile, globalTileIndex, CPU);
-    mapBackground = MAP_create(&image_fondo_tejados_map, BG_B,
-        TILE_ATTR_FULL(PAL_COMMON, FALSE, FALSE, FALSE, globalTileIndex));
-    globalTileIndex += image_fondo_tejados_tile.numTile;
+    mapBackground = gameCore_loadMapWithTiles(&image_fondo_tejados_tile, &image_fondo_tejados_map,
+        BG_B, PAL_COMMON, FALSE, FALSE, FALSE, &globalTileIndex);
     if (mapBackground != NULL) {
         MAP_scrollTo(mapBackground, 0, backgroundOffsetY);
     }

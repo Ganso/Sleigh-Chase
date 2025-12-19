@@ -1147,10 +1147,8 @@ void minigamePickup_init(void) {
 
     VDP_setBackgroundColor(0);
 
-    VDP_loadTileSet(&image_pista_polo_tile, globalTileIndex, CPU);
-    mapTrack = MAP_create(&image_pista_polo_map, BG_B,
-        TILE_ATTR_FULL(PAL_COMMON, FALSE, FALSE, FALSE, globalTileIndex));
-    globalTileIndex += image_pista_polo_tile.numTile;   
+    mapTrack = gameCore_loadMapWithTiles(&image_pista_polo_tile, &image_pista_polo_map,
+        BG_B, PAL_COMMON, FALSE, FALSE, FALSE, &globalTileIndex);
     trackOffsetY = TRACK_LOOP_PX;
     if (mapTrack != NULL) {
         MAP_scrollTo(mapTrack, 0, trackOffsetY);

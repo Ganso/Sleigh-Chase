@@ -145,3 +145,29 @@ void gameCore_applyInertiaMovement(s16 *x, s16 *y, s8 *vx, s8 *vy,
 u8 gameCore_checkCollision(s16 x1, s16 y1, s16 w1, s16 h1, s16 x2, s16 y2, s16 w2, s16 h2) {
     return (x1 < x2 + w2) && (x1 + w1 > x2) && (y1 < y2 + h2) && (y1 + h1 > y2);
 }
+
+/**
+ * @brief Carga un tileset, crea un mapa y avanza el índice global.
+ *
+ * @param tileSet Tileset a cargar.
+ * @param mapDefinition Definición de mapa asociada.
+ * @param plane Plano de destino para el mapa.
+ * @param paletteIndex Índice de paleta a aplicar.
+ * @param hFlip Flip horizontal para los tiles.
+ * @param vFlip Flip vertical para los tiles.
+ * @param priority TRUE si el mapa debe tener prioridad.
+ * @param tileIndex Índice de tiles global a actualizar.
+ * @return Puntero al mapa creado o NULL si faltan datos.
+ */
+Map* gameCore_loadMapWithTiles(const TileSet* tileSet, const MapDefinition* mapDefinition,
+    VDPPlane plane, u16 paletteIndex, u8 hFlip, u8 vFlip, u8 priority, u32* tileIndex) {
+    if (tileSet == NULL || mapDefinition == NULL || tileIndex == NULL) {
+        return NULL;
+    }
+
+    VDP_loadTileSet(tileSet, *tileIndex, CPU);
+    Map* map = MAP_create(mapDefinition, plane,
+        TILE_ATTR_FULL(paletteIndex, hFlip, vFlip, priority, *tileIndex));
+    *tileIndex += tileSet->numTile;
+    return map;
+}
