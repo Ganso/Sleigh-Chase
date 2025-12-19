@@ -160,7 +160,7 @@ static u8 santaReturnToIdle; /**< Solicitud de volver a la animación base. */
 
 static Map* mapBackground; /**< Mapa del plano B para el tejado. */
 static s16 backgroundOffsetY; /**< Offset vertical del scroll de fondo. */
-static fix16 scrollAccumulator; /**< Acumulador de scroll fraccional. */
+static fix16 backgroundOffsetFY; /**< Offset vertical de scroll en fix16. */
 static fix16 scrollSpeedPerFrame; /**< Velocidad de scroll por frame. */
 static SnowEffect snowEffect; /**< Efecto de nieve compartido. */
 static GameTimer gameTimer; /**< Temporizador de la fase para derrota. */
@@ -240,7 +240,7 @@ void minigameDelivery_init(void) {
     santaReturnToIdle = FALSE;
     backgroundOffsetY = SCROLL_LOOP_PX;
     backgroundOffsetY %= SCROLL_LOOP_PX;
-    scrollAccumulator = FIX16(0);
+    backgroundOffsetFY = FIX16(backgroundOffsetY);
     scrollSpeedPerFrame = SCROLL_SPEED_PER_FRAME;
     santaInertia.accel = 3;
     santaInertia.friction = 3;
@@ -350,7 +350,7 @@ void minigameDelivery_shutdown(void) {
 static void initBackground(void) {
     gameCore_resetTileIndex();
 
-    scrollAccumulator = FIX16(0);
+    backgroundOffsetFY = FIX16(backgroundOffsetY);
     scrollSpeedPerFrame = SCROLL_SPEED_PER_FRAME;
 
     if (image_fondo_tejados_pal.data) {
@@ -522,18 +522,17 @@ static void initGiftCounterSprites(void) {
 }
 
 static s16 advanceVerticalScroll(void) {
-    scrollAccumulator += scrollSpeedPerFrame;
-    s16 scrollStep = 0;
-    while (scrollAccumulator >= FIX16(1)) {
-        scrollStep++;
-        scrollAccumulator -= FIX16(1);
+    const s16 previousOffsetY = backgroundOffsetY;
+
+    backgroundOffsetFY -= scrollSpeedPerFrame;
+    if (backgroundOffsetFY < 0) {
+        backgroundOffsetFY += FIX16(SCROLL_LOOP_PX);
     }
 
-    if (scrollStep > 0) {
-        backgroundOffsetY -= scrollStep;
-        if (backgroundOffsetY < 0) {
-            backgroundOffsetY += SCROLL_LOOP_PX;
-        }
+    backgroundOffsetY = F16_toInt(backgroundOffsetFY);
+    s16 scrollStep = previousOffsetY - backgroundOffsetY;
+    if (scrollStep < 0) {
+        scrollStep += SCROLL_LOOP_PX;
     }
 
     return scrollStep;
