@@ -51,7 +51,7 @@ void audio_play_phase3(void) {
 }
 
 void audio_play_phase4(void) {
-    audio_play_loop(musica_Rudolph);
+    audio_play_loop(musica_Fanfarria);
 }
 
 void audio_stop_music(void) {
