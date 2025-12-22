@@ -43,7 +43,7 @@ void audio_play_phase1(void) {
 }
 
 void audio_play_phase2(void) {
-    audio_play_loop(musica_MerryGentelmen);
+    audio_play_loop(musica_SleighRide);
 }
 
 void audio_play_phase3(void) {
@@ -51,7 +51,7 @@ void audio_play_phase3(void) {
 }
 
 void audio_play_phase4(void) {
-    audio_play_loop(musica_MerryGentelmen);
+    audio_play_loop(musica_Rudolph);
 }
 
 void audio_stop_music(void) {
