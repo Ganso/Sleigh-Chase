@@ -1,5 +1,13 @@
+/**
+ * @file gift_counter.c
+ * @brief Implementación del HUD de contador de regalos con parpadeo.
+ */
+
 #include "gift_counter.h"
 
+/**
+ * @brief Inicializa los parámetros del HUD del contador.
+ */
 void giftCounter_initHUD(GiftCounterHUD* hud, Sprite* top, Sprite* bottom,
     s16 baseX, s16 baseY, s16 topOffsetY, s16 bottomOffsetX,
     u16 depthTop, u16 depthBottom, u8 rowSize, u16 maxValue) {
@@ -17,6 +25,9 @@ void giftCounter_initHUD(GiftCounterHUD* hud, Sprite* top, Sprite* bottom,
     hud->maxValue = maxValue;
 }
 
+/**
+ * @brief Configura el estado de parpadeo con un rango de valores.
+ */
 void giftCounter_startBlink(GiftCounterBlink* blink, u16 previousValue,
     u16 targetValue, u8 intervalFrames) {
     if (blink == NULL) return;
@@ -26,6 +37,9 @@ void giftCounter_startBlink(GiftCounterBlink* blink, u16 previousValue,
     blink->intervalFrames = intervalFrames ? intervalFrames : 1;
 }
 
+/**
+ * @brief Desactiva el parpadeo del contador.
+ */
 void giftCounter_stopBlink(GiftCounterBlink* blink) {
     if (blink == NULL) return;
     blink->active = FALSE;
@@ -34,6 +48,9 @@ void giftCounter_stopBlink(GiftCounterBlink* blink) {
     blink->intervalFrames = 1;
 }
 
+/**
+ * @brief Calcula el valor visible teniendo en cuenta el parpadeo.
+ */
 u16 giftCounter_getDisplayValue(const GiftCounterBlink* blink,
     u16 currentValue, u16 frameCounter) {
     if ((blink == NULL) || !blink->active) {
@@ -44,6 +61,9 @@ u16 giftCounter_getDisplayValue(const GiftCounterBlink* blink,
     return toggle ? blink->targetValue : blink->previousValue;
 }
 
+/**
+ * @brief Actualiza sprites y frames del HUD para el valor indicado.
+ */
 void giftCounter_render(const GiftCounterHUD* hud, u16 value) {
     if (hud == NULL) return;
 

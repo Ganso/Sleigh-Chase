@@ -122,4 +122,23 @@ void gameCore_applyInertiaMovement(s16 *x, s16 *y, s8 *vx, s8 *vy,
  */
 u8 gameCore_checkCollision(s16 x1, s16 y1, s16 w1, s16 h1, s16 x2, s16 y2, s16 w2, s16 h2);
 
+/**
+ * @brief Carga un tileset y crea un mapa en el plano indicado.
+ *
+ * Encapsula la carga del tileset, la creación del mapa y el avance del índice
+ * global de tiles.
+ *
+ * @param tileSet Tileset a cargar en VRAM.
+ * @param mapDefinition Definición del mapa a instanciar.
+ * @param plane Plano de destino (BG_A o BG_B).
+ * @param paletteIndex Índice de paleta a usar en el mapa.
+ * @param hFlip Indica si se aplica flip horizontal.
+ * @param vFlip Indica si se aplica flip vertical.
+ * @param priority TRUE si el mapa debe dibujarse con prioridad.
+ * @param tileIndex Índice global de tiles que se incrementará con el tileset.
+ * @return Mapa creado o NULL si faltan recursos.
+ */
+Map* gameCore_loadMapWithTiles(const TileSet* tileSet, const MapDefinition* mapDefinition,
+    VDPPlane plane, u16 paletteIndex, u8 hFlip, u8 vFlip, u8 priority, u32* tileIndex);
+
 #endif

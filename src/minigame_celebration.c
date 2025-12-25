@@ -83,10 +83,9 @@ void minigameCelebration_shutdown(void) {
 static void loadCelebrationBackground(void) {
     gameCore_resetTileIndex();
 
-    VDP_loadTileSet(&image_fondo_fiesta_tile, globalTileIndex, CPU);
-    celebrationMap = MAP_create(&image_fondo_fiesta_map, BG_B,
-        TILE_ATTR_FULL(PAL_COMMON, FALSE, FALSE, FALSE, globalTileIndex));
-    globalTileIndex += image_fondo_tile.numTile;
+    celebrationMap = gameCore_loadMapWithTiles(&image_fondo_fiesta_tile,
+        &image_fondo_fiesta_map, BG_B, PAL_COMMON, FALSE, FALSE, FALSE,
+        &globalTileIndex);
     PAL_setPalette(PAL_COMMON, image_fondo_fiesta_pal.data, CPU);
     MAP_scrollTo(celebrationMap, 0, 0);
     (void)celebrationMap;
